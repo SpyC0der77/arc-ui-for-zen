@@ -1,0 +1,12 @@
+{
+  "zen.view.use-single-toolbar": true,
+  "zen.view.sidebar-expanded": true,
+  "zen.tabs.vertical.right-side": false,
+  "zen.view.compact.animate-sidebar": false,
+  "zen.view.compact.sidebar-keep-hover.duration": 160,
+  "zen.downloads.download-animation": false,
+  "zen.urlbar.replace-newtab": true,
+  "zen.urlbar.behavior": "float",
+  "zen.theme.content-element-separation": 10,
+  "zen.theme.essentials-favicon-bg": false
+}

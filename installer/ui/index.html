@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self';">
+<title>Arc Skeleton for Zen</title><link rel="stylesheet" href="style.css"><script src="renderer.js" defer></script>
+</head><body><main>
+<p class="title">Arc Skeleton for Zen</p>
+<p class="intro">Install the theme and browser interaction patches.</p>
+<form id="installer">
+<label for="installation">Zen installation</label>
+<div class="path-row"><input id="installation" spellcheck="false" autocomplete="off" placeholder="Choose your Zen application folder" required><button id="browse-installation" type="button">Browse…</button></div>
+<label for="profiles">Zen profile</label>
+<select id="profiles"><option value="">Select a profile…</option></select>
+<div class="path-row"><input id="profile" spellcheck="false" autocomplete="off" placeholder="Or choose a profile folder" required><button id="browse-profile" type="button">Browse…</button></div>
+<p class="help">Find your profile in Zen at <code>about:profiles</code>. Close Zen before installing or removing.</p>
+<details><summary>What this installs</summary><ul>
+<li>Lavender theme, tabs, page corners and address popup</li>
+<li>Sidebar docking, hover reveal and icon feedback</li>
+<li>Gift menu, library rail and real download controls</li>
+<li>File flight animation and a download preview page</li>
+</ul><p>The library’s six selectors match the skeleton. Placeholder sections do not add new Arc services.</p></details>
+<p class="notice">Includes privileged local browser UI scripts and a startup loader. Website sandboxing stays enabled. Existing configuration is backed up; conflicting loaders are left untouched.</p>
+<div class="actions"><button id="install" class="primary" type="submit">Install</button><button id="remove" type="button">Remove</button><button id="launch" type="button">Open Zen</button></div>
+</form>
+<p id="status" role="status" aria-live="polite">Looking for Zen…</p><p id="version" class="help"></p>
+</main></body></html>

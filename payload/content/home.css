@@ -1,0 +1,7 @@
+﻿@font-face { font-family: Geist; src: url("chrome://arc-skeleton/content/geist-400.woff2"); font-weight: 400; }
+@font-face { font-family: Geist; src: url("chrome://arc-skeleton/content/geist-500.woff2"); font-weight: 500; }
+html,body { margin: 0; min-height: 100%; background: white; color: #141414; font: 14px Geist,sans-serif; }
+main { min-height: 256px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; gap: 12px; }
+button { display: inline-flex; align-items: center; justify-content: center; height: 36px; gap: 8px; padding: 0 16px; border: 0; border-radius: 8px; background: #65556f; color: white; font: 500 14px Geist,sans-serif; }
+button:hover { background: #54455d; } button:disabled { opacity: .5; } button:focus-visible { outline: 2px solid #65556f; outline-offset: 3px; }
+svg { width: 16px; height: 16px; } p { margin: 0; color: #65556f; } #status:empty { display: none; } ::selection { background: #cec7d4; }

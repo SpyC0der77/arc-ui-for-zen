@@ -1,0 +1,6 @@
+{
+  "gfx.font_rendering.cleartype_params.rendering_mode": 5,
+  "gfx.font_rendering.cleartype_params.cleartype_level": 0,
+  "gfx.font_rendering.cleartype_params.enhanced_contrast": 50,
+  "gfx.font_rendering.cleartype_params.gamma": 2200
+}
