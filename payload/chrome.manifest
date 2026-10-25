@@ -1,2 +1,2 @@
-content arc-skeleton content/
-content arc-skeleton-runtime ./
+content arc-ui content/
+content arc-ui-runtime ./

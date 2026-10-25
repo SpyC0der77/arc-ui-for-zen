@@ -1,8 +1,8 @@
 {
-  "name": "arc-skeleton-zen-installer",
+  "name": "arc-ui-zen-installer",
   "version": "0.1.0",
   "private": true,
-  "description": "Cross-platform installer for Arc Skeleton theme and behavior patches for Zen Browser",
+  "description": "Cross-platform installer for the Arc UI theme and behavior patches for Zen Browser",
   "license": "UNLICENSED",
   "main": "installer/main.cjs",
   "scripts": {
@@ -16,12 +16,12 @@
   },
   "devDependencies": { "electron": "45.0.0", "electron-builder": "26.18.0" },
   "build": {
-    "appId": "dev.arc-skeleton.zen-installer",
-    "productName": "Arc Skeleton for Zen",
+    "appId": "dev.arcui.zen-installer",
+    "productName": "Arc UI for Zen",
     "directories": { "output": "release" },
     "files": ["installer/**/*.cjs", "installer/ui/**/*", "payload/**/*", "package.json"],
-    "win": { "target": ["portable"], "requestedExecutionLevel": "asInvoker", "artifactName": "Arc-Skeleton-Zen-${version}-Windows.${ext}" },
-    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.utilities", "artifactName": "Arc-Skeleton-Zen-${version}-macOS-${arch}.${ext}" },
-    "linux": { "target": ["AppImage"], "category": "Utility", "artifactName": "Arc-Skeleton-Zen-${version}-Linux-${arch}.${ext}" }
+    "win": { "target": ["portable"], "requestedExecutionLevel": "asInvoker", "artifactName": "Arc-UI-Zen-${version}-Windows.${ext}" },
+    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.utilities", "artifactName": "Arc-UI-Zen-${version}-macOS-${arch}.${ext}" },
+    "linux": { "target": ["AppImage"], "category": "Utility", "artifactName": "Arc-UI-Zen-${version}-Linux-${arch}.${ext}" }
   }
 }

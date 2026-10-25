@@ -1,4 +1,4 @@
-name: Build Zen theme installer
+name: Build Arc UI for Zen installer
 on:
   workflow_dispatch:
 jobs:
@@ -31,7 +31,7 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - uses: actions/upload-artifact@v4
         with:
-          name: zen-installer-${{ matrix.target }}
+          name: arc-ui-zen-${{ matrix.target }}
           path: |
             release/*.exe
             release/*.dmg

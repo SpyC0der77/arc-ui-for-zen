@@ -6,7 +6,7 @@
     await wait(2500);
     check(!!window.ZenArc,'startup loader and patch');
     if(!window.ZenArc)throw new Error('ZenArc did not initialize');
-    check(document.documentElement.hasAttribute('data-arc-skeleton'),'theme marker');
+    check(document.documentElement.hasAttribute('data-arc-ui'),'theme marker');
     const label=document.querySelector('.tab-label');
     check(label&&getComputedStyle(label).fontFamily.includes('Geist'),'native tab uses theme typography');
     check(label&&getComputedStyle(label).fontWeight==='500','tab labels use medium weight');
@@ -49,7 +49,7 @@
     check(document.querySelectorAll('#arc-sidebar-toggle').length===1&&['zen-toggle-compact-mode','zen-expand-sidebar-button'].every(id=>!document.getElementById(id)||getComputedStyle(document.getElementById(id)).display==='none'),'one visible sidebar toggle');
     check(typeof document.querySelector('zen-library').constructor.animateProgress==='function','native functional library available');
     check(['zen-library-button','library-button','downloads-button'].every(id=>!document.getElementById(id)||getComputedStyle(document.getElementById(id)).display==='none'),'duplicate native library and downloads buttons hidden');
-    check(getComputedStyle(document.getElementById('navigator-toolbox')).backgroundColor==='rgb(206, 199, 212)','skeleton palette');
+    check(getComputedStyle(document.getElementById('navigator-toolbox')).backgroundColor==='rgb(206, 199, 212)','lavender palette');
     const frameNodes=['zen-browser-background','zen-toolbar-background','zen-appcontent-wrapper','zen-tabbox-wrapper'];
     const savedTheme=document.documentElement.getAttribute('style');
     document.documentElement.style.setProperty('--zen-main-browser-background','linear-gradient(#aaffcc,#ffaaaa)');
@@ -81,9 +81,9 @@
     await flight;check(!document.querySelector('[data-arc-flight]'),'file flight completes');check(ZenArc.diagnostics().downloads===start,'preview creates no downloads');
     check(ZenArc.diagnostics().popup,'arrival opens downloads');
     ZenArc.hideDownloads();
-    const tab=window.openTrustedLinkIn('chrome://arc-skeleton/content/home.xhtml','tab');
+    const tab=window.openTrustedLinkIn('chrome://arc-ui/content/home.xhtml','tab');
     await wait(1800);
-    check(gBrowser.currentURI.spec==='chrome://arc-skeleton/content/home.xhtml','demo page opens');
+    check(gBrowser.currentURI.spec==='chrome://arc-ui/content/home.xhtml','demo page opens');
     const home = gBrowser.selectedBrowser.contentDocument;
     check(!!home?.getElementById('preview'),'demo button renders in chrome page');
     home?.getElementById('preview')?.click();
@@ -130,7 +130,7 @@
       await IOUtils.write(PathUtils.join(PathUtils.profileDir,'verified.png'),new Uint8Array(await blob.arrayBuffer()));
       result.checks.push({label:'browser chrome screenshot',pass:true});
     }catch(error){result.screenshotError=String(error);}
-    document.title='Arc Skeleton verification';
+    document.title='Arc UI verification';
   } catch(error){result.errors.push(String(error)+'\n'+error.stack);}
   await IOUtils.writeJSON(PathUtils.join(PathUtils.profileDir,'verification.json'),result);
   window.setTimeout(()=>Services.startup.quit(Ci.nsIAppStartup.eAttemptQuit),100);

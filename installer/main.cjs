@@ -29,7 +29,7 @@ async function boot() {
     const child=spawn(target.exe,['-purgecaches','-profile',target.profile],{detached:true,stdio:'ignore',windowsHide:false});
     await new Promise((resolve,reject)=>{child.once('spawn',resolve);child.once('error',reject);});child.unref();return true;
   });
-  window=new BrowserWindow({width:720,height:690,minWidth:600,minHeight:640,title:'Arc Skeleton for Zen',show:false,backgroundColor:'#faf8fb',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,sandbox:true,nodeIntegration:false}});
+  window=new BrowserWindow({width:720,height:690,minWidth:600,minHeight:640,title:'Arc UI for Zen',show:false,backgroundColor:'#faf8fb',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,sandbox:true,nodeIntegration:false}});
   window.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   window.webContents.on('will-navigate',(event,url)=>{if(url!==pathToFileURL(page).href)event.preventDefault();});
   window.on('close',event=>{if(busy)event.preventDefault();});

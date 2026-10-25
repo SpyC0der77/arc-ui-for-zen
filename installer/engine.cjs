@@ -7,14 +7,14 @@ const { promisify } = require('node:util');
 const run = promisify(execFile);
 const VERSION = '0.1.0';
 const SUPPORTED = '1.23.4b';
-const BEGIN = '// BEGIN Arc Skeleton for Zen';
-const END = '// END Arc Skeleton for Zen';
+const BEGIN = '// BEGIN Arc UI for Zen';
+const END = '// END Arc UI for Zen';
 const utf8 = bytes => new TextDecoder('utf-8', { fatal: true }).decode(bytes);
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const exists = file => fs.access(file).then(() => true, () => false);
 const eq = (a,b,platform=process.platform) => platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b;
 const escape = value => value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-const receiptFile = profile => path.join(profile,'chrome','zen-arc.install.json');
+const receiptFile = profile => path.join(profile,'chrome','arc-ui.install.json');
 function parseIni(text) {
   const sections = {}; let current = null;
   for(const line of text.split(/\r?\n/)) {
@@ -86,29 +86,29 @@ async function writable(folder) {
 async function install(installation,profile,{payload=path.join(__dirname,'..','payload'),...options}={}) {
   const target=await validate(installation,profile,options);
   const manifest=receiptFile(target.profile);
-  if(await exists(manifest))throw new Error('Arc Skeleton is already installed in this profile. Remove it before reinstalling.');
+  if(await exists(manifest))throw new Error('Arc UI is already installed in this profile. Remove it before reinstalling.');
   const prefDir=path.join(target.resources,'defaults','pref');
   for(const file of await fs.readdir(prefDir).catch(e=>{if(e.code==='ENOENT')return [];throw e;})) {
     if(!file.endsWith('.js'))continue;
     if(/(?:pref|defaultPref|lockPref)\s*\(\s*["']general\.config\.filename/.test(await fs.readFile(path.join(prefDir,file),'utf8')))
       throw new Error('Another AutoConfig loader is installed. It will not be overwritten: '+file);
   }
-  if(await exists(path.join(target.resources,'zen-arc-owner.json')))throw new Error('This Zen installation is attached to another Arc Skeleton profile.');
+  if(await exists(path.join(target.resources,'arc-ui-owner.json')))throw new Error('This Zen installation is attached to another Arc UI profile.');
   const userPath=path.join(target.profile,'user.js');
   const userBytes=await fs.readFile(userPath).catch(e=>{if(e.code==='ENOENT')return null;throw e;});
   const user=userBytes?utf8(userBytes):'';
-  if(user.includes(BEGIN)||user.includes(END))throw new Error('An existing Arc Skeleton settings block has no installation receipt. Restore that installation before continuing.');
+  if(user.includes(BEGIN)||user.includes(END))throw new Error('An existing Arc UI settings block has no installation receipt. Restore that installation before continuing.');
   const settings=JSON.parse(await fs.readFile(path.join(payload,'settings.json'),'utf8'));
   // DirectWrite tuning is Windows-only. Keep CoreText/FreeType native elsewhere.
   if((options.platform||process.platform)==='win32')Object.assign(settings,JSON.parse(await fs.readFile(path.join(payload,'settings.windows.json'),'utf8')));
   const block=BEGIN+'\n'+Object.entries(settings).map(([k,v])=>`user_pref(${JSON.stringify(k)}, ${JSON.stringify(v)});`).join('\n')+'\n'+END;
   const writes=new Map();
-  writes.set(path.join(prefDir,'zen-arc-autoconfig.js'),await fs.readFile(path.join(payload,'zen-arc-autoconfig.js')));
-  writes.set(path.join(target.resources,'zen-arc.cfg'),await fs.readFile(path.join(payload,'zen-arc.cfg')));
-  writes.set(path.join(target.resources,'zen-arc-owner.json'),Buffer.from(JSON.stringify({profile:target.profile,version:VERSION})));
+  writes.set(path.join(prefDir,'arc-ui-autoconfig.js'),await fs.readFile(path.join(payload,'arc-ui-autoconfig.js')));
+  writes.set(path.join(target.resources,'arc-ui.cfg'),await fs.readFile(path.join(payload,'arc-ui.cfg')));
+  writes.set(path.join(target.resources,'arc-ui-owner.json'),Buffer.from(JSON.stringify({profile:target.profile,version:VERSION})));
   for(const relative of await walk(payload)) {
-    if(['settings.json','settings.windows.json','zen-arc.cfg','zen-arc-autoconfig.js'].includes(relative))continue;
-    writes.set(path.join(target.profile,'chrome','zen-arc',relative),await fs.readFile(path.join(payload,relative)));
+    if(['settings.json','settings.windows.json','arc-ui.cfg','arc-ui-autoconfig.js'].includes(relative))continue;
+    writes.set(path.join(target.profile,'chrome','arc-ui',relative),await fs.readFile(path.join(payload,relative)));
   }
   writes.set(userPath,Buffer.from(user+(user&&!user.endsWith('\n')?'\n':'')+block+'\n'));
   const prefs=await fs.readFile(path.join(target.profile,'prefs.js'),'utf8');
@@ -127,17 +127,17 @@ async function install(installation,profile,{payload=path.join(__dirname,'..','p
     if(!failures.length)await fs.rm(manifest,{force:true});
     throw new Error(error.message+(failures.length?' Rollback needs attention; keep the installation receipt. '+failures.join('; '):' Changes were rolled back.'));
   }
-  return {message:'Installed. Open Zen to load Arc Skeleton.',version:VERSION,profile:target.profile};
+  return {message:'Installed. Open Zen to load Arc UI.',version:VERSION,profile:target.profile};
 }
 async function restore(file) {if(file.before===null)await fs.rm(file.path,{force:true});else await atomicWrite(file.path,Buffer.from(file.before,'base64'));}
 async function remove(installation,profile,options={}) {
   const target=await validate(installation,profile,{...options,requireVersion:false});
   const manifest=receiptFile(target.profile);
-  const receipt=JSON.parse(await fs.readFile(manifest,'utf8').catch(e=>{if(e.code==='ENOENT')throw new Error('Arc Skeleton is not installed in this profile.');throw e;}));
+  const receipt=JSON.parse(await fs.readFile(manifest,'utf8').catch(e=>{if(e.code==='ENOENT')throw new Error('Arc UI is not installed in this profile.');throw e;}));
   if(receipt.profile!==target.profile||receipt.resources!==target.resources)throw new Error('The receipt belongs to a different installation or profile.');
-  const ownRoot=path.join(target.profile,'chrome','zen-arc');
+  const ownRoot=path.join(target.profile,'chrome','arc-ui');
   const userPath=path.join(target.profile,'user.js');
-  const appFiles=[path.join(target.resources,'defaults','pref','zen-arc-autoconfig.js'),path.join(target.resources,'zen-arc.cfg'),path.join(target.resources,'zen-arc-owner.json')];
+  const appFiles=[path.join(target.resources,'defaults','pref','arc-ui-autoconfig.js'),path.join(target.resources,'arc-ui.cfg'),path.join(target.resources,'arc-ui-owner.json')];
   const valid=file=>appFiles.includes(file)||file===userPath||(file.startsWith(ownRoot+path.sep)&&!path.relative(ownRoot,file).startsWith('..'));
   const originals=new Map();
   for(const file of receipt.files) {

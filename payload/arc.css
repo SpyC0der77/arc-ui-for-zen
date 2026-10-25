@@ -1,6 +1,6 @@
-﻿/* Arc Skeleton for Zen 1.23.4b. Preserve native tabs, focus, permissions and navigation. */
+﻿/* Arc UI for Zen 1.23.4b. Preserve native tabs, focus, permissions and navigation. */
 @-moz-document url("chrome://browser/content/browser.xhtml") {
-  :root[data-arc-skeleton] {
+  :root[data-arc-ui] {
     --arc-font: -apple-system, BlinkMacSystemFont, Geist, sans-serif;
     font-family: var(--arc-font) !important;
     font-synthesis: none;
@@ -26,48 +26,48 @@
     --zen-element-separation: 10px !important;
     color-scheme: light !important;
   }
-  :root[data-arc-skeleton] #zen-main-app-wrapper,
-  :root[data-arc-skeleton] body,
-  :root[data-arc-skeleton] #browser,
-  :root[data-arc-skeleton] #zen-browser-background,
-  :root[data-arc-skeleton] #zen-toolbar-background,
-  :root[data-arc-skeleton] #zen-appcontent-wrapper,
-  :root[data-arc-skeleton] #zen-tabbox-wrapper,
-  :root[data-arc-skeleton] #navigator-toolbox,
-  :root[data-arc-skeleton] #titlebar,
-  :root[data-arc-skeleton] .zen-toolbar-background,
-  :root[data-arc-skeleton] #zen-appcontent-navbar-wrapper {
+  :root[data-arc-ui] #zen-main-app-wrapper,
+  :root[data-arc-ui] body,
+  :root[data-arc-ui] #browser,
+  :root[data-arc-ui] #zen-browser-background,
+  :root[data-arc-ui] #zen-toolbar-background,
+  :root[data-arc-ui] #zen-appcontent-wrapper,
+  :root[data-arc-ui] #zen-tabbox-wrapper,
+  :root[data-arc-ui] #navigator-toolbox,
+  :root[data-arc-ui] #titlebar,
+  :root[data-arc-ui] .zen-toolbar-background,
+  :root[data-arc-ui] #zen-appcontent-navbar-wrapper {
     background: var(--arc-surface) !important;
     color: var(--arc-text) !important;
   }
-  :root[data-arc-skeleton] .zen-browser-grain,
-  :root[data-arc-skeleton] #zen-browser-background::before,
-  :root[data-arc-skeleton] #zen-browser-background::after,
-  :root[data-arc-skeleton] #zen-toolbar-background::before,
-  :root[data-arc-skeleton] #zen-toolbar-background::after { display: none !important; }
-  :root[data-arc-skeleton] #navigator-toolbox { min-width: 200px !important; }
-  :root[data-arc-skeleton] #arc-top-controls { order: -1; }
-  :root[data-arc-skeleton] :is(#back-button,#forward-button,#reload-button,#stop-button,#zen-expand-sidebar-button) { display: none !important; }
-  :root[data-arc-skeleton] :is(#zen-toggle-compact-mode,toolbarbutton[command="cmd_toggleCompactModeIgnoreHover"],toolbarbutton[command="cmd_zenToggleSidebar"]) { display: none !important; }
-  :root[data-arc-skeleton][data-arc-sidebar-animating] #browser { overflow: clip !important; }
+  :root[data-arc-ui] .zen-browser-grain,
+  :root[data-arc-ui] #zen-browser-background::before,
+  :root[data-arc-ui] #zen-browser-background::after,
+  :root[data-arc-ui] #zen-toolbar-background::before,
+  :root[data-arc-ui] #zen-toolbar-background::after { display: none !important; }
+  :root[data-arc-ui] #navigator-toolbox { min-width: 200px !important; }
+  :root[data-arc-ui] #arc-top-controls { order: -1; }
+  :root[data-arc-ui] :is(#back-button,#forward-button,#reload-button,#stop-button,#zen-expand-sidebar-button) { display: none !important; }
+  :root[data-arc-ui] :is(#zen-toggle-compact-mode,toolbarbutton[command="cmd_toggleCompactModeIgnoreHover"],toolbarbutton[command="cmd_zenToggleSidebar"]) { display: none !important; }
+  :root[data-arc-ui][data-arc-sidebar-animating] #browser { overflow: clip !important; }
   /* Native titlebar children set visibility themselves. Hide the entire live
      tree while the captured sidebar moves, rather than just its parent. */
-  :root[data-arc-skeleton][data-arc-sidebar-animating="closing"] :is(#navigator-toolbox,#navigator-toolbox *) { visibility: hidden !important; }
+  :root[data-arc-ui][data-arc-sidebar-animating="closing"] :is(#navigator-toolbox,#navigator-toolbox *) { visibility: hidden !important; }
   /* Zen keeps an empty tab's sidebar open independently of hover. Explicit
      undocking must still hide it; focus, menus, dragging and edge peeks work. */
-  :root[data-arc-skeleton][zen-compact-mode="true"]:not([customizing]) #navigator-toolbox:not([animate="true"]):not(:is([zen-has-hover],[zen-user-show],[flash-popup],[has-popup-menu],[movingtab],[zen-compact-mode-active])) {
+  :root[data-arc-ui][zen-compact-mode="true"]:not([customizing]) #navigator-toolbox:not([animate="true"]):not(:is([zen-has-hover],[zen-user-show],[flash-popup],[has-popup-menu],[movingtab],[zen-compact-mode-active])) {
     translate: var(--zen-compact-hidden-translate) !important;
   }
   #arc-sidebar-transition { position: fixed; pointer-events: none; z-index: 99999; }
-  :root[data-arc-skeleton] #urlbar:not([breakout-extend]) .urlbar-background {
+  :root[data-arc-ui] #urlbar:not([breakout-extend]) .urlbar-background {
     background: #bcb3c5 !important; border: 0 !important; border-radius: 10px !important; box-shadow: none !important;
   }
-  :root[data-arc-skeleton] #urlbar-input { color: #141414 !important; font-size: 13px !important; font-weight: 500 !important; }
-  :root[data-arc-skeleton] #urlbar:not([zen-floating-urlbar="true"]) #urlbar-input { caret-color: transparent !important; }
-  :root[data-arc-skeleton] #urlbar:not([zen-floating-urlbar="true"]) #urlbar-input::selection { background: transparent !important; color: inherit !important; }
-  :root[data-arc-skeleton] #urlbar[zen-floating-urlbar="true"] #urlbar-input { caret-color: auto !important; }
-  :root[data-arc-skeleton] #urlbar-container { position: relative !important; }
-  :root[data-arc-skeleton] #urlbar-container:has(#urlbar[open][zen-floating-urlbar="true"]) { background: transparent !important; }
+  :root[data-arc-ui] #urlbar-input { color: #141414 !important; font-size: 13px !important; font-weight: 500 !important; }
+  :root[data-arc-ui] #urlbar:not([zen-floating-urlbar="true"]) #urlbar-input { caret-color: transparent !important; }
+  :root[data-arc-ui] #urlbar:not([zen-floating-urlbar="true"]) #urlbar-input::selection { background: transparent !important; color: inherit !important; }
+  :root[data-arc-ui] #urlbar[zen-floating-urlbar="true"] #urlbar-input { caret-color: auto !important; }
+  :root[data-arc-ui] #urlbar-container { position: relative !important; }
+  :root[data-arc-ui] #urlbar-container:has(#urlbar[open][zen-floating-urlbar="true"]) { background: transparent !important; }
   #arc-sidebar-address-label {
     display: none;
     position: absolute;
@@ -86,9 +86,9 @@
   .arc-sidebar-address-icon { position: absolute; top: 50%; translate: 0 -50%; width: 16px; height: 16px; background-size: contain; background-repeat: no-repeat; background-position: center; -moz-context-properties: fill, fill-opacity; }
   .arc-sidebar-address-icon[hidden] { display: none; }
   .arc-sidebar-address-text { position: absolute; top: 0; height: 100%; align-content: center; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  :root[data-arc-skeleton] #urlbar-container:has(#urlbar[open][zen-floating-urlbar="true"]) > #arc-sidebar-address-label { display: flex; }
-  :root[data-arc-skeleton] #urlbar[breakout-extend] .urlbar-background { background: white !important; border-radius: 10px !important; box-shadow: 0 2px 8px #44375030 !important; }
-  :root[data-arc-skeleton] #urlbar[open][zen-floating-urlbar="true"] {
+  :root[data-arc-ui] #urlbar-container:has(#urlbar[open][zen-floating-urlbar="true"]) > #arc-sidebar-address-label { display: flex; }
+  :root[data-arc-ui] #urlbar[breakout-extend] .urlbar-background { background: white !important; border-radius: 10px !important; box-shadow: 0 2px 8px #44375030 !important; }
+  :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] {
     position: fixed !important;
     top: 24vh !important;
     left: 50% !important;
@@ -104,14 +104,14 @@
     transform-origin: 50% 28px;
     animation: arc-search-open 180ms cubic-bezier(.2,.7,.3,1) both !important;
   }
-  :root[data-arc-skeleton] #urlbar[open][zen-floating-urlbar="true"] .urlbar-background {
+  :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] .urlbar-background {
     border-radius: 16px !important;
     background: white !important;
   }
-  :root[data-arc-skeleton] #urlbar[open][zen-floating-urlbar="true"] #urlbar-input {
+  :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] #urlbar-input {
     font-size: 18px !important;
   }
-  :root[data-arc-skeleton] #urlbar[open][zen-floating-urlbar="true"] .urlbarView {
+  :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] .urlbarView {
     max-height: calc(70vh - 72px);
     overflow-y: auto;
     border-radius: 0 0 12px 12px;
@@ -121,44 +121,44 @@
     to { opacity: 1; transform: scale(1); }
   }
   @media (prefers-reduced-motion: reduce) {
-    :root[data-arc-skeleton] #urlbar[open][zen-floating-urlbar="true"] { animation: none !important; }
+    :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] { animation: none !important; }
   }
-  :root[data-arc-skeleton] .urlbarView-row[selected] .urlbarView-row-inner { background: #bcb3c5 !important; color: #141414 !important; border-radius: 6px !important; }
-  :root[data-arc-skeleton] .tabbrowser-tab { min-height: 40px !important; font-size: 14px !important; }
-  :root[data-arc-skeleton] .tab-background { border-radius: 10px !important; transition: background-color 120ms ease !important; }
-  :root[data-arc-skeleton] .tab-background[selected] { background: white !important; box-shadow: 0 1px 3px #44375026 !important; outline: 1px solid #44375026 !important; }
-  :root[data-arc-skeleton] .tabbrowser-tab:not([selected]):hover .tab-background { background: #1414140f !important; }
-  :root[data-arc-skeleton] .tab-label { color: #141414 !important; }
-  :root[data-arc-skeleton] #tabs-newtab-button { color: #65556f !important; }
-  :root[data-arc-skeleton] #zen-sidebar-foot-buttons { min-height: 40px !important; }
+  :root[data-arc-ui] .urlbarView-row[selected] .urlbarView-row-inner { background: #bcb3c5 !important; color: #141414 !important; border-radius: 6px !important; }
+  :root[data-arc-ui] .tabbrowser-tab { min-height: 40px !important; font-size: 14px !important; }
+  :root[data-arc-ui] .tab-background { border-radius: 10px !important; transition: background-color 120ms ease !important; }
+  :root[data-arc-ui] .tab-background[selected] { background: white !important; box-shadow: 0 1px 3px #44375026 !important; outline: 1px solid #44375026 !important; }
+  :root[data-arc-ui] .tabbrowser-tab:not([selected]):hover .tab-background { background: #1414140f !important; }
+  :root[data-arc-ui] .tab-label { color: #141414 !important; }
+  :root[data-arc-ui] #tabs-newtab-button { color: #65556f !important; }
+  :root[data-arc-ui] #zen-sidebar-foot-buttons { min-height: 40px !important; }
   /* Retain native download services, expose only the Arc gift entry point. */
-  :root[data-arc-skeleton] :is(#zen-library-button,#library-button,#downloads-button,.zen-library-download-list,.zen-library-sprite) { display: none !important; }
-  :root[data-arc-skeleton] .browserSidebarContainer:not(.zen-glance-overlay) { border-radius: 10px !important; box-shadow: 0 1px 6px #44375038 !important; }
-  :root[data-arc-skeleton][zen-compact-mode="true"] .browserSidebarContainer:not(.zen-glance-overlay) { border-radius: 10px !important; }
+  :root[data-arc-ui] :is(#zen-library-button,#library-button,#downloads-button,.zen-library-download-list,.zen-library-sprite) { display: none !important; }
+  :root[data-arc-ui] .browserSidebarContainer:not(.zen-glance-overlay) { border-radius: 10px !important; box-shadow: 0 1px 6px #44375038 !important; }
+  :root[data-arc-ui][zen-compact-mode="true"] .browserSidebarContainer:not(.zen-glance-overlay) { border-radius: 10px !important; }
   /* Undocked: the page keeps its corners across the whole window, and Zen's peek
      panel becomes the only sidebar surface so it floats over the content instead
      of sitting in a full-height band. */
-  :root[data-arc-skeleton][zen-compact-mode="true"] :is(#navigator-toolbox, #titlebar) { background: transparent !important; }
-  :root[data-arc-skeleton][zen-compact-mode="true"] #zen-toolbar-background {
+  :root[data-arc-ui][zen-compact-mode="true"] :is(#navigator-toolbox, #titlebar) { background: transparent !important; }
+  :root[data-arc-ui][zen-compact-mode="true"] #zen-toolbar-background {
     top: calc(-1 * var(--arc-top-controls-height, 44px)) !important; /* reach over the added control row */
     border-radius: 12px !important;
     box-shadow: inset 0 0 0 1px #4437501a, 0 12px 40px #44375047 !important;
   }
   /* A hidden panel must not leave its shadow on the page edge. */
-  :root[data-arc-skeleton][zen-compact-mode="true"] #navigator-toolbox:not([animate="true"]):not(:is([zen-has-hover],[zen-user-show],[flash-popup],[has-popup-menu],[movingtab],[zen-compact-mode-active])) #zen-toolbar-background {
+  :root[data-arc-ui][zen-compact-mode="true"] #navigator-toolbox:not([animate="true"]):not(:is([zen-has-hover],[zen-user-show],[flash-popup],[has-popup-menu],[movingtab],[zen-compact-mode-active])) #zen-toolbar-background {
     box-shadow: none !important;
   }
-  :root[data-arc-skeleton] #navigator-toolbox[zen-has-hover] { transition: translate 120ms ease !important; }
-  :root[data-arc-skeleton] #navigator-toolbox:not([zen-has-hover]) { transition-timing-function: ease !important; }
-  :root[data-arc-skeleton][inDOMFullscreen="true"] :is(#arc-library-rail,#arc-top-controls,#arc-download-popup,#arc-file-layer,#arc-gift-button) { display: none !important; }
+  :root[data-arc-ui] #navigator-toolbox[zen-has-hover] { transition: translate 120ms ease !important; }
+  :root[data-arc-ui] #navigator-toolbox:not([zen-has-hover]) { transition-timing-function: ease !important; }
+  :root[data-arc-ui][inDOMFullscreen="true"] :is(#arc-library-rail,#arc-top-controls,#arc-download-popup,#arc-file-layer,#arc-gift-button) { display: none !important; }
   /* Cover native chrome as well as the added controls. Preserve icon fonts. */
-  :root[data-arc-skeleton] :is(.tab-label, .toolbarbutton-text, .menu-text,
+  :root[data-arc-ui] :is(.tab-label, .toolbarbutton-text, .menu-text,
     .urlbarView-row, .urlbarView-title, .urlbarView-url, .panel-subview-body,
     #urlbar-input, #searchbar, menupopup, tooltip, input, textarea, select, button) {
     font-family: var(--arc-font) !important;
   }
-  :root[data-arc-skeleton] .tab-label { font-weight: 500 !important; }
-  :root[data-arc-skeleton] .tabbrowser-tab[selected] .tab-label { font-weight: 500 !important; }
+  :root[data-arc-ui] .tab-label { font-weight: 500 !important; }
+  :root[data-arc-ui] .tabbrowser-tab[selected] .tab-label { font-weight: 500 !important; }
   .arc-ui { font-family: var(--arc-font); font-size: 14px; font-weight: 500; color: #141414; box-sizing: border-box; }
   .arc-ui *, .arc-ui *::before, .arc-ui *::after { box-sizing: border-box; }
   .arc-ui button, button.arc-ui { appearance: none; font: inherit; color: inherit; cursor: default; border: 0; background: transparent; border-radius: 6px; }
@@ -189,7 +189,7 @@
   .arc-flying-file svg { width: 36px; height: 36px; fill: white; }
   .arc-fallback-gift { position: absolute; color: #65556f; }
   #arc-live-status { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  @media (prefers-reduced-motion: reduce) { #arc-library-rail, :root[data-arc-skeleton] #navigator-toolbox { transition: none !important; } }
+  @media (prefers-reduced-motion: reduce) { #arc-library-rail, :root[data-arc-ui] #navigator-toolbox { transition: none !important; } }
 }
-@font-face { font-family: Geist; src: url("chrome://arc-skeleton/content/geist-400.woff2"); font-weight: 400; }
-@font-face { font-family: Geist; src: url("chrome://arc-skeleton/content/geist-500.woff2"); font-weight: 500; }
+@font-face { font-family: Geist; src: url("chrome://arc-ui/content/geist-400.woff2"); font-weight: 400; }
+@font-face { font-family: Geist; src: url("chrome://arc-ui/content/geist-500.woff2"); font-weight: 500; }

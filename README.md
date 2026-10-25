@@ -1,4 +1,4 @@
-# Arc Skeleton for Zen
+# Arc UI for Zen
 
 An Electron installer plus local CSS and JavaScript patches for Zen **1.23.4b**. It ports the existing `arc-ui-skeleton` interface onto Zen's native browser features. It does not replace the browser engine or fork Zen.
 
@@ -8,19 +8,19 @@ Open the installer, select your Zen application and profile, close Zen, then cli
 
 **Open Zen** passes `-purgecaches` so updated browser UI scripts and styles are reloaded after installation. Reopening through a normal shortcut immediately after an update can leave the previous UI cached. This clears startup code caches, not history, cookies or saved tabs.
 
-The Windows executable is built into `release/Arc-Skeleton-Zen-0.1.0-Windows.exe`. The Electron app also has macOS DMG/ZIP and Linux AppImage build targets. Build those on their respective operating systems with the included CI workflow. macOS and Linux installation paths are covered by automated filesystem tests; their browser runtime and distribution signing have not been validated here.
+The Windows executable is built into `release/Arc-UI-Zen-0.1.0-Windows.exe`. The Electron app also has macOS DMG/ZIP and Linux AppImage build targets. Build those on their respective operating systems with the included CI workflow. macOS and Linux installation paths are covered by automated filesystem tests; their browser runtime and distribution signing have not been validated here.
 
 Select your actual profile explicitly when there is more than one. Zen's `about:profiles` page lists its root directory. This installer never closes your existing browser automatically, imports private data, or changes your default browser.
 
 ## Feature mapping
 
-| Skeleton feature | Zen implementation |
+| Arc UI feature | Zen implementation |
 | --- | --- |
 | Lavender shell, typography, tabs, page corners | Bundled CSS and Geist fonts, keeping native Zen tabs |
 | Sidebar width and resizing | Initial 264px width; native Zen splitter and persistence |
 | Dock/undock | Single toggle or Ctrl+B/Cmd+B; shared 240ms sidebar slide and live page resize, without scaling page text |
 | Hover peek | Zen compact mode, tuned reveal and 160ms close behavior |
-| Back, forward, reload/stop | Native browser commands in the skeleton's control row |
+| Back, forward, reload/stop | Native browser commands in the Arc UI control row |
 | Press feedback | Local Web Animations API icon nudges |
 | Address command menu and new tab | Click or keyboard opens Zen's native centered URL bar; 16px corners, 180ms entrance, native suggestions and new-tab replacement |
 | Secondary library | Gift click opens Zen's functional library overlay, covering the main sidebar |
@@ -32,7 +32,7 @@ Select your actual profile explicitly when there is more than one. Zen's `about:
 | Demo Download button | Local chrome page, no network request and no downloaded file |
 | Reduced motion | File flight and icon movement skipped; arrival feedback remains |
 
-The gift is the single library/downloads button. Hover shows the custom menu backed by native public/private downloads; click opens Zen's existing library overlay. Show all downloads opens the library's real Downloads section. Native library/download toolbar buttons are hidden, and native download panel requests open the custom menu. Zen retains its own library sections, workspaces, pinning, folders, permissions, extensions, navigation and session restore. The base skeleton's placeholder selectors are superseded by the functional native library. This is a first port, not a claim of identical Arc/macOS behavior or the Electron prototype's captured-page transition implementation.
+The gift is the single library/downloads button. Hover shows the custom menu backed by native public/private downloads; click opens Zen's existing library overlay. Show all downloads opens the library's real Downloads section. Native library/download toolbar buttons are hidden, and native download panel requests open the custom menu. Zen retains its own library sections, workspaces, pinning, folders, permissions, extensions, navigation and session restore. The base interface's placeholder selectors are superseded by the functional native library. This is a first port, not a claim of identical Arc/macOS behavior or the Electron prototype's captured-page transition implementation.
 
 Undocking hides the sidebar even on Zen's empty new-tab page. After clicking Undock, edge hover stays blocked until the pointer leaves the sidebar's former width. Returning to the edge then reveals it normally. During the closing animation the entire live sidebar tree is hidden behind the captured layer, including native children that set their own visibility. While undocked, Zen's peek panel is the only sidebar surface: the toolbox and titlebar stop painting, the panel keeps its 12px corners and shadow over the control row, and the page keeps 10px corners across the whole window. The sidebar therefore floats over the content rather than occupying a full-height band.
 
@@ -46,7 +46,7 @@ On Windows the installer also applies a profile-local DirectWrite preset: Natura
 
 To update an existing installation, close Zen, use the previous installer to Remove, then Install with the new build. Removal restores previous rendering preferences through the normal receipt backup.
 
-The installer adds two app startup files, `zen-arc.cfg` and `defaults/pref/zen-arc-autoconfig.js`. They register local chrome packages and load `chrome/zen-arc/arc.uc.js` only in the selected profile. Scripts and fonts are bundled; no remote scripts are downloaded or executed.
+The installer adds two app startup files, `arc-ui.cfg` and `defaults/pref/arc-ui-autoconfig.js`. They register local chrome packages and load `chrome/arc-ui/arc.uc.js` only in the selected profile. Scripts and fonts are bundled; no remote scripts are downloaded or executed.
 
 The loader enables the unsandboxed **AutoConfig script context**, which gives these local scripts browser-level privileges. This does not disable web-content sandboxing, extension signatures, TLS checks or web security. The installer discloses this before installation and refuses to replace an existing AutoConfig loader, including Sine/fx-autoconfig installations.
 
@@ -62,7 +62,7 @@ The payload checks the exact Zen version again at startup and does not run in Sa
 
 ## Remove and recover
 
-Close Zen, open the same installer, select the same folders, and click **Remove**. A receipt at `PROFILE/chrome/zen-arc.install.json` records owned files and the previous settings. Removal restores the original `user.js`, or removes only its managed block when unrelated edits were added. Only persisted preferences that still match the installed value are restored; later user changes are retained. Namespaced `arc-skeleton.*` state may remain, with no active loader.
+Close Zen, open the same installer, select the same folders, and click **Remove**. A receipt at `PROFILE/chrome/arc-ui.install.json` records owned files and the previous settings. Removal restores the original `user.js`, or removes only its managed block when unrelated edits were added. Only persisted preferences that still match the installed value are restored; later user changes are retained. Namespaced `arc-ui.*` state may remain, with no active loader.
 
 Install and removal use atomic file writes and rollback on ordinary write failures. Edited patch files are not silently deleted. The installer reports their path and keeps the receipt. Keep that receipt until removal finishes. A crash or power failure between file writes is not a fully transactional filesystem operation; the receipt is written first for recovery.
 

@@ -1,4 +1,4 @@
-/* Arc Skeleton for Zen 1.23.4b. Privileged browser UI only; no remote code. */
+/* Arc UI for Zen 1.23.4b. Privileged browser UI only; no remote code. */
 (() => {
   "use strict";
   if (window.ZenArc || !window.gBrowser) return;
@@ -7,17 +7,17 @@
   const { Downloads } = ChromeUtils.importESModule("resource://gre/modules/Downloads.sys.mjs");
   const { PrivateBrowsingUtils } = ChromeUtils.importESModule("resource://gre/modules/PrivateBrowsingUtils.sys.mjs");
   const root = document.documentElement;
-  const folder = PathUtils.join(PathUtils.profileDir, "chrome", "zen-arc");
-  const uri = "chrome://arc-skeleton-runtime/content/arc.css";
+  const folder = PathUtils.join(PathUtils.profileDir, "chrome", "arc-ui");
+  const uri = "chrome://arc-ui-runtime/content/arc.css";
   window.windowUtils.loadSheetUsingURIString(uri, window.windowUtils.USER_SHEET);
-  root.setAttribute("data-arc-skeleton", "0.1.0");
+  root.setAttribute("data-arc-ui", "0.1.0");
   // Keep Zen's native splitter and persisted width after the initial theme setup.
-  if (!Services.prefs.getBoolPref("arc-skeleton.width-initialized", false)) {
+  if (!Services.prefs.getBoolPref("arc-ui.width-initialized", false)) {
     const toolbox = document.getElementById("navigator-toolbox");
     toolbox.style.width = "264px";
     toolbox.style.setProperty("--zen-sidebar-width", "264px");
     toolbox.setAttribute("width", "264px");
-    Services.prefs.setBoolPref("arc-skeleton.width-initialized", true);
+    Services.prefs.setBoolPref("arc-ui.width-initialized", true);
   }
   const timers = new Set(), animations = new Set();
   const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -64,7 +64,7 @@
     const b=el("button",{type:"button",title:label,"aria-label":label,class:"arc-icon-button"});b.append(icon(name));
     b.addEventListener("click",action);b.addEventListener("pointerdown",e=>{if(e.button===0)nudge(b,name);});return b;
   }
-  function report(error) { console.error("[Arc Skeleton]",error); status.textContent=error.message || String(error); }
+  function report(error) { console.error("[Arc UI]",error); status.textContent=error.message || String(error); }
   const toolbox=document.getElementById("navigator-toolbox");
   const content=document.getElementById("zen-tabbox-wrapper");
   if (!toolbox || !content || !window.gZenCompactModeManager) throw new Error("Unsupported Zen window layout");
@@ -292,7 +292,7 @@
     try {
       if(!wasCompact&&!reduced()&&sideBefore.width&&sideBefore.height) {
         try { snapshot=await window.browsingContext.currentWindowGlobal.drawSnapshot(new DOMRect(sideBefore.x,sideBefore.y,sideBefore.width,sideBefore.height),devicePixelRatio,'transparent'); }
-        catch(error){console.warn('[Arc Skeleton] Sidebar snapshot unavailable',error);}
+        catch(error){console.warn('[Arc UI] Sidebar snapshot unavailable',error);}
       }
       await originalUpdate.apply(this,args);
       const after=content.getBoundingClientRect(),sideAfter=toolbox.getBoundingClientRect();
@@ -340,9 +340,9 @@
   window.ZenArc={version:"0.1.0",previewDownload:position=>flight(position),toggleDock,setRail,openDownloads,hideDownloads,diagnostics:()=>({version:"0.1.0",browser:Services.appinfo.version,compact:cm.preference,sidebarHoverBlocked:!!sidebarRearmBounds,downloads:records.length,private:PrivateBrowsingUtils.isWindowPrivate(window),rail:NativeLibrary.isLibrarySlightlyOpen,popup:!popup.hidden})};
   updateNav();renderDownloads();
   // Only open the demo once, after the browser's own onboarding has completed.
-  if(!PrivateBrowsingUtils.isWindowPrivate(window)&&!Services.prefs.getBoolPref("arc-skeleton.demo-seen",false)&&Services.prefs.getBoolPref("zen.welcome-screen.seen",false)){
-    Services.prefs.setBoolPref("arc-skeleton.demo-seen",true);
-    later(()=>window.openTrustedLinkIn("chrome://arc-skeleton/content/home.xhtml","tab"),500);
+  if(!PrivateBrowsingUtils.isWindowPrivate(window)&&!Services.prefs.getBoolPref("arc-ui.demo-seen",false)&&Services.prefs.getBoolPref("zen.welcome-screen.seen",false)){
+    Services.prefs.setBoolPref("arc-ui.demo-seen",true);
+    later(()=>window.openTrustedLinkIn("chrome://arc-ui/content/home.xhtml","tab"),500);
   }
   window.addEventListener("unload",()=>{
     libraryObserver.disconnect();window.DownloadsPanel.showPanel=originalShowDownloadsPanel;

@@ -10,7 +10,7 @@ const originalInstall=engine.install,originalRemove=engine.remove;
 engine.install=(installation,profile)=>originalInstall(installation,profile,{checkClosed:async()=>{}});
 engine.remove=(installation,profile)=>originalRemove(installation,profile,{checkClosed:async()=>{}});
 app.whenReady().then(async()=>{
- fixture=await fs.mkdtemp(path.join(os.tmpdir(),'zen-arc-ui-'));
+ fixture=await fs.mkdtemp(path.join(os.tmpdir(),'arc-ui-ui-'));
  const zen=path.join(fixture,'Zen'),profile=path.join(fixture,'Profile');await fs.mkdir(zen);await fs.mkdir(profile);
  await fs.writeFile(path.join(zen,'zen.exe'),'fixture');await fs.writeFile(path.join(zen,'application.ini'),'[App]\nVersion=1.23.4b\n');await fs.writeFile(path.join(profile,'prefs.js'),'user_pref("untouched", true);\n');
  engine.discover=async()=>({platform:'win32',version:engine.VERSION,supportedZen:engine.SUPPORTED,apps:[zen],profiles:[{name:'Verification profile',path:profile,installed:false}]});
