@@ -28,7 +28,8 @@ test('preserves existing native folders and filters',async()=>{
   const filters={authorMe:false,assignedMe:false,reviewRequested:true,repoExcludes:new Set(['owner/repo'])};
   Object.assign(existing.state.options,filters);
   await scope.ArcGitHub.setup(f);
-  assert.equal(f.manager.calls.length,2);assert.deepEqual(existing.state.options,filters);
+  assert.deepEqual(f.manager.calls,['github:issues','github:pull-requests']);
+  assert.deepEqual(existing.state.options,filters);
   assert.equal(existing.saved,undefined);
 });
 test('waits for native restore; skips private and closed windows',async()=>{
