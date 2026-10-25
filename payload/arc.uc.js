@@ -73,6 +73,13 @@
   const content=document.getElementById("zen-tabbox-wrapper");
   if (!toolbox || !content || !window.gZenCompactModeManager) throw new Error("Unsupported Zen window layout");
   const cm=window.gZenCompactModeManager;
+  // Zen resets the sidebar to its platform default on splitter double-click.
+  // Intercept only that gesture; leave native pointer-based resizing intact.
+  function preventSidebarWidthReset(event) {
+    if(event.button!==0||event.target.id!=="zen-sidebar-splitter")return;
+    event.preventDefault();event.stopImmediatePropagation();
+  }
+  window.addEventListener("dblclick",preventSidebarWidthReset,true);
   // The native URL bar moves into the popover. Keep its last sidebar text behind.
   const addressContainer=document.getElementById("urlbar-container");
   const addressLabel=el("span",{id:"arc-sidebar-address-label","aria-hidden":"true"});
@@ -447,6 +454,7 @@
     later(()=>window.openTrustedLinkIn("chrome://arc-ui/content/home.xhtml","tab"),500);
   }
   window.addEventListener("unload",()=>{
+    window.removeEventListener("dblclick",preventSidebarWidthReset,true);
     if(NativeLibrary.animateProgress===animateLibrary)NativeLibrary.animateProgress=originalLibraryAnimate;
     libraryObserver.disconnect();window.DownloadsPanel.showPanel=originalShowDownloadsPanel;
     document.removeEventListener("popupshowing",interceptDownloadsPanel,true);

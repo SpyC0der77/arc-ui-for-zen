@@ -1,6 +1,6 @@
 # Arc UI for Zen
 
-An Electron installer plus local CSS and JavaScript patches for Zen **1.23.4b**. It ports the existing `arc-ui-skeleton` interface onto Zen's native browser features. It does not replace the browser engine or fork Zen.
+An Arc-style interface for Zen **1.23.4b**, with a lavender sidebar, centered address bar, library and animated downloads. It brings Arc's visual design to Zen's native tabs and browser features through local CSS and JavaScript patches, installed with an Electron app. It does not replace the browser engine or fork Zen.
 
 ## Install
 
@@ -12,27 +12,32 @@ The Windows executable is built into `release/Arc-UI-Zen-0.1.0-Windows.exe`. The
 
 Select your actual profile explicitly when there is more than one. Zen's `about:profiles` page lists its root directory. This installer never closes your existing browser automatically, imports private data, or changes your default browser.
 
-## Feature mapping
+## Features
 
-| Arc UI feature | Zen implementation |
-| --- | --- |
-| Lavender shell, typography, tabs, page corners | Bundled CSS and Geist fonts, keeping native Zen tabs |
-| Sidebar width and resizing | Initial 264px width; native Zen splitter and persistence |
-| Dock/undock | Single toggle or Ctrl+B/Cmd+B; shared sidebar slide and live page resize, 220ms to dock and 180ms to hide, without scaling page text |
-| Hover peek | Zen compact mode, tuned reveal and 160ms close behavior |
-| Back, forward, reload/stop | Native browser commands in the Arc UI control row |
-| Press feedback | Local Web Animations API icon nudges |
-| Address command menu and new tab | Click or keyboard opens Zen's native centered URL bar; 16px corners, 180ms entrance, native suggestions and new-tab replacement |
-| Secondary library | Gift click opens Zen's functional library overlay, covering the main sidebar |
-| Downloads hover menu | Real public or private-window download list, separately scoped |
-| Download actions | Open, reveal in folder, pause/resume, cancel |
-| Download flight | Same 65-point ballistic arc, 1.6-second flight and shrinking file |
-| Download arrival | Gift feedback and three-second menu peek |
-| Hidden sidebar during download | Temporary gift target at the bottom-left |
-| Demo Download button | Local chrome page, no network request and no downloaded file |
-| Reduced motion | File flight and icon movement skipped; arrival feedback remains |
+"Theme" means added styling, controls or animations. "Patch" means changes to Zen's existing UI behavior or settings. Some features use both. All patches load at startup; they do not modify Zen's packaged source files.
 
-The gift is the single library/downloads button. Hover shows the custom menu ported from `arc-ui-skeleton`'s `SidebarDownloadsButton`, backed by native public/private downloads. Click opens Zen's existing library overlay. Click the menu's Downloads title to open the library's real Downloads section. The popup lives in the sidebar's hover tree and uses a manual HTML popover to paint above browser content without being clipped. Native library/download toolbar buttons and the native hover stack are hidden, and native download panel requests open the custom menu. Zen retains its own library sections, workspaces, pinning, folders, permissions, extensions, navigation and session restore. The base interface's placeholder selectors are superseded by the functional native library. This is a first port, not a claim of identical Arc/macOS behavior or the Electron prototype's captured-page transition implementation.
+| Feature | Behavior in Zen | Implementation |
+| --- | --- | --- |
+| Lavender shell, typography, tabs, page corners | Arc-style colors and layout around native Zen tabs | Theme: CSS and bundled Geist fonts style the browser chrome. |
+| Sidebar width and resizing | Starts at 264px; drag to resize; double-click keeps the current width | Patch: sets the initial width once and blocks Zen's double-click width reset on the sidebar splitter. Drag resizing and persistence remain native. |
+| Dock/undock | Toggle or Ctrl+B/Cmd+B; 220ms to dock, 180ms to hide, without scaling page text | Theme + patch: adds the toggle and shortcut, wraps Zen's compact-mode update, and animates a captured sidebar when hiding or the live sidebar when docking alongside the page width. |
+| Hover peek | Reveals the hidden sidebar at the edge; 160ms close delay | Theme + patch: styles Zen's compact sidebar as a rounded overlay, sets its close-delay preference, and blocks native hover expansion after undocking until the pointer leaves the old sidebar bounds. |
+| Back, forward, reload/stop | Navigation controls in the top row | Theme: adds buttons wired to Zen's native browser commands and hides the original buttons. |
+| Application menu | Zen's menu in the top row | Theme: moves the existing native menu button into the added control row and restyles it. |
+| Press feedback | Icons nudge when pressed | Theme: pointer handlers animate the added SVG icons through the Web Animations API. |
+| Address command menu and new tab | Centered address bar with native suggestions, 16px corners and a 180ms entrance | Theme + patch: restyles Zen's floating URL bar, enables its floating and new-tab replacement settings, and adds a matching address label behind the field while it is open. |
+| Library | Gift-shaped button opens Zen's library over the main sidebar | Theme + patch: adds a button that calls Zen's library animation and wraps that animation to keep its first frame offscreen. Native library contents remain intact. |
+| Downloads hover menu | Separate public and private-window download lists | Theme + patch: builds a manual HTML popover from Mozilla's native download lists, hides Zen's download controls and hover stack, and redirects native download-panel requests to the popover. |
+| Download actions | Open, reveal in folder, pause/resume, cancel | Theme: added menu buttons call the native download object's launch, reveal, cancel, start and partial-data removal methods. |
+| Download animation | File curves toward the library button and shrinks over 1.6 seconds | Theme + patch: observes native download additions and animates an added file icon; disables Zen's own download animation through a preference. |
+| Download arrival | Gift feedback and menu peek; closes after three seconds unless hovered or focused | Theme: animates the button and schedules the popover to close. Menu opening is suppressed while the library is open. |
+| Hidden sidebar during download | Temporary gift target at the bottom-left | Theme: draws a temporary gift icon when the actual library button is outside the window. |
+| Demo Download button | Plays the animation without a network request or downloaded file | Theme: a bundled local preview page calls the same file-animation function directly. |
+| Reduced motion | Skips file flight, icon movement and gift highlight; retains the menu and accessibility announcement | Theme: checks the reduced-motion media query before running JavaScript animations; CSS also disables the address-bar entrance. |
+
+The gift-shaped button combines the library and downloads controls, following Arc's sidebar design. Hover over it to see downloads for the current public or private browsing session. Click it to open Zen's library, or click the Downloads title in the hover menu to open the library's Downloads section. The download menu appears above page content without being clipped by the sidebar. It replaces Zen's native download popup and hover stack.
+
+Zen continues to manage library sections, workspaces, pinned tabs, folders, permissions, extensions, navigation and session restore. This theme recreates parts of Arc's interface using those native features; it does not reproduce every Arc feature or exactly match its macOS behavior.
 
 Undocking hides the sidebar even on Zen's empty new-tab page. After clicking Undock, edge hover stays blocked until the pointer leaves the sidebar's former width. Returning to the edge then reveals it normally. During the closing animation the entire live sidebar tree is hidden behind the captured layer, including native children that set their own visibility. While undocked, Zen's peek panel is the only sidebar surface: the toolbox and titlebar stop painting, the panel keeps its 12px corners and shadow over the control row, and the page keeps 10px corners across the whole window. The sidebar therefore floats over the content rather than occupying a full-height band.
 
@@ -81,13 +86,15 @@ pnpm dist:linux
 
 `start` launches the local Electron app, with no development server. Build only the target for the host OS. The release is currently unsigned.
 
-`node tests/runtime.cjs <Zen application folder>` makes an isolated application copy and profile, installs the patch there, runs native browser checks, captures browser chrome, and verifies removal. It does not modify the real installation or profile. Its temporary copies and screenshots stay under the ignored `artifacts` directory.
+`node tests/runtime.cjs <unpatched Zen application folder>` requires a Zen application folder without an installed Arc UI theme or another AutoConfig loader. It makes an isolated application copy and profile, installs the patch there, runs native browser checks, captures browser chrome, and verifies removal. It does not modify the real installation or profile. Its temporary copies and screenshots stay under the ignored `artifacts` directory.
 
 `tests/installer-smoke.cjs` runs with Electron and tests the actual install/remove UI and renderer isolation against temporary fixture folders. `pnpm test` covers all platform layouts, conflicts, version checks, preservation and receipt validation.
 
 `tests/interactive.py` adds pointer-input checks through Mozilla's Marionette driver. It exercises library hover/click from docked and peeked sidebars, then records sidebar and child visibility throughout closing. It also moves the pointer along the reveal edge beyond Zen's hover timeout, checks that an intentional exit and return rearms the sidebar, and confirms the peeked panel floats (rounded card with its shadow) over rounded page corners. It attaches only to an explicitly launched test session with `--marionette` and `MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1`. Install its optional Python client into `artifacts/test-python` as described in the script. Close that session and reopen Zen normally afterward; the installer never enables the driver.
 
 `tests/sidebar-motion.py` uses the same Marionette session to pause docking at five points, save chrome screenshots, and verify the actual sidebar corner hit targets, transparent native layers, and control bounds. Docking uses one animated background and a matching clip on the entire sidebar tree so native square backgrounds cannot fill the rounded corners.
+
+The UI implementation is adapted from [`arc-ui-skeleton`](https://github.com/SpyC0der77/arc-ui-skeleton), a standalone recreation of Arc's interface.
 
 The included Geist fonts retain their license in `payload/content/Geist-LICENSE.txt`.
 

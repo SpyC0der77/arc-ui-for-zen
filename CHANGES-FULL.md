@@ -1,0 +1,167 @@
+- Change the browser frame to an Arc-style lavender appearance.
+- Apply the same background across the sidebar, title bar, toolbar and page surround.
+- Override workspace background colors in the browser frame while the theme is active.
+- Hide the native browser grain texture.
+- Hide decorative background layers behind the browser frame.
+- Use dark text and icons throughout the themed browser controls.
+- Use a light color scheme for the browser interface.
+- Give the selected tab a white background.
+- Add a subtle outline and shadow to the selected tab.
+- Add a muted background when hovering over an unselected tab.
+- Round tab backgrounds.
+- Standardize tab height and label size.
+- Use medium-weight tab labels.
+- Restyle the new-tab button with a muted purple color.
+- Round the corners of page containers outside Glance overlays.
+- Add a subtle shadow around page containers outside Glance overlays.
+- Set consistent spacing between browser content and the surrounding frame.
+- Set shared corner treatments for themed browser elements.
+- Bundle Geist regular and medium fonts with the theme.
+- Use the native system font on macOS.
+- Use bundled Geist fonts on Windows and Linux.
+- Apply the theme font to native tab labels, address fields, menus, suggestions, tooltips and form controls in the browser interface.
+- Disable synthetic font weights and styles in the themed browser interface.
+- Apply a profile-local text-rendering preset on Windows.
+- Prefer Natural Symmetric text rendering on Windows.
+- Prefer grayscale text rendering on Windows where supported by the graphics backend.
+- Set text contrast and gamma preferences on Windows.
+- Enable Zen's single-toolbar layout.
+- Enable Zen's expanded sidebar layout.
+- Place vertical tabs on the left through the installed preferences.
+- Set an initial sidebar width when the theme first initializes.
+- Apply a minimum width to the sidebar.
+- Disable the sidebar rail's double-click reset to the platform default width.
+- Hide the original sidebar expansion and compact-mode buttons.
+- Add a sidebar visibility button above the tabs.
+- Add a keyboard shortcut for docking and hiding the sidebar.
+- Update the sidebar button's label to match its current action.
+- Disable Zen's built-in compact-sidebar animation through its preferences.
+- Wrap Zen's compact-mode updates with a coordinated sidebar and page transition.
+- Animate the page width during docking and undocking without scaling website text or images.
+- Use a shorter transition when hiding the sidebar than when docking it.
+- Capture the sidebar's appearance before animating it out of view.
+- Hide the live sidebar and its children while the captured sidebar slides away.
+- Clip the browser area during sidebar transitions to prevent overflow.
+- Animate a shared sidebar background while docking.
+- Clip the live sidebar to match the animated background's rounded outline.
+- Make native sidebar background layers transparent during docking.
+- Preserve the positions of native toolbar sections while they move between peeked and docked layouts.
+- Disable competing native hover transitions during docking and undocking.
+- Prevent overlapping sidebar toggle animations.
+- Allow explicit undocking to hide the sidebar even on an empty new tab.
+- Block immediate edge-hover reopening after undocking until the pointer leaves the sidebar's former area.
+- Set a brief close delay for Zen's compact sidebar.
+- Tune the sidebar's hover-reveal transition.
+- Make the peeked sidebar float over page content.
+- Make the surrounding toolbox and title bar transparent while the sidebar is undocked.
+- Extend the peeked sidebar background behind the added top controls.
+- Round the peeked sidebar and add a shadow around it.
+- Remove the peeked sidebar's shadow when it is hidden.
+- Keep page corners rounded across the window while the sidebar is undocked.
+- Add a top control row with room to drag the browser window.
+- Keep buttons in the top row clickable rather than treating them as window-drag areas.
+- Hide the original back, forward, reload and stop buttons.
+- Add replacement back and forward buttons connected to native browser commands.
+- Disable the replacement back and forward buttons when their actions are unavailable.
+- Add a replacement reload button that becomes a stop button while a page is loading.
+- Move the native application-menu button into the added top row.
+- Hide the application-menu button's text label and standardize its icon and button dimensions.
+- Add hover backgrounds and visible keyboard-focus outlines to the added controls.
+- Add press animations to supported icons in the added controls.
+- Give the closed sidebar address field a muted lavender background.
+- Remove the closed address field's border and shadow.
+- Round the closed address field.
+- Use dark, medium-weight text in the address field.
+- Hide the caret and selection highlight in the sidebar address field until the floating editor opens.
+- Enable Zen's floating address-bar behavior.
+- Enable Zen's native new-tab replacement behavior.
+- Position the open address bar horizontally centered above page content.
+- Constrain the floating address bar to fit within the browser window.
+- Increase the address text size in the floating editor relative to the sidebar field.
+- Give the floating address bar a white background and rounded corners.
+- Add a fade and scale entrance to the floating address bar.
+- Constrain the suggestions list height and allow it to scroll.
+- Restyle the selected address suggestion with the theme's lavender background.
+- Leave a matching address label behind in the sidebar while the native field is floating.
+- Match the retained label's position, font, color, background and icon to the closed address field.
+- Keep the retained address label aligned when its container resizes.
+- Hide the native library buttons, downloads toolbar button and library sprite decoration.
+- Add a gift-shaped button that combines library access and download previews.
+- Connect the gift-shaped button to Zen's existing library overlay.
+- Keep the library button's pressed state synchronized with the native library.
+- Correct the library animation's initial position so it begins offscreen.
+- Increase the enabled Boosts toggle thumb's travel to account for its borderless track.
+- Align the Boosts toggle thumb with the end of its track in either text direction.
+- Hide Zen's native library download hover stack.
+- Replace native download-panel opening requests with the custom downloads menu.
+- Add a downloads menu above the gift-shaped button.
+- Keep the downloads menu in the sidebar's hover tree.
+- Display the downloads menu above page content without sidebar clipping.
+- Open the downloads menu when the gift-shaped button receives hover or keyboard focus.
+- Keep the downloads menu open while the pointer or keyboard focus is inside it or its button.
+- Close the downloads menu after a brief delay when hover and focus leave.
+- Close the downloads menu when clicking outside it.
+- Close the downloads menu with Escape and return focus to the library button.
+- Prevent restored focus from immediately reopening the dismissed downloads menu.
+- Close the downloads menu before opening the library or toggling the sidebar.
+- Suppress downloads-menu opening while the library is open or a file animation is running.
+- Position the downloads menu within the browser window and update its position on resize.
+- Add an expandable-state announcement to the library button for the downloads menu.
+- Populate the downloads menu from Mozilla's native download service.
+- Keep public-window and private-window download lists separate.
+- Show recent download additions first and limit the visible list to recent entries.
+- Show a download count when the list is populated.
+- Show an empty-state message when there are no downloads.
+- Show file names and file-type icons in download rows.
+- Show file sizes, download progress and completion, failure, pause or cancellation states.
+- Add a progress bar for active downloads with known progress.
+- Truncate long file names and status text to fit the menu.
+- Add hover and keyboard-focus backgrounds to download rows.
+- Reveal download action buttons when a row is hovered or contains keyboard focus.
+- Open completed downloads through the native download service.
+- Reveal completed downloads in their containing folder.
+- Add pause and resume controls for eligible downloads.
+- Add cancellation controls that remove partial download data.
+- Open the native library's Downloads section when clicking the menu's Downloads heading.
+- Disable Zen's native download animation through its preferences.
+- Observe new downloads and play the custom file animation in the most recently active browser window.
+- Animate a file icon along a curved path from the last click position toward the library button.
+- Use a central starting position when no click position is available.
+- Rotate, resize and fade the file icon during its flight.
+- Add a temporary gift target near the bottom-left corner when the library button is outside the window.
+- Keep the animation layer from intercepting pointer input.
+- Remove the flying file and temporary target after the animation.
+- Keep the downloads menu closed until concurrent file animations have finished.
+- Animate the gift-shaped button when the final file arrives.
+- Briefly open the downloads menu after file arrival unless another state prevents opening it.
+- Announce file arrival through an accessibility status region.
+- Report download-action errors through the status region and browser console.
+- Skip file flights while the document is hidden or content fullscreen is active.
+- Hide the added control row, library button, downloads menu and file-animation layer during content fullscreen.
+- Respect reduced-motion preferences by skipping scripted animations.
+- Disable the floating address-bar entrance and sidebar CSS transitions when reduced motion is requested.
+- Keep download-menu updates and accessibility announcements available with reduced motion.
+- Add a bundled local preview page for the download animation.
+- Open the preview page automatically after onboarding in an eligible non-private window when it has not been shown before.
+- Add a preview Download button that plays the file animation without downloading a file.
+- Temporarily disable the preview button while its animation runs.
+- Restrict the preview page to bundled browser resources through its content security policy.
+- Add a local browser startup configuration and preference loader to the selected Zen installation.
+- Enable the unsandboxed AutoConfig script context for the local browser patches.
+- Register local packages for the theme's scripts, styles, fonts and preview page.
+- Install the theme payload into the selected profile.
+- Add a managed preferences block to the selected profile's startup preferences.
+- Record the installation's selected profile and owned files.
+- Back up existing startup preferences and affected persisted preference values in an installation receipt.
+- Refuse installation over an existing AutoConfig loader or conflicting owned files.
+- Refuse installation or removal while Zen is running.
+- Refuse theme startup on an unsupported browser version or in Safe Mode.
+- Reopen the selected profile with startup-cache purging through the installer's Open Zen action.
+- Remove installed theme files through the installer's Remove action.
+- Restore previous preferences during removal when their current values still match the installed settings.
+- Preserve unrelated preference edits during removal.
+- Stop safe removal when an installed patch file has been edited.
+- Roll back completed writes when ordinary installation or removal writes fail.
+- Cancel pending theme timers and animations when a browser window unloads.
+- Remove theme event listeners and observers when a browser window unloads.
+- Restore wrapped native methods when a browser window unloads.

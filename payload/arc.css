@@ -164,6 +164,11 @@
   }
   :root[data-arc-ui] .tab-label { font-weight: 500 !important; }
   :root[data-arc-ui] .tabbrowser-tab[selected] .tab-label { font-weight: 500 !important; }
+  /* Library toggles remove the native border. Account for that in the thumb's
+     travel instead of reserving the native token's hard-coded 2px. */
+  :root[data-arc-ui] .zen-library-row-actions moz-toggle {
+    --toggle-dot-transform-x: calc(var(--toggle-width) - 2 * var(--toggle-dot-margin) - 2 * var(--toggle-border-width) - var(--toggle-dot-width)) !important;
+  }
   .arc-ui { font-family: var(--arc-font); font-size: 14px; font-weight: 500; color: #141414; box-sizing: border-box; }
   .arc-ui *, .arc-ui *::before, .arc-ui *::after { box-sizing: border-box; }
   .arc-ui button, button.arc-ui { appearance: none; font: inherit; color: inherit; cursor: default; border: 0; background: transparent; border-radius: 6px; }
