@@ -448,12 +448,24 @@
   const onResize=()=>{if(!popup.hidden)placePopup();};window.addEventListener("resize",onResize);
   window.ZenArc={version:"0.1.0",previewDownload:position=>flight(position),toggleDock,setRail,openDownloads,hideDownloads,diagnostics:()=>({version:"0.1.0",browser:Services.appinfo.version,compact:cm.preference,sidebarHoverBlocked:!!sidebarRearmBounds,downloads:records.length,private:PrivateBrowsingUtils.isWindowPrivate(window),rail:NativeLibrary.isLibrarySlightlyOpen,popup:!popup.hidden})};
   updateNav();renderDownloads();
+  let stopGithubSetup=()=>{};
+  if (!PrivateBrowsingUtils.isWindowPrivate(window)) {
+    try {
+      const { ZenLiveFoldersManager } = ChromeUtils.importESModule("resource:///modules/zen/ZenLiveFoldersManager.sys.mjs");
+      const github = {};
+      Services.scriptloader.loadSubScript("chrome://arc-ui/content/github.js", github, "UTF-8");
+      stopGithubSetup=github.ArcGitHub.start({manager:ZenLiveFoldersManager,prefs:Services.prefs,
+        isPrivateWindow:win=>PrivateBrowsingUtils.isWindowPrivate(win),isClosed:()=>window.closed,
+        schedule:later,cancel:clear,onError:error=>console.error("[Arc UI] GitHub Live Folders setup failed; retrying",error)});
+    } catch (error) { console.error("[Arc UI] GitHub Live Folders unavailable",error); }
+  }
   // Only open the demo once, after the browser's own onboarding has completed.
   if(!PrivateBrowsingUtils.isWindowPrivate(window)&&!Services.prefs.getBoolPref("arc-ui.demo-seen",false)&&Services.prefs.getBoolPref("zen.welcome-screen.seen",false)){
     Services.prefs.setBoolPref("arc-ui.demo-seen",true);
     later(()=>window.openTrustedLinkIn("chrome://arc-ui/content/home.xhtml","tab"),500);
   }
   window.addEventListener("unload",()=>{
+    stopGithubSetup();
     window.removeEventListener("dblclick",preventSidebarWidthReset,true);
     if(NativeLibrary.animateProgress===animateLibrary)NativeLibrary.animateProgress=originalLibraryAnimate;
     libraryObserver.disconnect();window.DownloadsPanel.showPanel=originalShowDownloadsPanel;
