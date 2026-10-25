@@ -46,6 +46,27 @@
       check(Services.prefs.getIntPref('gfx.font_rendering.cleartype_params.enhanced_contrast')===50,'Windows text contrast restores stroke strength');
     }
     check(!!document.getElementById('arc-top-controls'),'navigation controls');
+    const {ZenLiveFoldersManager:liveFolders}=ChromeUtils.importESModule('resource:///modules/zen/ZenLiveFoldersManager.sys.mjs');
+    await liveFolders.stateRestored.promise;
+    if(liveFolders.arcGitHubSetup)await liveFolders.arcGitHubSetup;
+    const githubFolders=[...liveFolders.liveFolders.values()].filter(f=>f.constructor.type==='github');
+    check(githubFolders.length===2,'native GitHub issues and PR folders created');
+    check(githubFolders.every(f=>f.state.options.authorMe&&f.state.options.assignedMe),'GitHub authored and assigned filters enabled');
+    check(githubFolders.find(f=>f.state.type==='pull-requests')?.state.options.reviewRequested,'GitHub PR review requests included');
+    const prFolder=githubFolders.find(f=>f.state.type==='pull-requests');
+    for(const f of githubFolders)f.stop();
+    // Test the native lazy-tab lifecycle without depending on a GitHub login.
+    liveFolders.onLiveFolderFetch(prFolder,[{id:'arc-test#1',title:'Runtime test pull request',url:'https://github.com/example/test/pull/1'}]);
+    await wait(100);
+    const nativeFolder=liveFolders.getFolderForLiveFolder(prFolder);
+    check(nativeFolder.tabs.some(t=>t.hasAttribute('zen-live-folder-item-id')&&t.label==='Runtime test pull request'),'GitHub entry creates a native lazy tab');
+    liveFolders.onLiveFolderFetch(prFolder,'zen-live-folder-failed-fetch');
+    check(nativeFolder.tabs.some(t=>t.hasAttribute('zen-live-folder-item-id')),'fetch error preserves existing GitHub entries');
+    liveFolders.onLiveFolderFetch(prFolder,[]);await wait(500);
+    check(!nativeFolder.tabs.some(t=>t.hasAttribute('zen-live-folder-item-id')),'GitHub entry disappears when it no longer matches');
+    const toggleRect=document.getElementById('arc-sidebar-toggle').getBoundingClientRect();
+    const controlsRect=document.getElementById('arc-top-controls').getBoundingClientRect();
+    check(Math.abs(toggleRect.left-controlsRect.left-2)<1&&toggleRect.width===32,'sidebar toggle moves left with full hit area');
     check(document.querySelectorAll('#arc-sidebar-toggle').length===1&&['zen-toggle-compact-mode','zen-expand-sidebar-button'].every(id=>!document.getElementById(id)||getComputedStyle(document.getElementById(id)).display==='none'),'one visible sidebar toggle');
     check(typeof document.querySelector('zen-library').constructor.animateProgress==='function','native functional library available');
     check(['zen-library-button','library-button','downloads-button'].every(id=>!document.getElementById(id)||getComputedStyle(document.getElementById(id)).display==='none'),'duplicate native library and downloads buttons hidden');

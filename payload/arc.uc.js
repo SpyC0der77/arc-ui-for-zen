@@ -448,6 +448,15 @@
   const onResize=()=>{if(!popup.hidden)placePopup();};window.addEventListener("resize",onResize);
   window.ZenArc={version:"0.1.0",previewDownload:position=>flight(position),toggleDock,setRail,openDownloads,hideDownloads,diagnostics:()=>({version:"0.1.0",browser:Services.appinfo.version,compact:cm.preference,sidebarHoverBlocked:!!sidebarRearmBounds,downloads:records.length,private:PrivateBrowsingUtils.isWindowPrivate(window),rail:NativeLibrary.isLibrarySlightlyOpen,popup:!popup.hidden})};
   updateNav();renderDownloads();
+  if (!PrivateBrowsingUtils.isWindowPrivate(window)) {
+    try {
+      const { ZenLiveFoldersManager } = ChromeUtils.importESModule("resource:///modules/zen/ZenLiveFoldersManager.sys.mjs");
+      const github = {};
+      Services.scriptloader.loadSubScript("chrome://arc-ui/content/github.js", github, "UTF-8");
+      github.ArcGitHub.setup({manager:ZenLiveFoldersManager,prefs:Services.prefs,isClosed:()=>window.closed})
+        .catch(error=>console.error("[Arc UI] GitHub Live Folders setup failed",error));
+    } catch (error) { console.error("[Arc UI] GitHub Live Folders unavailable",error); }
+  }
   // Only open the demo once, after the browser's own onboarding has completed.
   if(!PrivateBrowsingUtils.isWindowPrivate(window)&&!Services.prefs.getBoolPref("arc-ui.demo-seen",false)&&Services.prefs.getBoolPref("zen.welcome-screen.seen",false)){
     Services.prefs.setBoolPref("arc-ui.demo-seen",true);
