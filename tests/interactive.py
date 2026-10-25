@@ -24,13 +24,22 @@ def close_library():
 def dock():
  if state()['compact']:
   move(600,300);move(1,300);time.sleep(.45);click('arc-sidebar-toggle');time.sleep(.6)
+
+def hover_downloads(label):
+ pointer().pointer_move(0,0,origin=m.find_element('id','arc-gift-button')).perform();time.sleep(.25)
+ visible=m.execute_script("""const p=document.getElementById('arc-download-popup'),r=p.getBoundingClientRect(),native=document.getElementById('zen-library-download-list');return {custom:p.dataset.arcDownloadDesign==='skeleton'&&p.matches(':popover-open')&&p.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)),nativeHidden:!native||getComputedStyle(native).display==='none',x:r.x+r.width/2,y:r.bottom-16};""")
+ check(state()['popup'] and visible['custom'] and visible['nativeHidden'],f'only skeleton popup paints on hover {label}')
+ move(visible['x'],visible['y']);time.sleep(.5)
+ check(state()['popup'],f'popup remains open after pointer enters its content {label}')
+ if state()['compact']:check(sidebar()['right']>200,f'popup hover keeps undocked sidebar visible {label}')
+ if label=='docked 1':(ROOT/'artifacts/interactive-download-empty.png').write_bytes(base64.b64decode(m.screenshot()))
+ pointer().pointer_move(0,0,origin=m.find_element('id','arc-gift-button')).perform()
 try:
  if state()['rail']:close_library()
  dock()
  for cycle in range(3):
   move(600,300)
-  pointer().pointer_move(0,0,origin=m.find_element('id','arc-gift-button')).perform();time.sleep(.2)
-  check(state()['popup'],f'hover shows downloads {cycle+1}')
+  hover_downloads(f'docked {cycle+1}')
   click('arc-gift-button');time.sleep(.7)
   check(state()['rail'] and not state()['popup'],f'trusted gift click opens library {cycle+1}')
   if cycle==0:(ROOT/'artifacts/interactive-library.png').write_bytes(base64.b64decode(m.screenshot()))
@@ -63,10 +72,15 @@ try:
   check(sidebar()['hover'] and sidebar()['right']>200,f'deliberate edge return shows one sidebar {cycle+1}')
   surface=m.execute_script("""const c=getComputedStyle(document.getElementById('zen-toolbar-background')),p=getComputedStyle(document.querySelector('.browserSidebarContainer:not(.zen-glance-overlay)'));return {shadow:c.boxShadow,radius:c.borderRadius,pageRadius:p.borderRadius}""")
   check(surface['shadow']!='none' and surface['radius']=='12px' and surface['pageRadius']=='10px',f'peek floats over rounded content {cycle+1}')
-  pointer().pointer_move(0,0,origin=m.find_element('id','arc-gift-button')).perform();time.sleep(.2)
+  hover_downloads(f'undocked {cycle+1}')
   click('arc-gift-button');time.sleep(.7)
   check(state()['rail'],f'gift click opens library from hover peek {cycle+1}')
   close_library();dock()
+ # Escape must stay closed even when returning keyboard focus to the trigger.
+ move(600,300);hover_downloads('before Escape')
+ from marionette_driver.keys import Keys
+ ActionSequence(m,'key','arc-keyboard').key_down(Keys.ESCAPE).key_up(Keys.ESCAPE).perform();time.sleep(.3)
+ check(not state()['popup'],'Escape closes popup without focus reopening it')
  print(json.dumps({'checks':checks,'final':state()},indent=2))
  (ROOT/'artifacts/interactive-results.json').write_text(json.dumps(checks,indent=2))
 finally:
