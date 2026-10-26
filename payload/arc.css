@@ -125,7 +125,9 @@
     :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] { animation: none !important; }
   }
   :root[data-arc-ui] .urlbarView-row[selected] .urlbarView-row-inner { background: #bcb3c5 !important; color: #141414 !important; border-radius: 6px !important; }
-  :root[data-arc-ui] .tabbrowser-tab { min-height: 40px !important; font-size: 14px !important; }
+  /* Size the native tab contents without preventing folder animations from
+     shrinking inactive rows to zero height when a selected tab stays visible. */
+  :root[data-arc-ui] .tabbrowser-tab { --tab-min-height: 40px; font-size: 14px !important; }
   :root[data-arc-ui] .tab-background { border-radius: 10px !important; transition: background-color 120ms ease !important; }
   :root[data-arc-ui] .tab-background[selected] { background: white !important; box-shadow: 0 1px 3px #44375026 !important; outline: 1px solid #44375026 !important; }
   :root[data-arc-ui] .tabbrowser-tab:not([selected]):hover .tab-background { background: #1414140f !important; }
