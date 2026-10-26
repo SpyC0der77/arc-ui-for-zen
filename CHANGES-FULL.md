@@ -107,6 +107,17 @@
 - Suppress downloads-menu opening while the library is open or a file animation is running.
 - Position the downloads menu within the browser window and update its position on resize.
 - Add an expandable-state announcement to the library button for the downloads menu.
+- Close background tabs left idle for 12 hours so Zen records them as closed tabs.
+- Skip pinned, essential, split-view, grouped, folder, audible, busy, attention-seeking and selected tabs.
+- Never archive tabs in private windows or browser-internal pages.
+- Run the archive pass shortly after startup and on a fixed interval, and stop it when the window unloads.
+- Cap one pass so it cannot fill the closed-tab history at once.
+- Report close failures without aborting the rest of the pass.
+- Announce each archive pass with a short in-browser notice.
+- Select the library's Archive view on first run so archived tabs appear in the secondary library sidebar and reopen on click.
+- Leave a later switch back to the library's History view in effect on the next start.
+- Raise Zen's closed-tab history to 100 entries per window so archived tabs survive several passes.
+- Read the idle window from preferences and allow auto-archive to be turned off.
 - Populate the downloads menu from Mozilla's native download service.
 - Keep public-window and private-window download lists separate.
 - Show recent download additions first and limit the visible list to recent entries.

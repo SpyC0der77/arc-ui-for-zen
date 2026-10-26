@@ -8,5 +8,6 @@
   "zen.urlbar.replace-newtab": true,
   "zen.urlbar.behavior": "float",
   "zen.theme.content-element-separation": 10,
-  "zen.theme.essentials-favicon-bg": false
+  "zen.theme.essentials-favicon-bg": false,
+  "browser.sessionstore.max_tabs_undo": 100
 }

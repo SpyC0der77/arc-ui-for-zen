@@ -1,6 +1,6 @@
 # Arc UI for Zen
 
-An Arc-style interface for Zen **1.23.4b**, with a lavender sidebar, centered address bar, library and animated downloads. It brings Arc's visual design to Zen's native tabs and browser features through local CSS and JavaScript patches, installed with an Electron app. It does not replace the browser engine or fork Zen.
+An Arc-style interface for Zen **1.23.4b**, with a lavender sidebar, centered address bar, library, auto-archive and animated downloads. It brings Arc's visual design to Zen's native tabs and browser features through local CSS and JavaScript patches, installed with an Electron app. It does not replace the browser engine or fork Zen.
 
 ## Install
 
@@ -21,6 +21,7 @@ Select your actual profile explicitly when there is more than one. Zen's `about:
 | Lavender shell, typography, tabs, page corners | Arc-style colors and layout around native Zen tabs | Theme: CSS and bundled Geist fonts style the browser chrome. |
 | Sidebar width and resizing | Starts at 264px; drag to resize; double-click keeps the current width | Patch: sets the initial width once and blocks Zen's double-click width reset on the sidebar splitter. Drag resizing and persistence remain native. |
 | GitHub issues and pull requests | Sidebar Live Folders list your open authored and assigned items, plus PR review requests | Patch: creates missing native GitHub folders once in the first synced window's active workspace. Uses that workspace's GitHub session; no separate token. Existing folders and filters stay unchanged. |
+| Auto-Archive | Background tabs idle for 12 hours close into the library sidebar's Archive tab, where they restore with history | Patch: closes eligible tabs on a timer so Zen records them as closed tabs, and selects the library's Archive view. Pinned, essential, grouped, folder, split-view, playing-audio and the selected tab are never archived. |
 | Dock/undock | Toggle or Ctrl+B/Cmd+B; 220ms to dock, 180ms to hide, without scaling page text | Theme + patch: adds the toggle and shortcut, wraps Zen's compact-mode update, and animates a captured sidebar when hiding or the live sidebar when docking alongside the page width. |
 | Hover peek | Reveals the hidden sidebar at the edge; 160ms close delay | Theme + patch: styles Zen's compact sidebar as a rounded overlay, sets its close-delay preference, and blocks native hover expansion after undocking until the pointer leaves the old sidebar bounds. |
 | Back, forward, reload/stop | Navigation controls in the top row | Theme: adds buttons wired to Zen's native browser commands and hides the original buttons. |
@@ -37,6 +38,8 @@ Select your actual profile explicitly when there is more than one. Zen's `about:
 | Reduced motion | Skips file flight, icon movement and gift highlight; retains the menu and accessibility announcement | Theme: checks the reduced-motion media query before running JavaScript animations; CSS also disables the address-bar entrance. |
 
 The gift-shaped button combines the library and downloads controls, following Arc's sidebar design. Hover over it to see downloads for the current public or private browsing session. Click it to open Zen's library, or click the Downloads title in the hover menu to open the library's Downloads section. The download menu appears above page content without being clipped by the sidebar. It replaces Zen's native download popup and hover stack.
+
+Auto-Archive closes ordinary background tabs the user has not returned to for 12 hours. It runs 90 seconds after a window opens and every five minutes after that. Closed tabs are recorded by Zen itself, so they appear in the library sidebar's **Archive** tab with their history and reopen on click. Pinned tabs, Essentials, split views, tab groups, folder tabs, tabs playing audio and the selected tab are left alone, as are private windows and browser-internal pages. Set `arc-ui.archive.hours` to another number of hours, or to `0` to turn auto-archive off. On first run the theme selects the library's Archive view, and a later switch back to History is remembered. It also raises Zen's closed-tab history to 100 entries per window so an archive pass is not evicted immediately; browsing history remains available through the library's filter. The archive survives restarts through Zen's session data and is not sent anywhere.
 
 Zen continues to manage library sections, workspaces, pinned tabs, folders, permissions, extensions, navigation and session restore. This theme recreates parts of Arc's interface using those native features; it does not reproduce every Arc feature or exactly match its macOS behavior.
 

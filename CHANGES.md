@@ -9,6 +9,9 @@
 - Replace the downloads popup with an Arc-style hover menu backed by native downloads and file actions.
 - Add a curved file-arrival animation, temporary target for a hidden sidebar, and arrival feedback.
 - Respect reduced motion and add keyboard-focus states and accessibility announcements.
+- Archive background tabs left idle for 12 hours into the library sidebar's Archive tab.
+- Keep pinned, essential, split-view, grouped, folder and audible tabs, the selected tab and private windows out of auto-archive.
+- Select the library's Archive view on first run and keep 100 closed tabs per window so archived tabs restore with their history.
 - Add a local download-animation preview page.
 - Apply browser layout preferences and a Windows-only text-rendering preset.
 - Install local startup patches with conflict checks, backups and safe removal.

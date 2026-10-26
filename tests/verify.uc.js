@@ -88,6 +88,8 @@
       liveFolders.onLiveFolderFetch(prFolder,[]);await wait(500);
       check(!nativeFolder.tabs.some(t=>t.hasAttribute('zen-live-folder-item-id')),'GitHub entry disappears when it no longer matches');
     }
+    check(ZenArc.diagnostics().archiveHours===12,'auto-archive loaded with a 12 hour idle window');
+    check(Services.prefs.getBoolPref('zen.library.history.closed-tabs',false),'library Archive view enabled');
     const toggleRect=document.getElementById('arc-sidebar-toggle').getBoundingClientRect();
     const controlsRect=document.getElementById('arc-top-controls').getBoundingClientRect();
     check(Math.abs(toggleRect.left-controlsRect.left-2)<1&&toggleRect.width===32,'sidebar toggle moves left with full hit area');
