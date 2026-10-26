@@ -60,6 +60,28 @@
       liveFolders.onLiveFolderFetch(prFolder,[{id:'arc-test#1',title:'Runtime test pull request',url:'https://github.com/example/test/pull/1'}]);
       await wait(100);
       const nativeFolder=liveFolders.getFolderForLiveFolder(prFolder);
+      const actions=document.getElementById('zenFolderActions');
+      const originalTrigger=Object.getOwnPropertyDescriptor(actions,'triggerNode');
+      const openTestMenu=folder=>{
+        Object.defineProperty(actions,'triggerNode',{configurable:true,value:folder.labelElement});
+        actions.dispatchEvent(new Event('popupshowing',{bubbles:true}));
+      };
+      try {
+        openTestMenu(nativeFolder);
+        for(const id of ['context_zenFolderUnpack','context_zenFolderNewSubfolder','context_zenFolderToSpace']) {
+          const item=document.getElementById(id);
+          check(getComputedStyle(item).display==='none',id+' hidden for live folders');
+          check(!item.dispatchEvent(new Event('command',{bubbles:true,cancelable:true})),id+' command blocked for live folders');
+        }
+        check(getComputedStyle(document.getElementById('context_zenFolderDelete')).display!=='none','live folder deletion remains available');
+        const ordinary=gZenFolders.createFolder([],{label:'Menu test',renameFolder:false});
+        openTestMenu(ordinary);
+        check(getComputedStyle(document.getElementById('context_zenFolderUnpack')).display!=='none','ordinary folder retains Unpack after live menu');
+        await ordinary.delete();
+      } finally {
+        actions.dispatchEvent(new Event('popuphidden',{bubbles:true}));
+        if(originalTrigger)Object.defineProperty(actions,'triggerNode',originalTrigger);else delete actions.triggerNode;
+      }
       check(nativeFolder.tabs.some(t=>t.hasAttribute('zen-live-folder-item-id')&&t.label==='Runtime test pull request'),'GitHub entry creates a native lazy tab');
       liveFolders.onLiveFolderFetch(prFolder,'zen-live-folder-failed-fetch');
       check(nativeFolder.tabs.some(t=>t.hasAttribute('zen-live-folder-item-id')),'fetch error preserves existing GitHub entries');

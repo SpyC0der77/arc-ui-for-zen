@@ -7,7 +7,7 @@
   "main": "installer/main.cjs",
   "scripts": {
     "start": "node scripts/start.cjs",
-    "test": "node --test tests/engine.test.cjs tests/github.test.cjs",
+    "test": "node --test tests/engine.test.cjs tests/github.test.cjs tests/native-actions.test.cjs",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win portable",

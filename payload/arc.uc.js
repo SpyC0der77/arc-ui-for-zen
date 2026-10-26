@@ -448,6 +448,12 @@
   const onResize=()=>{if(!popup.hidden)placePopup();};window.addEventListener("resize",onResize);
   window.ZenArc={version:"0.1.0",previewDownload:position=>flight(position),toggleDock,setRail,openDownloads,hideDownloads,diagnostics:()=>({version:"0.1.0",browser:Services.appinfo.version,compact:cm.preference,sidebarHoverBlocked:!!sidebarRearmBounds,downloads:records.length,private:PrivateBrowsingUtils.isWindowPrivate(window),rail:NativeLibrary.isLibrarySlightlyOpen,popup:!popup.hidden})};
   updateNav();renderDownloads();
+  const nativeActions = {};
+  Services.scriptloader.loadSubScript("chrome://arc-ui/content/native-actions.js", nativeActions, "UTF-8");
+  const stopNativeActions=nativeActions.ArcNativeActions.install({document,contextTabs:()=>{
+    const tab=window.TabContextMenu.contextTab;
+    return tab?.multiselected?[...gBrowser.selectedTabs]:[tab];
+  }});
   let stopGithubSetup=()=>{};
   if (!PrivateBrowsingUtils.isWindowPrivate(window)) {
     try {
@@ -465,7 +471,7 @@
     later(()=>window.openTrustedLinkIn("chrome://arc-ui/content/home.xhtml","tab"),500);
   }
   window.addEventListener("unload",()=>{
-    stopGithubSetup();
+    stopGithubSetup();stopNativeActions();
     window.removeEventListener("dblclick",preventSidebarWidthReset,true);
     if(NativeLibrary.animateProgress===animateLibrary)NativeLibrary.animateProgress=originalLibraryAnimate;
     libraryObserver.disconnect();window.DownloadsPanel.showPanel=originalShowDownloadsPanel;

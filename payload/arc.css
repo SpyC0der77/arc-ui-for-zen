@@ -133,6 +133,10 @@
   :root[data-arc-ui] .tabbrowser-tab:not([selected]):hover .tab-background { background: #1414140f !important; }
   :root[data-arc-ui] .tab-label { color: #141414 !important; }
   :root[data-arc-ui] #tabs-newtab-button { color: #65556f !important; }
+  /* Providers own list structure, entry titles and canonical URLs. Ordinary
+     folders and tabs keep their native menus, including after detachment. */
+  :root[data-arc-ui] #zenFolderActions[data-arc-provider-owned] :is(#context_zenFolderUnpack,#context_zenFolderNewSubfolder,#context_zenFolderToSpace),
+  :root[data-arc-ui] #tabContextMenu[data-arc-provider-owned] :is(#context_zen-edit-tab-title,#context_zen-edit-pinned-page,#context_zen-edit-pinned-url,#context_zen-replace-pinned-url-with-current) { display: none !important; }
   :root[data-arc-ui] #zen-sidebar-foot-buttons { min-height: 40px !important; }
   /* Retain native download services, expose only the Arc gift entry point. */
   :root[data-arc-ui] :is(#zen-library-button,#library-button,#downloads-button,#zen-library-download-list,.zen-library-sprite) { display: none !important; }
