@@ -28,6 +28,7 @@ Select your actual profile explicitly when there is more than one. Zen's `about:
 | Application menu | Zen's menu in the top row | Theme: moves the existing native menu button into the added control row and restyles it. |
 | Press feedback | Icons nudge when pressed | Theme: pointer handlers animate the added SVG icons through the Web Animations API. |
 | Address command menu and new tab | Centered address bar with native suggestions, 16px corners and a 180ms entrance | Theme + patch: restyles Zen's floating URL bar, enables its floating and new-tab replacement settings, and adds a matching address label behind the field while it is open. |
+| Command bar actions | Type Archive, Downloads, Split View, Split Horizontal, Unsplit or Toggle Sidebar; select the command with the arrow keys and Enter, or click it | Patch: a local native URL-bar provider adds matching commands alongside normal search results. Split commands use Zen's native behavior, pairing selected tabs or the current tab with the next visible tab. Unsplit appears only in a split; creating a split requires at least two visible tabs. |
 | Library | Gift-shaped button opens Zen's library over the main sidebar | Theme + patch: adds a button that calls Zen's library animation and wraps that animation to keep its first frame offscreen. Native library contents remain intact. |
 | Downloads hover menu | Separate public and private-window download lists | Theme + patch: builds a manual HTML popover from Mozilla's native download lists, hides Zen's download controls and hover stack, and redirects native download-panel requests to the popover. |
 | Download actions | Open, reveal in folder, pause/resume, cancel | Theme: added menu buttons call the native download object's launch, reveal, cancel, start and partial-data removal methods. |
@@ -37,11 +38,21 @@ Select your actual profile explicitly when there is more than one. Zen's `about:
 | Demo Download button | Plays the animation without a network request or downloaded file | Theme: a bundled local preview page calls the same file-animation function directly. |
 | Reduced motion | Skips file flight, icon movement and gift highlight; retains the menu and accessibility announcement | Theme: checks the reduced-motion media query before running JavaScript animations; CSS also disables the address-bar entrance. |
 
-The gift-shaped button combines the library and downloads controls, following Arc's sidebar design. Hover over it to see downloads for the current public or private browsing session. Click it to open Zen's library, or click the Downloads title in the hover menu to open the library's Downloads section. The download menu appears above page content without being clipped by the sidebar. It replaces Zen's native download popup and hover stack.
+The gift-shaped button combines the library and downloads controls, following Arc's sidebar design. Hover over it to reveal recent files rising from the gift, directly on the sidebar surface. Completed images show thumbnails and relative timestamps; other files use the system's file-type icons. Click the gift to open Zen's library, or use the Downloads command to open its Downloads section. The list replaces Zen's native download popup and hover stack, retaining native file actions and separate public and private lists.
 
 Auto-Archive closes ordinary background tabs the user has not returned to for 12 hours. It runs 90 seconds after a window opens and every five minutes after that. Closed tabs are recorded by Zen itself, so they appear in the library sidebar's **Archive** tab with their history and reopen on click. Pinned tabs, Essentials, split views, tab groups, folder tabs, tabs playing audio and the selected tab are left alone, as are private windows and browser-internal pages. Set `arc-ui.archive.hours` to another number of hours, or to `0` to turn auto-archive off. On first run the theme selects the library's Archive view, and a later switch back to History is remembered. It also raises Zen's closed-tab history to 100 entries per window so an archive pass is not evicted immediately; browsing history remains available through the library's filter. The archive survives restarts through Zen's session data and is not sent anywhere.
 
 Zen continues to manage library sections, workspaces, pinned tabs, folders, permissions, extensions, navigation and session restore. This theme recreates parts of Arc's interface using those native features; it does not reproduce every Arc feature or exactly match its macOS behavior.
+
+Download actions use bundled [Lucide](https://lucide.dev/) SVGs. Their license is included in `payload/content/lucide/LICENSE`. Files retain their native icons and image previews.
+
+### Debug mode
+
+Open the command bar with **Ctrl+T** or **Ctrl+L**, type **Debug**, and select **Enable Debug Mode**. Select **Disable Debug Mode** the same way to turn it off. **Reset Debug Data** restores the original fixtures while the mode is active. The sample Spaces are named Debug Work and Debug Personal.
+
+Debug mode fills the main views with local sample data: two native Spaces, favorites, open and collapsed folders, short and long tab titles, completed and in-progress downloads, paused/failed/cancelled transfers, Archive and History rows, media previews, Boost toggles. The mock download buttons change fixture states or show a local status message; they do not launch programs or fetch files. Library search and download filters work on the fixtures.
+
+The library and downloads fixtures stay in memory. Temporary native tabs and Spaces are tracked separately, and turning the mode off removes only those items. Normal tabs moved into a debug Space, or mock tabs navigated to a normal page, are kept in the original Space. Generated previews live in a UUID-named temporary directory and are removed with the fixtures. If Zen is interrupted, a small ownership record lets the next startup clean up after native session and Workspace restoration. Debug mode is offered in regular windows with Workspaces enabled.
 
 Expand the GitHub Issues and Pull Requests folders in the sidebar to see their lists. Sign in to GitHub in the same workspace if Zen reports that authentication is needed. Right-click a folder for filters, refresh and update intervals. Entries use Zen's native lazy tabs and disappear when they no longer match the folder's filters. Deleting a folder does not cause the theme to recreate it; add it again through the sidebar's native Live Folder menu. These folders remain native browser data after theme removal.
 
@@ -51,7 +62,7 @@ Undocking hides the sidebar even on Zen's empty new-tab page. After clicking Und
 
 ### Typography
 
-Native tab labels, the address field, menus and added controls share one UI font stack. macOS uses its system face; Windows and Linux use the bundled Geist regular and medium faces. Tab labels and added controls use medium weight for legibility. Website font families and page zoom remain unchanged.
+Native tab labels, the address field, menus and added controls share one UI font stack. macOS uses its system face; Windows and Linux use the bundled Geist regular, medium and semibold faces. Tab labels and added controls use medium weight for legibility; folder names use semibold. Website font families and page zoom remain unchanged.
 
 On Windows the installer also applies a profile-local DirectWrite preset: Natural Symmetric rendering (`rendering_mode=5`), grayscale preference (`cleartype_level=0`), moderate contrast (`enhanced_contrast=50`) and gamma 2.2 (`gamma=2200`). These are supported [Mozilla rendering preferences](https://github.com/mozilla-firefox/firefox/blob/main/modules/libpref/init/all.js). They affect browser and website text where the graphics backend honors them. The result depends on display scaling, GPU and font; it approximates macOS rather than replacing DirectWrite with CoreText. No Windows registry or system-wide ClearType settings are changed. macOS and Linux keep their native rasterization settings.
 
@@ -91,6 +102,8 @@ pnpm dist:linux
 ```
 
 `start` launches the local Electron app, with no development server. Build only the target for the host OS. The release is currently unsigned.
+
+Historical Arc screenshots and their source notes live in [`dev/references/`](dev/references/README.md). They are excluded from installer packages. Pull requests run unit tests and build installers on Windows, macOS, and Linux; `pnpm verify:package` checks the resulting ASAR files for complete runtime contents and excluded development files. Pass an output directory to verify a separate build, for example `pnpm verify:package artifacts/pr-build`.
 
 `node tests/runtime.cjs <unpatched Zen application folder>` requires a Zen application folder without an installed Arc UI theme or another AutoConfig loader. It makes an isolated application copy and profile, installs the patch there, runs native browser checks, captures browser chrome, and verifies removal. It does not modify the real installation or profile. Its temporary copies and screenshots stay under the ignored `artifacts` directory.
 

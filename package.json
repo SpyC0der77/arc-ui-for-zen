@@ -7,21 +7,53 @@
   "main": "installer/main.cjs",
   "scripts": {
     "start": "node scripts/start.cjs",
-    "test": "node --test tests/engine.test.cjs tests/github.test.cjs tests/archive.test.cjs tests/native-actions.test.cjs",
+    "test": "node --test tests/engine.test.cjs tests/github.test.cjs tests/archive.test.cjs tests/native-actions.test.cjs tests/commands.test.cjs tests/debug.test.cjs tests/package.test.cjs",
     "pack": "electron-builder --dir",
+    "verify:package": "node scripts/verify-package.cjs",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win portable",
     "dist:mac": "electron-builder --mac dmg zip",
     "dist:linux": "electron-builder --linux AppImage"
   },
-  "devDependencies": { "electron": "45.0.0", "electron-builder": "26.18.0" },
+  "devDependencies": {
+    "@electron/asar": "3.4.1",
+    "electron": "45.0.0",
+    "electron-builder": "26.18.0"
+  },
   "build": {
     "appId": "dev.arcui.zen-installer",
     "productName": "Arc UI for Zen",
-    "directories": { "output": "release" },
-    "files": ["installer/**/*.cjs", "installer/ui/**/*", "payload/**/*", "package.json"],
-    "win": { "target": ["portable"], "requestedExecutionLevel": "asInvoker", "artifactName": "Arc-UI-Zen-${version}-Windows.${ext}" },
-    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.utilities", "artifactName": "Arc-UI-Zen-${version}-macOS-${arch}.${ext}" },
-    "linux": { "target": ["AppImage"], "category": "Utility", "artifactName": "Arc-UI-Zen-${version}-Linux-${arch}.${ext}" }
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "installer/**/*.cjs",
+      "installer/ui/**/*",
+      "payload/**/*",
+      "package.json",
+      "!dev{,/**/*}"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "requestedExecutionLevel": "asInvoker",
+      "artifactName": "Arc-UI-Zen-${version}-Windows.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities",
+      "artifactName": "Arc-UI-Zen-${version}-macOS-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility",
+      "artifactName": "Arc-UI-Zen-${version}-Linux-${arch}.${ext}"
+    }
   }
 }

@@ -133,7 +133,7 @@
 - Reveal completed downloads in their containing folder.
 - Add pause and resume controls for eligible downloads.
 - Add cancellation controls that remove partial download data.
-- Open the native library's Downloads section when clicking the menu's Downloads heading.
+- Reveal recent files directly on the sidebar above the gift, with image previews, relative timestamps and staggered rising rows. Open the library by clicking the gift, or its Downloads section with the Downloads command.
 - Disable Zen's native download animation through its preferences.
 - Observe new downloads and play the custom file animation in the most recently active browser window.
 - Animate a file icon along a curved path from the last click position toward the library button.
@@ -176,3 +176,6 @@
 - Cancel pending theme timers and animations when a browser window unloads.
 - Remove theme event listeners and observers when a browser window unloads.
 - Restore wrapped native methods when a browser window unloads.
+- Add local command-bar actions alongside normal address-bar search results, with native mouse and keyboard activation.
+- Open the library's Archive and Downloads sections, toggle the sidebar, and invoke Zen's native split and unsplit commands.
+- Match command prefixes and aliases without treating unrelated phrases or URLs as commands; hide unavailable split actions.

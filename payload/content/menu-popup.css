@@ -1,0 +1,25 @@
+/* This stylesheet lives inside Zen's native popup shadow root. */
+:host {
+  --panel-background: #ded6e4 !important;
+  --arrowpanel-background: #ded6e4 !important;
+}
+arrowscrollbox.menupopup-arrowscrollbox {
+  appearance: none !important;
+  background: #ded6e4 !important;
+  color: #141414 !important;
+  border: 1px solid #44375026 !important;
+  border-radius: 10px !important;
+  padding: 5px !important;
+  box-shadow: none !important;
+}
+:host(#zenCreateNewPopup) {
+  --panel-background: #fff !important;
+  --arrowpanel-background: #fff !important;
+}
+:host(#zenCreateNewPopup) arrowscrollbox.menupopup-arrowscrollbox {
+  background: #fff !important;
+  border: 1px solid #44375018 !important;
+  border-radius: 10px !important;
+  corner-shape: round !important;
+  padding: 6px !important;
+}

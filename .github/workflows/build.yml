@@ -1,6 +1,12 @@
 name: Build Arc UI for Zen installer
 on:
+  pull_request:
   workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: installer-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     strategy:
@@ -29,6 +35,10 @@ jobs:
       - run: pnpm dist:${{ matrix.target }}
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - run: pnpm verify:package
+      - name: Smoke-test packaged Windows installer
+        if: matrix.target == 'win'
+        run: pnpm exec electron tests/installer-smoke.cjs "${{ github.workspace }}/release/win-unpacked/resources/app.asar"
       - uses: actions/upload-artifact@v4
         with:
           name: arc-ui-zen-${{ matrix.target }}
