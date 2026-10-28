@@ -327,6 +327,35 @@
   :root[data-arc-ui] .tab-background { border-radius: 10px !important; transition: background-color 120ms ease !important; }
   :root[data-arc-ui] .tab-background[selected] { background: white !important; box-shadow: 0 1px 3px #44375026 !important; outline: 1px solid #44375026 !important; }
   :root[data-arc-ui] .tabbrowser-tab:not([selected]):hover .tab-background { background: #1414140f !important; }
+  /* Arc keeps split tabs in a shared row, with a lighter focused segment.
+     Keep Zen's native tabs and hit targets, without its nested selection rings. */
+  :root[data-arc-ui] tab-group[split-view-group] .tab-group-container {
+    border-radius: 8px !important;
+    padding: 2px !important;
+    gap: 2px;
+    background: #1414140a !important;
+    outline: none !important;
+    box-shadow: none !important;
+    scale: none !important;
+    transition: background-color 120ms ease !important;
+  }
+  :root[data-arc-ui] tab-group[split-view-group][hasactivetab] .tab-group-container {
+    background: #ffffff52 !important;
+  }
+  :root[data-arc-ui] tab-group[split-view-group] .tabbrowser-tab {
+    min-width: 0 !important;
+    padding-inline: 0 !important;
+    --tab-min-height: 32px;
+    &::after { display: none !important; }
+    & .tab-background {
+      background: transparent !important;
+      border-radius: 6px !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    &[selected] .tab-background { background: #ffffffb3 !important; }
+    &:not([selected]):hover .tab-background { background: #ffffff59 !important; }
+  }
   :root[data-arc-ui] .tab-label { color: #141414 !important; }
   /* Match Arc's favorite proportions without changing ordinary tab density. */
   :root[data-arc-ui] .tabbrowser-tab[zen-essential="true"] { --tab-min-height: 46px; }
