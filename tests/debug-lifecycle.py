@@ -20,6 +20,8 @@ evidence = ROOT / 'artifacts/debug-mode'
 evidence.mkdir(parents=True, exist_ok=True)
 
 try:
+    assert m.execute_script('return !!window.ZenArc?.debug?.available'), (
+        'Debug mode is unavailable; use a regular disposable window with Workspaces enabled')
     for opened in [True, False]:
         result = m.execute_async_script("""
           const opened=arguments[0],done=arguments[arguments.length-1];
