@@ -111,6 +111,8 @@ Historical Arc screenshots and their source notes live in [`dev/references/`](de
 
 `tests/interactive.py` adds pointer-input checks through Mozilla's Marionette driver. It exercises library hover/click from docked and peeked sidebars, then records sidebar and child visibility throughout closing. It also moves the pointer along the reveal edge beyond Zen's hover timeout, checks that an intentional exit and return rearms the sidebar, and confirms the peeked panel floats (rounded card with its shadow) over rounded page corners. It attaches only to an explicitly launched test session with `--marionette` and `MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1`. Install its optional Python client into `artifacts/test-python` as described in the script. Close that session and reopen Zen normally afterward; the installer never enables the driver.
 
+`python tests/debug-lifecycle.py [port]` uses the same disposable Marionette session to verify restoration of open and closed library views through debug reset/disable, and teardown while activation is paused after creating its first Space. The teardown check destroys that window's debug controller, so restart the test browser afterward.
+
 `tests/sidebar-motion.py` uses the same Marionette session to pause docking at five points, save chrome screenshots, and verify the actual sidebar corner hit targets, transparent native layers, and control bounds. Docking uses one animated background and a matching clip on the entire sidebar tree so native square backgrounds cannot fill the rounded corners.
 
 The UI implementation is adapted from [`arc-ui-skeleton`](https://github.com/SpyC0der77/arc-ui-skeleton), a standalone recreation of Arc's interface.

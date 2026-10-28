@@ -19,11 +19,25 @@ function verifyPackage(archive, sourceRoot = path.resolve(__dirname, '..')) {
     filesIn(path.join(sourceRoot, dir)).map(file => path.relative(sourceRoot, file).replaceAll('\\', '/')))];
   for (const file of expected) {
     assert(entries.includes(file), `Missing packaged runtime file: ${file}`);
-    if (file === 'package.json') continue; // electron-builder normalizes this manifest.
+    if (file === 'package.json') {
+      const source = JSON.parse(fs.readFileSync(path.join(sourceRoot, file), 'utf8'));
+      const packaged = JSON.parse(asar.extractFile(archive, file).toString('utf8'));
+      // electron-builder strips development metadata, but must retain runtime identity.
+      for (const field of ['name', 'version', 'main']) {
+        assert.equal(packaged[field], source[field], `Packaged manifest differs: ${field}`);
+      }
+      continue;
+    }
     const digest = data => crypto.createHash('sha256').update(data).digest('hex');
     assert.equal(digest(asar.extractFile(archive, path.normalize(file))), digest(fs.readFileSync(path.join(sourceRoot, file))),
       `Packaged file differs from the source: ${file}`);
   }
+  const allowed = new Set(expected);
+  for (const file of expected) {
+    const parts = file.split('/');
+    for (let length = 1; length < parts.length; length++) allowed.add(parts.slice(0, length).join('/'));
+  }
+  assert.deepEqual(entries.filter(file => !allowed.has(file)), [], 'Unexpected packaged files or directories');
   return expected.length;
 }
 

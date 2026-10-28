@@ -1,6 +1,6 @@
 # Arc design references
 
-These images document the visual evidence used for this theme. They are development context, not application assets. `electron-builder` includes only `installer/`, `payload/`, and the package manifest, and explicitly excludes `dev/`. CI opens the built ASAR to check that references remain excluded and runtime files match the source.
+This folder documents the visual evidence used for this theme. The source index and manifest are versioned; screenshot files stay in the local, Git-ignored `arc/` folder for development context. Reuse permissions were not recorded, so the publisher images are not redistributed in the tracked tree. `electron-builder` includes only `installer/`, `payload/`, and the package manifest, and explicitly excludes `dev/`. CI opens the built ASAR to check that references remain excluded and runtime files match the source.
 
 The screenshots belong to their original publishers. They are historical examples, mostly from 2023–2024, and do not establish Arc's current behavior. Author-added arrows and highlights are part of the sources. Crops and enlarged details preserve the original pixels; they are not UI reconstructions. Production icons and fonts live separately in `payload/`, with their applicable license files.
 

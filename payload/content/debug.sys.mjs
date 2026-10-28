@@ -57,8 +57,8 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
   const library=document.querySelector("zen-library");
   const {SessionStore}=ChromeUtils.importESModule("moz-src:///browser/components/sessionstore/SessionStore.sys.mjs");
   const available=!isPrivate&&win.gZenWorkspaces.workspaceEnabled;
-  let enabled=false,queue=Promise.resolve(),observer=null,data=null,downloads=[],files=[],tabs=[],originalTab=null,originalLibraryTab=null;
-  const patches=new Map(),viewStates=new Map();
+  let enabled=false,destroyed=false,queue=Promise.resolve(),observer=null,data=null,downloads=[],files=[],tabs=[],originalTab=null,originalLibraryTab=null,originalRail=false,originalHistoryPref=null;
+  const patches=new Map(),viewStates=new Map(),optInStates=new Map();
   const enqueue=fn=>(queue=queue.catch(()=>{}).then(fn));
   const patch=(node,key,value)=>{
     if(!patches.has(node))patches.set(node,new Map());
@@ -131,7 +131,7 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
     if(!items.length)return empty();
     return html`<div class="zen-library-group">${[...items].reverse().map(d=>row(PathUtils.filename(d.target.path),
       d.succeeded?"Completed · Mock download":d.error?"Failed · Mock connection interrupted":d.canceled?(d.hasPartialData?"Paused · 38%":"Cancelled"):"Downloading · 38%",
-      `moz-icon://${d.target.path}?size=32`,()=>mockAction("Mock download selected"),
+      `moz-icon:${PathUtils.toFileURI(d.target.path)}?size=32`,()=>mockAction("Mock download selected"),
       html`<div class="zen-library-row-actions">${!d.succeeded?downloadAction(d):""}</div>`))}</div>`;
   }
   function downloadAction(d) {
@@ -174,24 +174,31 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
       patch(section,"renderItems",()=>render(section));
       if(section.dataset.section==="media") {
         const base=Object.getPrototypeOf(Object.getPrototypeOf(section));
+        optInStates.set(section,section.hasAttribute("needs-opt-in"));
         patch(section,"updated",function(changed){base.updated?.call(this,changed);this.removeAttribute("needs-opt-in");});
       }
       section.requestUpdate();
     }
   }
   function blockContext(event){if(enabled){event.preventDefault();event.stopImmediatePropagation();announce("Debug mode uses local mock data.");}}
-  async function enable() {
-    if(enabled||!available)return;
+  function requireOpenWindow(){if(destroyed||win.closed)throw new Error("Debug window closed during activation.");}
+  async function enable(preservedRail) {
+    if(enabled||!available||destroyed||win.closed)return;
     await ready;
+    if(destroyed||win.closed)return;
     if(active&&active!==controller)await active.disable();
     const old=journal();if(old)await removeOwned(win,old);
+    if(destroyed||win.closed)return;
     originalTab=win.gBrowser.selectedTab;originalLibraryTab=library.activeTab;
+    originalRail=preservedRail??!!win.ZenArc.diagnostics().rail;
+    originalHistoryPref={user:Services.prefs.prefHasUserValue("zen.library.history.closed-tabs"),value:Services.prefs.getBoolPref("zen.library.history.closed-tabs",false)};
     data={token:Services.uuid.generateUUID().toString().slice(1,-1),spaces:[],originalSpace:win.gZenWorkspaces.activeWorkspace};
     writeJournal(data);enabled=true;active=controller;
     boosts.forEach((boost,index)=>{boost.on=index<2;});
     document.documentElement.setAttribute("data-arc-debug","loading");
     try {
       const directory=await makeFiles();
+      requireOpenWindow();
       downloads=createDownloads({directory,image:[files[0],files[1]],join:(root,name)=>PathUtils.join(root,name),changed:refresh,action:mockAction});
       setDownloads(downloads);
       const originalRemove=win.gBrowser.removeTab;
@@ -203,9 +210,11 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
         const space=await win.gZenWorkspaces.createAndSaveWorkspace(name,"chrome://arc-ui/content/spaces.svg",false,0,{beforeChangeCallback:space=>{
           space.arcDebugToken=data.token;win.gZenWorkspaces.saveWorkspace(space);data.spaces.push(space.uuid);writeJournal(data);
         }});
+        requireOpenWindow();
         if(!space||!data.spaces.includes(space.uuid))throw new Error("Could not create a debug Space.");
       }
       await win.gZenWorkspaces.changeWorkspaceWithID(data.spaces[0]);
+      requireOpenWindow();
       for(const group of ["Project","Reading"]) {
         const groupTabs=PAGES.filter(p=>p.group===group).map(p=>newTab(p,data.spaces[0]));
         const folder=win.gZenFolders.createFolder(groupTabs,{label:group,workspaceId:data.spaces[0],renameFolder:false,collapsed:group==="Reading"});
@@ -231,22 +240,31 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
     for(const [node,properties] of patches) {
       for(const [key,descriptor] of properties) {if(descriptor)Object.defineProperty(node,key,descriptor);else delete node[key];}
       const state=viewStates.get(node);
-      if(state) {
+      if(state&&!destroyed&&!win.closed) {
         node.searchQuery=state.query;node.activeFilters.clear();for(const filter of state.filters)node.activeFilters.add(filter);
         const input=node.querySelector(".zen-library-search-box input");if(input)input.value=state.query;
-        node.onSearchChanged();
+        node.onFiltersChanged();
       }
-      node.requestUpdate?.();
+      if(!destroyed&&!win.closed)node.requestUpdate?.();
     }
-    patches.clear();viewStates.clear();setDownloads(null);
+    patches.clear();viewStates.clear();if(!destroyed&&!win.closed)setDownloads(null);
+    if(originalHistoryPref.user)Services.prefs.setBoolPref("zen.library.history.closed-tabs",originalHistoryPref.value);
+    else Services.prefs.clearUserPref("zen.library.history.closed-tabs");
+    for(const [section,needed] of optInStates) {
+      if(destroyed||win.closed)break;
+      if(needed)section.setAttribute("needs-opt-in","");else section.removeAttribute("needs-opt-in");
+      section.requestUpdate?.();
+    }
+    optInStates.clear();
     document.documentElement.removeAttribute("data-arc-debug");
-    await win.ZenArc.setRail(false);
+    if(!destroyed&&!win.closed)await win.ZenArc.setRail(false);
     if(originalLibraryTab)library.activeTab=originalLibraryTab;
     try {
       await removeOwned(win,data);
       if(originalTab&&!originalTab.closing&&win.gBrowser.tabs.includes(originalTab))win.gBrowser.selectedTab=originalTab;
+      if(!destroyed&&!win.closed)await win.ZenArc.setRail(originalRail);
       data=null;downloads=[];tabs=[];files=[];
-      announce("Debug Mode disabled. Your normal data is restored.");
+      announce("Debug Mode disabled. Debug data was removed. Normal tabs moved into debug Spaces stayed in your original Space.");
     } finally {if(active===controller)active=null;}
   }
   const ready=available?(recovery??=Promise.resolve().then(async()=>{
@@ -261,8 +279,8 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
   ready.catch(error=>console.error("[Arc UI] Debug recovery:",error));
   const controller={win,available,get enabled(){return enabled;},ready,
     toggle:()=>enqueue(()=>enabled?disable():enable()),disable:()=>enqueue(disable),
-    reset:()=>enqueue(async()=>{if(enabled){await disable();await enable();}}),
-    destroy(){if(active===controller)void disable().catch(error=>console.error("[Arc UI] Debug cleanup:",error));},
+    reset:()=>enqueue(async()=>{if(enabled){const rail=originalRail;await disable();await enable(rail);}}),
+    destroy(){destroyed=true;void controller.disable().catch(error=>console.error("[Arc UI] Debug cleanup:",error));},
   };
   return controller;
 }

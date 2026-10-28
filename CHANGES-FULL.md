@@ -179,3 +179,5 @@
 - Add local command-bar actions alongside normal address-bar search results, with native mouse and keyboard activation.
 - Open the library's Archive and Downloads sections, toggle the sidebar, and invoke Zen's native split and unsplit commands.
 - Match command prefixes and aliases without treating unrelated phrases or URLs as commands; hide unavailable split actions.
+- Add command-bar Debug Mode and Reset Debug Data with local mock data across the main views, ownership-based cleanup and interrupted-session recovery.
+- Restore the original rail, media opt-in and library view when debug mode is reset or disabled.

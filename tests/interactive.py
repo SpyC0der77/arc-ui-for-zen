@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'artifacts/test-python'))
 from marionette_driver.marionette import Marionette,ActionSequence
-m=Marionette('localhost',port=2828,socket_timeout=20)
+m=Marionette('localhost',port=int(sys.argv[1]) if len(sys.argv)>1 else 2828,socket_timeout=20)
 m.start_session();m.set_context('chrome')
 checks=[]
 def state():return m.execute_script('return window.ZenArc.diagnostics()')
@@ -27,8 +27,8 @@ def dock():
 
 def hover_downloads(label):
  pointer().pointer_move(0,0,origin=m.find_element('id','arc-gift-button')).perform();time.sleep(.25)
- visible=m.execute_script("""const p=document.getElementById('arc-download-popup'),r=p.getBoundingClientRect(),native=document.getElementById('zen-library-download-list');return {custom:p.dataset.arcDownloadDesign==='skeleton'&&p.matches(':popover-open')&&p.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)),nativeHidden:!native||getComputedStyle(native).display==='none',x:r.x+r.width/2,y:r.bottom-16};""")
- check(state()['popup'] and visible['custom'] and visible['nativeHidden'],f'only skeleton popup paints on hover {label}')
+ visible=m.execute_script("""const p=document.getElementById('arc-download-popup'),r=p.getBoundingClientRect(),native=document.getElementById('zen-library-download-list');return {custom:p.dataset.arcDownloadDesign==='arc'&&p.matches(':popover-open')&&p.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)),nativeHidden:!native||getComputedStyle(native).display==='none',x:r.x+r.width/2,y:r.bottom-16};""")
+ check(state()['popup'] and visible['custom'] and visible['nativeHidden'],f'only Arc popup paints on hover {label}')
  move(visible['x'],visible['y']);time.sleep(.5)
  check(state()['popup'],f'popup remains open after pointer enters its content {label}')
  if state()['compact']:check(sidebar()['right']>200,f'popup hover keeps undocked sidebar visible {label}')
