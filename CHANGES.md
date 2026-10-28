@@ -3,10 +3,18 @@
 - Add a top control row with navigation, the application menu and a sidebar toggle.
 - Replace sidebar docking animations with coordinated sidebar movement and live page resizing.
 - Make the hidden sidebar peek over page content and prevent immediate reopening after hiding it.
+- Give the floating sidebar a shadow on all sides against the page inset, without a border.
+- Remove contrast filtering from folder SVGs and their wrappers so the compositor keeps custom icons intact after floating-sidebar closing animations.
+- Polish sidebar favorites, folder-label weight, iconless Space alignment, Search corners and the pinned-section divider.
 - Disable the sidebar rail's double-click width reset while keeping native drag resizing.
 - Restyle the floating address bar and keep a matching address label visible in the sidebar.
+- Add native command-bar results for Archive, Downloads, Split View, horizontal split, Unsplit and Toggle Sidebar.
+- Add command-bar Debug Mode with local mock data across the main views, reset, ownership-based cleanup and interrupted-session recovery.
 - Add a gift-shaped library button and correct the enabled Boosts toggle's thumb alignment.
 - Replace the downloads popup with an Arc-style hover menu backed by native downloads and file actions.
+- Use local Lucide icons for download actions and compact lavender styling for the native main menu.
+- Match Arc's white New menu with dedicated icons, grouped actions, a New Tab shortcut hint, and Zen's native Boost creation.
+- Show recent downloads directly on the sidebar, with rising rows, image previews and relative timestamps instead of a separate card.
 - Add a curved file-arrival animation, temporary target for a hidden sidebar, and arrival feedback.
 - Respect reduced motion and add keyboard-focus states and accessibility announcements.
 - Archive background tabs left idle for 12 hours into the library sidebar's Archive tab.

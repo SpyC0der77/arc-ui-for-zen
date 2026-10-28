@@ -1,0 +1,258 @@
+{
+  "purpose": "Development-only Arc visual references; never packaged with the app.",
+  "images": [
+    {
+      "file": "arc/sidebar/arc-folder-sidebar.png",
+      "originalArtifact": "artifacts/sidebar-review/arc-folder-sidebar.png",
+      "sourcePage": null,
+      "provenance": "source URL not recorded in earlier comparison",
+      "dimensions": [
+        666,
+        2997
+      ],
+      "sha256": "f46bb7313ff2bfcb81c1df0d61f9f17fbdf93dd4243d04932d6f79b5857f7354"
+    },
+    {
+      "file": "arc/sidebar/arc-light-sidebar.png",
+      "originalArtifact": "artifacts/sidebar-review/arc-light-sidebar.png",
+      "sourcePage": null,
+      "provenance": "source URL not recorded in earlier comparison",
+      "dimensions": [
+        238,
+        781
+      ],
+      "sha256": "1899b38d395320c3d15f007a388d072919620ed6f200c838b1c0f9569bbb4ddd"
+    },
+    {
+      "file": "arc/sidebar/arc-light.jpg",
+      "originalArtifact": "artifacts/sidebar-review/arc-light.jpg",
+      "sourcePage": null,
+      "provenance": "source URL not recorded in earlier comparison",
+      "dimensions": [
+        1500,
+        783
+      ],
+      "sha256": "03553d55f360fb9d50254952f4929214fe7092426200966eddfbc4e6dfae1431"
+    },
+    {
+      "file": "arc/sidebar/arc-pinned-sidebar.png",
+      "originalArtifact": "artifacts/sidebar-review/arc-pinned-sidebar.png",
+      "sourcePage": "https://allthings.how/how-do-pinned-tabs-work-in-arc-browser/",
+      "provenance": "recorded",
+      "dimensions": [
+        263,
+        484
+      ],
+      "sha256": "a642c717fd208abe66971ef3d47a5253377f4bbc20103a1671edf660c7ebaddc"
+    },
+    {
+      "file": "arc/sidebar/arc-sidebar.png",
+      "originalArtifact": "artifacts/sidebar-review/arc-sidebar.png",
+      "sourcePage": null,
+      "provenance": "source URL not recorded in earlier comparison",
+      "dimensions": [
+        834,
+        3088
+      ],
+      "sha256": "e01692e7333083cba5637d28d0275abc385a7c5bc9b4fd599e0a2e0c8f8ffd0d"
+    },
+    {
+      "file": "arc/sidebar/arc-tabs.png",
+      "originalArtifact": "artifacts/sidebar-review/arc-tabs.png",
+      "sourcePage": null,
+      "provenance": "source URL not recorded in earlier comparison",
+      "dimensions": [
+        725,
+        485
+      ],
+      "sha256": "f02916ad9a60a333e28552a913cd84eb17732139aba7bbad7cde201bb030ea31"
+    },
+    {
+      "file": "arc/parts/arc-command-actions-full.jpg",
+      "originalArtifact": "artifacts/arc-parts-review/arc-command-actions-full.jpg",
+      "sourcePage": "https://tidbits.com/2023/05/01/arc-will-change-the-way-you-work-on-the-web/",
+      "provenance": "recorded",
+      "dimensions": [
+        1558,
+        698
+      ],
+      "sha256": "2f2a4be1b226428e7b9592a0ca2be9d8039e8e236c38a2ff90dafa2ce76378cb"
+    },
+    {
+      "file": "arc/parts/arc-command-full.png",
+      "originalArtifact": "artifacts/arc-parts-review/arc-command-full.png",
+      "sourcePage": "https://www.appsntips.com/home/arc-browser-review-top-features/",
+      "provenance": "recorded",
+      "dimensions": [
+        1500,
+        792
+      ],
+      "sha256": "a73a0e755d10344c834b51267ab469b41ea90ff3baa9121bbd515ffcd3edd6a4"
+    },
+    {
+      "file": "arc/parts/arc-command.png",
+      "originalArtifact": "artifacts/arc-parts-review/arc-command.png",
+      "sourcePage": "https://tidbits.com/2023/05/01/arc-will-change-the-way-you-work-on-the-web/",
+      "provenance": "recorded",
+      "dimensions": [
+        1558,
+        698
+      ],
+      "sha256": "efe3fd4dd4cd2ea79a037ecee28d2c69437737ca3f182d83d7601783208289fa"
+    },
+    {
+      "file": "arc/parts/arc-download-full.png",
+      "originalArtifact": "artifacts/arc-parts-review/arc-download-full.png",
+      "sourcePage": "https://bylukekelly.com/6-month-review-arc-browser",
+      "provenance": "recorded",
+      "dimensions": [
+        227,
+        267
+      ],
+      "sha256": "864afbc9a5ebd15d774e0ae3578d8bdbeccad64ead43a1e2aa0e5f8558ac567f"
+    },
+    {
+      "file": "arc/parts/arc-site-full.png",
+      "originalArtifact": "artifacts/arc-parts-review/arc-site-full.png",
+      "sourcePage": "https://allthings.how/how-to-take-a-screenshot-in-arc-browser/",
+      "provenance": "recorded",
+      "dimensions": [
+        839,
+        472
+      ],
+      "sha256": "fc75a9af3f754d61cf1f90cdb9dc5214e0d4ad1584e4aa31c586bc8842924063"
+    },
+    {
+      "file": "arc/parts/arc-site.png",
+      "originalArtifact": "artifacts/arc-parts-review/arc-site.png",
+      "sourcePage": "https://allthings.how/how-to-take-a-screenshot-in-arc-browser/",
+      "provenance": "recorded",
+      "dimensions": [
+        250,
+        320
+      ],
+      "sha256": "a15a7d84c496c40fc526036f9c3c158b17023cc8119dce7c4ff7ea401aad7009"
+    },
+    {
+      "file": "arc/new-menu/arc-new-menu-cropped.png",
+      "originalArtifact": "artifacts/arc-new-menu-reference/arc-new-menu-cropped.png",
+      "sourcePage": "https://hulry.com/arc-max-ai-review/",
+      "provenance": "recorded",
+      "dimensions": [
+        285,
+        390
+      ],
+      "sha256": "44d1423da540659e86d3df41e56788b38bced2946f6af12f2693b3a78cb59e34"
+    },
+    {
+      "file": "arc/new-menu/arc-new-menu-hulry.png",
+      "originalArtifact": "artifacts/arc-new-menu-reference/arc-new-menu-hulry.png",
+      "sourcePage": "https://hulry.com/arc-max-ai-review/",
+      "provenance": "recorded",
+      "dimensions": [
+        1200,
+        670
+      ],
+      "sha256": "979c02e85c389e50cf2c33f31887712fdd29e8434cb9e050957a31d908f6c0b7"
+    },
+    {
+      "file": "arc/new-menu/arc-new-split-menu-cropped.png",
+      "originalArtifact": "artifacts/arc-new-menu-reference/arc-new-split-menu-cropped.png",
+      "sourcePage": "https://allthings.how/how-to-use-the-arc-browser/",
+      "provenance": "recorded",
+      "dimensions": [
+        212,
+        339
+      ],
+      "sha256": "965fa6f43d1a8ae32497996393549719cbfd7febd6abca0601ac76cca2728990"
+    },
+    {
+      "file": "arc/new-menu/arc-new-split-reference.png",
+      "originalArtifact": "artifacts/arc-new-menu-reference/arc-new-split-reference.png",
+      "sourcePage": "https://allthings.how/how-to-use-the-arc-browser/",
+      "provenance": "recorded",
+      "dimensions": [
+        954,
+        537
+      ],
+      "sha256": "633a0a0e4f0c17251a829325d66fdc1e6ff08c26cdfa83485e8adfea72a1421b"
+    },
+    {
+      "file": "arc/new-menu/boost-hulry-enlarged.png",
+      "originalArtifact": "artifacts/arc-new-menu-reference/boost-hulry-enlarged.png",
+      "sourcePage": "https://hulry.com/arc-max-ai-review/",
+      "provenance": "recorded",
+      "dimensions": [
+        296,
+        296
+      ],
+      "sha256": "a7c7934b94ee37a9403d641ff0360e5834f4e146d0853b97eed6014d27c19331"
+    },
+    {
+      "file": "arc/new-menu/boost-reference-enlarged.png",
+      "originalArtifact": "artifacts/arc-new-menu-reference/boost-reference-enlarged.png",
+      "sourcePage": "https://allthings.how/how-to-use-the-arc-browser/",
+      "provenance": "recorded",
+      "dimensions": [
+        290,
+        290
+      ],
+      "sha256": "86d1f09b7ebb21e463261fca58299867783fd8bcb4af31987cba03cf559f12e8"
+    },
+    {
+      "file": "arc/new-menu/split-reference-enlarged.png",
+      "originalArtifact": "artifacts/arc-new-menu-reference/split-reference-enlarged.png",
+      "sourcePage": "https://allthings.how/how-to-use-the-arc-browser/",
+      "provenance": "recorded",
+      "dimensions": [
+        290,
+        290
+      ],
+      "sha256": "f9b067ce5a039456611689ccd8b99b2872d447f5fa900de6726d91c52d5b940b"
+    },
+    {
+      "file": "arc/main-menu/arc-macos-app-menu.png",
+      "originalArtifact": "artifacts/arc-main-menu-reference/arc-macos-app-menu.png",
+      "sourcePage": "https://allthings.how/how-to-sync-your-arc-browser-between-mac-and-windows/",
+      "provenance": "recorded",
+      "dimensions": [
+        827,
+        465
+      ],
+      "sha256": "7e2abc6b2b1d3404505d4d06c44d2855a6cf74db07b7ed01c5cd2acac8e699f6"
+    },
+    {
+      "file": "arc/main-menu/arc-macos-menu-cropped.png",
+      "originalArtifact": "artifacts/arc-main-menu-reference/arc-macos-menu-cropped.png",
+      "sourcePage": "https://allthings.how/how-to-sync-your-arc-browser-between-mac-and-windows/",
+      "provenance": "recorded",
+      "dimensions": [
+        287,
+        372
+      ],
+      "sha256": "2a1b67e0268a15cd07fa35be130595a69fe1a175cd70e734965d0cf192a00bb5"
+    },
+    {
+      "file": "arc/main-menu/arc-windows-main-menu.png",
+      "originalArtifact": "artifacts/arc-main-menu-reference/arc-windows-main-menu.png",
+      "sourcePage": "https://allthings.how/how-to-sync-your-arc-browser-between-mac-and-windows/",
+      "provenance": "recorded",
+      "dimensions": [
+        1257,
+        707
+      ],
+      "sha256": "33b89e1b2b3d72516d589aa8b7fc1ce4518444604c33655366eaffb4c9f1f631"
+    },
+    {
+      "file": "arc/main-menu/arc-windows-menu-cropped.png",
+      "originalArtifact": "artifacts/arc-main-menu-reference/arc-windows-menu-cropped.png",
+      "sourcePage": "https://allthings.how/how-to-sync-your-arc-browser-between-mac-and-windows/",
+      "provenance": "recorded",
+      "dimensions": [
+        508,
+        655
+      ],
+      "sha256": "9c0fda808f68285d0beba5895d2158def5aba618bcd7117c050dcec4d842d29f"
+    }
+  ]
+}

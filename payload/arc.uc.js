@@ -11,6 +11,46 @@
   const uri = "chrome://arc-ui-runtime/content/arc.css";
   window.windowUtils.loadSheetUsingURIString(uri, window.windowUtils.USER_SHEET);
   root.setAttribute("data-arc-ui", "0.1.0");
+  const {actionIcon}=ChromeUtils.importESModule("chrome://arc-ui/content/download-icons.sys.mjs");
+  const createMenu=document.getElementById("zenCreateNewPopup");
+  if(createMenu) {
+    const items=[
+      ["cmd_zenOpenWorkspaceCreation","New Space","new-space"],
+      ["cmd_zenOpenFolderCreation","New Folder","new-folder"],
+      ["cmd_zenNewEmptySplit","New Split","new-split"],
+      ["cmd_newNavigatorTab","New Tab","new-tab"]
+    ];
+    for(const [command,label,image] of items) {
+      const item=createMenu.querySelector(`[command="${command}"]`);
+      if(!item)continue;
+      item.removeAttribute("data-l10n-id");item.setAttribute("label",label);
+      item.setAttribute("image",`chrome://arc-ui/content/menu-icons/${image}.svg`);
+      item.classList.add("menuitem-iconic");
+      if(command==="cmd_newNavigatorTab")item.setAttribute("key","key_newNavigatorTab");
+    }
+    const split=createMenu.querySelector('[command="cmd_zenNewEmptySplit"]');
+    const tab=createMenu.querySelector('[command="cmd_newNavigatorTab"]');
+    const boost=document.createXULElement("menuitem");
+    boost.id="arc-new-boost";boost.classList.add("menuitem-iconic");
+    boost.setAttribute("label","New Boost");
+    boost.setAttribute("image","chrome://arc-ui/content/menu-icons/new-boost.svg");
+    boost.addEventListener("command",()=>document.getElementById("zen-site-data-boost").doCommand());
+    if(split)createMenu.insertBefore(boost,split);
+    if(tab)createMenu.insertBefore(document.createXULElement("menuseparator"),tab);
+    createMenu.addEventListener("popupshowing",()=>{
+      const uri=gBrowser.currentURI;
+      boost.disabled=!(uri.schemeIs("https")||uri.schemeIs("http"));
+    });
+  }
+  // Native menu internals have their own stylesheet and override ::part rules.
+  // Keep native popup behavior, while theming that internal surface explicitly.
+  document.addEventListener("popupshowing",event=>{
+    const popup=event.target;
+    if(!["appMenu-popup","zenCreateNewPopup"].includes(popup.id)||!popup.shadowRoot||popup.shadowRoot.querySelector("[data-arc-menu-style]"))return;
+    const link=document.createElementNS(HTML,"link");
+    link.rel="stylesheet";link.href="chrome://arc-ui/content/menu-popup.css";
+    link.setAttribute("data-arc-menu-style","");popup.shadowRoot.append(link);
+  });
   // Keep Zen's native splitter and persisted width after the initial theme setup.
   if (!Services.prefs.getBoolPref("arc-ui.width-initialized", false)) {
     const toolbox = document.getElementById("navigator-toolbox");
@@ -47,7 +87,7 @@
     fileArchive: ['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z','M14 2v6h6','M9 3v2m0 2v2m0 2v2','M8 16h2v3H8z'],
     easels: ['M3 3h18v13H3z','m8 21 4-5 4 5'], spaces: ['M3 3h8v8H3z','M14 3h7v8h-7z','M3 14h8v7H3z','M14 14h7v7h-7z'],
     boosts: ['m14 3 7 7-10 10H4v-7z','m12 5 7 7'], archive: ['M3 3h18v4H3z','M5 7v14h14V7','M9 11h6'],
-    pause: ['M8 5v14','M16 5v14'], play: ['m7 4 14 8-14 8z'], folder: ['M3 7h7l2 2h9l-3 11H3z','M3 7V4h7l2 3']
+    pause: ['M8 5v14','M16 5v14'], play: ['m7 4 14 8-14 8z'], folder: ['M20 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5l2 2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2z']
   };
   function icon(name) {
     const svg = document.createElementNS(SVG, "svg");
@@ -67,6 +107,11 @@
   function button(label,name,action) {
     const b=el("button",{type:"button",title:label,"aria-label":label,class:"arc-icon-button"});b.append(icon(name));
     b.addEventListener("click",action);b.addEventListener("pointerdown",e=>{if(e.button===0)nudge(b,name);});return b;
+  }
+  function downloadButton(label,name,action) {
+    const b=el("button",{type:"button",title:label,"aria-label":label,class:"arc-icon-button"});
+    b.append(el("img",{src:actionIcon(name),alt:"","aria-hidden":"true"}));
+    b.addEventListener("click",action);return b;
   }
   function report(error) { console.error("[Arc UI]",error); status.textContent=error.message || String(error); }
   const toolbox=document.getElementById("navigator-toolbox");
@@ -186,14 +231,10 @@
   (document.getElementById("zen-sidebar-foot-buttons") || toolbox).prepend(gift);
   // Keep this in the sidebar's hover tree. The top layer lets it paint outside
   // Zen's sidebar clipping and stacking contexts without turning into a native panel.
-  const popup=el("section",{id:"arc-download-popup",class:"arc-ui",hidden:"true",popover:"manual","data-arc-download-design":"skeleton","aria-label":"Downloads",role:"region"});
+  const popup=el("section",{id:"arc-download-popup",class:"arc-ui",hidden:"true",popover:"manual","data-arc-download-design":"arc","aria-label":"Downloads",role:"region"});
   const popupContent=el("div",{class:"arc-download-content"});
-  const header=el("header",{class:"arc-download-header"});
-  const all=el("button",{type:"button",class:"arc-download-heading","aria-label":"Show all downloads"},"Downloads");
-  all.addEventListener("click",()=>{hideDownloads();library.activeTab="downloads";void setRail(true).catch(report);});
-  const count=el("span",{class:"arc-download-count"});header.append(all,count);
   const list=el("ul",{class:"arc-download-list"});
-  popupContent.append(header,list);popup.append(popupContent);toolbox.append(popup);
+  popupContent.append(list);popup.append(popupContent);toolbox.append(popup);
   // Keep native download bookkeeping, but route native panel requests to this UI.
   const originalShowDownloadsPanel=window.DownloadsPanel.showPanel;
   window.DownloadsPanel.showPanel=function(){openDownloads();return Promise.resolve();};
@@ -204,31 +245,50 @@
   document.addEventListener("popupshowing",interceptDownloadsPanel,true);
   const layer=el("div",{id:"arc-file-layer",class:"arc-ui","aria-hidden":"true"});document.body.append(layer);
   const status=el("div",{id:"arc-live-status",role:"status","aria-live":"polite","aria-atomic":"true"});document.body.append(status);
-  let closeTimer=0,arrivalTimer=0,restoringGiftFocus=false,flightsInProgress=0;
+  let closeTimer=0,arrivalTimer=0,restoringGiftFocus=false,flightsInProgress=0,popupClosing=false,popupMotion=0;
   const inside=()=>popup.matches(":hover")||gift.matches(":hover")||popup.contains(document.activeElement)||gift===document.activeElement;
   function placePopup() {
     const r=gift.getBoundingClientRect();
-    const left=r.right>0?r.left:12;
-    const width=Math.max(200,Math.min(264,toolbox.getBoundingClientRect().width-16,innerWidth-24));
+    const sidebar=toolbox.getBoundingClientRect();
+    const width=Math.min(Math.max(sidebar.width,200),264,innerWidth-16);
+    const left=r.right>0?Math.max(0,sidebar.left):8;
     popup.style.width=`${width}px`;
-    popup.style.left=`${Math.max(12,Math.min(innerWidth-width-12,left))}px`;
+    popup.style.left=`${Math.max(0,Math.min(innerWidth-width,left))}px`;
     popup.style.bottom=`${r.bottom>0?Math.max(12,innerHeight-r.top+6):52}px`;
   }
   function openDownloads() {
     if(flightsInProgress||NativeLibrary.isLibrarySlightlyOpen||root.hasAttribute("inDOMFullscreen"))return;
     clear(closeTimer);placePopup();
-    const wasHidden=popup.hidden;popup.hidden=false;gift.setAttribute("aria-expanded","true");
+    const wasHidden=popup.hidden||popupClosing;popupClosing=false;++popupMotion;
+    if(wasHidden)for(const detail of list.querySelectorAll("[data-download-time]"))detail.textContent=downloadAge({endTime:Number(detail.dataset.downloadTime)});
+    if(wasHidden)for(const node of [popup,...list.children])for(const motion of node.getAnimations())motion.cancel();
+    popup.hidden=false;gift.setAttribute("aria-expanded","true");
     if(!popup.matches(":popover-open"))popup.showPopover();
     if(wasHidden) {
-      void animate(popup,[{opacity:0,transform:"translateY(8px) scale(.35,.15)"},{opacity:1,transform:"none"}],{duration:220,easing:"cubic-bezier(.16,1,.3,1)"});
-      void animate(popupContent,[{opacity:0},{opacity:1}],{duration:140,delay:60,easing:"linear"});
+      void animate(popup,[{opacity:0},{opacity:1}],{duration:160,easing:"ease-out"});
+      const rows=[...list.children];
+      for(const [index,row] of rows.entries()) {
+        const rise=Math.max(8,Math.min(320,riseFromGift(row)));
+        void animate(row,[{opacity:0,transform:`translateY(${rise}px) scale(.92)`},{opacity:1,transform:"none"}],{duration:260,delay:Math.min(rows.length-1-index,5)*24,easing:"cubic-bezier(.16,1,.3,1)",fill:"backwards"});
+      }
     }
   }
-  function hideDownloads(){
-    if(popup.matches(":popover-open"))popup.hidePopover();
-    popup.hidden=true;gift.setAttribute("aria-expanded","false");clear(closeTimer);clear(arrivalTimer);
+  function riseFromGift(row){return gift.getBoundingClientRect().top-row.getBoundingClientRect().top;}
+  function hideDownloads(soft=false){
+    const motion=++popupMotion;
+    gift.setAttribute("aria-expanded","false");clear(closeTimer);clear(arrivalTimer);
+    const finish=()=>{
+      if(motion!==popupMotion)return;
+      if(popup.matches(":popover-open"))popup.hidePopover();
+      popup.hidden=true;popupClosing=false;
+    };
+    for(const node of [popup,...list.children])for(const animation of node.getAnimations())animation.cancel();
+    if(soft&&!popup.hidden&&!reduced()) {
+      popupClosing=true;
+      void animate(popup,[{opacity:1,transform:"none"},{opacity:0,transform:"translateY(8px)"}],{duration:140,easing:"ease-in"}).then(finish);
+    } else finish();
   }
-  function scheduleClose(){clear(closeTimer);closeTimer=later(()=>{if(!inside())hideDownloads();},160);}
+  function scheduleClose(){clear(closeTimer);closeTimer=later(()=>{if(!inside())hideDownloads(true);},160);}
   for(const node of [gift,popup]) {
     node.addEventListener("pointerenter",()=>{clear(closeTimer);if(!NativeLibrary.isLibrarySlightlyOpen)openDownloads();});
     node.addEventListener("pointerleave",scheduleClose);
@@ -241,6 +301,7 @@
   document.addEventListener("pointerdown",dismissDownloads,true);
   async function act(d,action) {
     try {
+      if(action==="open"||action==="show")hideDownloads();
       if(action==="open")await d.launch();
       else if(action==="show")await d.showContainingDirectory();
       else if(action==="pause")await d.cancel();
@@ -248,35 +309,62 @@
       else if(action==="cancel"){await d.cancel();await d.removePartialData();}
     } catch(error){report(error);}
   }
-  let records=[],ready=false,downloadList=null;
+  let records=[],ready=false,downloadList=null,debugDownloads=null;
+  const relativeTime=new Intl.RelativeTimeFormat(undefined,{numeric:"auto"});
+  function downloadAge(d) {
+    const time=new Date(d.endTime||d.startTime).getTime();
+    if(!Number.isFinite(time))return "Completed";
+    const seconds=Math.max(0,(Date.now()-time)/1000);
+    if(seconds<60)return "Just now";
+    for(const [unit,length] of [["year",31536000],["month",2592000],["day",86400],["hour",3600],["minute",60]]) {
+      if(seconds>=length)return relativeTime.format(-Math.floor(seconds/length),unit);
+    }
+  }
   function renderDownloads() {
-    count.textContent=String(records.length);count.hidden=!records.length;list.replaceChildren();
-    for(const d of [...records].reverse().slice(0,20)) {
+    list.replaceChildren();
+    for(const d of [...(debugDownloads??records)].reverse().slice(0,20)) {
       const row=el("li",{class:"arc-download-row"});
       const name=PathUtils.filename(d.target.path);
       const main=el("button",{type:"button",class:"arc-download-main","aria-label":d.succeeded?`Open ${name}`:name});
-      const fileIcon=el("span",{class:"arc-download-icon"});fileIcon.append(icon(/\.(png|jpe?g|gif|webp|svg|avif)$/i.test(name)?"media":/\.(zip|7z|rar|gz|tar)$/i.test(name)?"fileArchive":/\.(mp4|webm|mov|mkv)$/i.test(name)?"film":/\.(mp3|wav|ogg|flac|m4a)$/i.test(name)?"music":"file"));main.append(fileIcon);
+      const fileIcon=el("span",{class:"arc-download-icon","aria-hidden":"true"});
+      fileIcon.append(icon(/\.(png|jpe?g|gif|webp|svg|avif)$/i.test(name)?"media":/\.(zip|7z|rar|gz|tar)$/i.test(name)?"fileArchive":/\.(mp4|webm|mov|mkv)$/i.test(name)?"film":/\.(mp3|wav|ogg|flac|m4a)$/i.test(name)?"music":"file"));main.append(fileIcon);
+      const fileImage=el("img",{class:"arc-download-file-icon",alt:"",loading:"lazy",src:`moz-icon://${d.target.path}?size=32${d.succeeded?"&state=normal":""}`});
+      fileImage.addEventListener("load",()=>fileIcon.classList.add("has-file-icon"),{once:true});
+      fileImage.addEventListener("error",()=>{fileIcon.classList.remove("has-file-icon");fileImage.remove();},{once:true});
+      fileIcon.append(fileImage);
+      if(d.succeeded&&/\.(png|jpe?g|gif|webp|avif)$/i.test(name)) {
+        const preview=el("img",{class:"arc-download-preview",alt:"",loading:"lazy",decoding:"async",src:PathUtils.toFileURI(d.target.path)});
+        preview.addEventListener("load",()=>fileIcon.classList.add("has-preview"),{once:true});
+        preview.addEventListener("error",()=>{fileIcon.classList.remove("has-preview");preview.remove();},{once:true});
+        fileIcon.append(preview);
+      }
       main.disabled=!d.succeeded;main.addEventListener("click",()=>void act(d,"open"));
-      const label=el("span",{class:"arc-download-label"});label.append(el("span",{class:"arc-download-name"},name));
+      const label=el("span",{class:"arc-download-label"});label.append(el("span",{class:"arc-download-name",title:name},name));
       const size=bytes=>bytes>=1048576?`${(bytes/1048576).toFixed(1)} MB`:bytes>=1024?`${Math.round(bytes/1024)} KB`:`${bytes} B`;
-      const meta=d.succeeded?(d.target.size>0?size(d.target.size):"Completed"):d.error?"Failed":d.canceled?(d.hasPartialData?"Paused":"Cancelled"):d.hasProgress?`${size(d.currentBytes)} of ${size(d.totalBytes)}`:"Downloading";
-      label.append(el("span",{class:"arc-download-meta"},meta));
+      const meta=d.succeeded?downloadAge(d):d.error?"Failed":d.canceled?(d.hasPartialData?"Paused":"Cancelled"):d.hasProgress?`${size(d.currentBytes)} of ${size(d.totalBytes)}`:"Downloading";
+      const detail=el("span",{class:"arc-download-meta"},meta);
+      if(d.succeeded) {
+        const time=new Date(d.endTime||d.startTime).getTime();
+        if(Number.isFinite(time))detail.dataset.downloadTime=String(time);
+        if(d.target.size>0)detail.title=size(d.target.size);
+      }
+      label.append(detail);
       if(!d.stopped&&d.hasProgress)label.append(el("progress",{max:100,value:d.progress,"aria-label":`Download progress for ${name}`}));
       main.append(label);row.append(main);
-      if(d.succeeded)row.append(button(`Show ${name} in folder`,"folder",()=>void act(d,"show")));
+      if(d.succeeded)row.append(downloadButton(`Show ${name} in folder`,"folder-open",()=>void act(d,"show")));
       else if(!d.stopped||d.hasPartialData) {
-        row.append(button(`${d.stopped?"Resume":"Pause"} ${name}`,d.stopped?"play":"pause",()=>void act(d,d.stopped?"resume":"pause")));
-        row.append(button(`Cancel ${name}`,"close",()=>void act(d,"cancel")));
+        row.append(downloadButton(`${d.stopped?"Resume":"Pause"} ${name}`,d.stopped?"play":"pause",()=>void act(d,d.stopped?"resume":"pause")));
+        row.append(downloadButton(`Cancel ${name}`,"x",()=>void act(d,"cancel")));
       }
       list.append(row);
     }
-    if(!records.length) {
+    if(!(debugDownloads??records).length) {
       const empty=el("li",{class:"arc-download-empty"});
       empty.textContent="No downloads yet";list.append(empty);
     }
   }
   const downloadView={
-    onDownloadAdded(d){records.push(d);renderDownloads();if(ready&&Services.wm.getMostRecentWindow("navigator:browser")===window)void flight(window.gZenUIManager?._lastClickPosition);},
+    onDownloadAdded(d){records.push(d);renderDownloads();if(debugDownloads===null&&ready&&Services.wm.getMostRecentWindow("navigator:browser")===window)void flight(window.gZenUIManager?._lastClickPosition);},
     onDownloadChanged(){renderDownloads();},
     onDownloadRemoved(d){records=records.filter(x=>x!==d);renderDownloads();}
   };
@@ -447,7 +535,7 @@
   window.addEventListener("keydown",key,true);
   const onResize=()=>{if(!popup.hidden)placePopup();};window.addEventListener("resize",onResize);
   let archiveAPI=null,stopArchive=()=>{};
-  window.ZenArc={version:"0.1.0",previewDownload:position=>flight(position),toggleDock,setRail,openDownloads,hideDownloads,diagnostics:()=>({version:"0.1.0",browser:Services.appinfo.version,compact:cm.preference,sidebarHoverBlocked:!!sidebarRearmBounds,downloads:records.length,private:PrivateBrowsingUtils.isWindowPrivate(window),rail:NativeLibrary.isLibrarySlightlyOpen,popup:!popup.hidden,archiveHours:archiveAPI?archiveAPI.hours(Services.prefs):null})};
+  window.ZenArc={version:"0.1.0",previewDownload:position=>flight(position),toggleDock,setRail,openDownloads,hideDownloads,diagnostics:()=>({version:"0.1.0",browser:Services.appinfo.version,compact:cm.preference,sidebarHoverBlocked:!!sidebarRearmBounds,downloads:(debugDownloads??records).length,realDownloads:records.length,debug:!!window.ZenArc.debug?.enabled,private:PrivateBrowsingUtils.isWindowPrivate(window),rail:NativeLibrary.isLibrarySlightlyOpen,popup:!popup.hidden,archiveHours:archiveAPI?archiveAPI.hours(Services.prefs):null})};
   updateNav();renderDownloads();
   function archiveTabInfo(tab) {
     return {tab,closed:tab.closed,pinned:tab.pinned,essential:tab.hasAttribute("zen-essential"),
@@ -497,6 +585,18 @@
     const tab=window.TabContextMenu.contextTab;
     return tab?.multiselected?[...gBrowser.selectedTabs]:[tab];
   }});
+  let stopCommands=()=>{};
+  try {
+    const debug=ChromeUtils.importESModule("chrome://arc-ui/content/debug.sys.mjs");
+    const {html}=ChromeUtils.importESModule("chrome://global/content/vendor/lit.all.mjs",{global:"current"});
+    window.ZenArc.debug=debug.install(window,{html,isPrivate:PrivateBrowsingUtils.isWindowPrivate(window),
+      setDownloads:items=>{if(debugDownloads!==items)hideDownloads();debugDownloads=items;renderDownloads();},
+      announce:message=>{status.textContent=message;}});
+  } catch(error){console.error("[Arc UI] Debug mode unavailable",error);}
+  try {
+    const commands=ChromeUtils.importESModule("chrome://arc-ui/content/commands.sys.mjs");
+    stopCommands=commands.install(window);
+  } catch(error){console.error("[Arc UI] Command bar actions unavailable",error);}
   let stopGithubSetup=()=>{};
   if (!PrivateBrowsingUtils.isWindowPrivate(window)) {
     try {
@@ -514,7 +614,7 @@
     later(()=>window.openTrustedLinkIn("chrome://arc-ui/content/home.xhtml","tab"),500);
   }
   window.addEventListener("unload",()=>{
-    stopArchive();stopGithubSetup();stopNativeActions();
+    stopArchive();stopGithubSetup();stopNativeActions();stopCommands();window.ZenArc.debug?.destroy();
     window.removeEventListener("dblclick",preventSidebarWidthReset,true);
     if(NativeLibrary.animateProgress===animateLibrary)NativeLibrary.animateProgress=originalLibraryAnimate;
     libraryObserver.disconnect();window.DownloadsPanel.showPanel=originalShowDownloadsPanel;

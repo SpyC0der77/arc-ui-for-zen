@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@electron/asar':
+        specifier: 3.4.1
+        version: 3.4.1
       electron:
         specifier: 45.0.0
         version: 45.0.0

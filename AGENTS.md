@@ -1,5 +1,9 @@
 # Repository instructions
 
+## UI change screenshots
+
+Whenever you make a UI improvement or change, show before and after screenshots in the chat. Capture the affected UI before editing and again after applying the change, using the same view and interaction state so the comparison is clear. Embed both screenshots in the final response.
+
 ## Zen theme updates
 
 After every change to this project, update the installed Zen theme before handing off:
