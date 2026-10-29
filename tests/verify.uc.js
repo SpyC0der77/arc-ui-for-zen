@@ -6,6 +6,7 @@
     await wait(2500);
     check(!!window.ZenArc,'startup loader and patch');
     if(!window.ZenArc)throw new Error('ZenArc did not initialize');
+    check(!matchMedia('(prefers-reduced-motion: reduce)').matches,'runtime baseline explicitly enables motion');
     const nativeLibrary=document.querySelector('zen-library');
     const {ProvidersManager}=ChromeUtils.importESModule('moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs');
     const commandProvider=ProvidersManager.getInstanceForSap('urlbar').getProvider('ArcCommandProvider');

@@ -81,6 +81,9 @@ async function verify(source, {pointer = false, timeoutMs = 120000} = {}) {
     await fs.writeFile(path.join(profile, 'prefs.js'), '// isolated verification profile\n');
     const user = ['user_pref("zen.welcome-screen.seen", true);', 'user_pref("browser.shell.checkDefaultBrowser", false);',
       'user_pref("browser.startup.homepage_override.mstone", "ignore");', 'user_pref("arc-ui.demo-seen", true);',
+      // Windows Server runners report reduced motion by default. Establish
+      // normal motion here; verify.uc.js separately tests reduced motion.
+      'user_pref("ui.prefersReducedMotion", 0);',
       `user_pref("arc-ui.test.pointer", ${pointer});`, ''].join('\n');
     await fs.writeFile(path.join(profile, 'user.js'), user);
     const target = await engine.validate(sourceApp, profile, {checkClosed: async () => {}});
