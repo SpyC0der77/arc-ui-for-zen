@@ -6,6 +6,14 @@ An Arc-style interface for Zen **1.23.4b**, with a lavender sidebar, centered ad
 
 Open the installer, select your Zen application and profile, close Zen, then click **Install**. Use **Open Zen** afterward. On first launch after Zen onboarding, a local preview page opens. Its Download button plays the file animation without downloading anything.
 
+## Publishing a release
+
+Set the same installer version in `package.json` and `installer/engine.cjs`, commit the changes, then push a matching tag such as `v0.1.0`. The **Create release** workflow tests and builds Windows, macOS and Linux installers before publishing a GitHub release with all four distribution files, SHA-256 checksums, supported Zen versions, installation notes and GitHub-generated changes since the previous release. Tags with a prerelease suffix, such as `v0.2.0-beta.1`, produce prereleases.
+
+To retry a failed run, rerun it in Actions, or run **Create release** manually with the existing version tag selected. Branch runs and version mismatches fail before building. An existing published release is never overwritten. No signing credentials are configured; these builds remain unsigned.
+
+## Installation details
+
 **Open Zen** passes `-purgecaches` so updated browser UI scripts and styles are reloaded after installation. Reopening through a normal shortcut immediately after an update can leave the previous UI cached. This clears startup code caches, not history, cookies or saved tabs.
 
 The Windows executable is built into `release/Arc-UI-Zen-0.1.0-Windows.exe`. The Electron app also has macOS DMG/ZIP and Linux AppImage build targets. Build those on their respective operating systems with the included CI workflow. macOS and Linux installation paths are covered by automated filesystem tests; their browser runtime and distribution signing have not been validated here.

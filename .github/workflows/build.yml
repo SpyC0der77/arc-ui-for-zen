@@ -2,6 +2,7 @@ name: Build Arc UI for Zen installer
 on:
   pull_request:
   workflow_dispatch:
+  workflow_call:
 permissions:
   contents: read
 concurrency:
@@ -32,7 +33,7 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
-      - run: pnpm dist:${{ matrix.target }}
+      - run: pnpm dist:${{ matrix.target }} --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - run: pnpm verify:package
@@ -42,6 +43,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: arc-ui-zen-${{ matrix.target }}
+          if-no-files-found: error
           path: |
             release/*.exe
             release/*.dmg
