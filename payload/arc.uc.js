@@ -1,4 +1,4 @@
-/* Arc UI for Zen 1.23.4b. Startup wiring only; UI changes live in content/features/. */
+/* Arc UI for supported Zen releases. Startup wiring only; UI changes live in content/features/. */
 (() => {
   "use strict";
   if (window.ZenArc || !window.gBrowser) return;

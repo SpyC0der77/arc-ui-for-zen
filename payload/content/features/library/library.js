@@ -5,6 +5,8 @@ var ArcLibrary = {
     const { icon, nudge, hideDownloads, report } = dependencies;
     const toolbox = document.getElementById("navigator-toolbox");
     const library = document.querySelector("zen-library");
+    if (typeof library?.constructor.animateProgress !== "function")
+      return this.installLegacy(window, dependencies);
     const footerButtons = new Set();
     const donateImages = new Map();
     function syncLibraryFooter() {
@@ -106,5 +108,63 @@ var ArcLibrary = {
         donateImages.clear();
       },
     };
+  },
+  installLegacy(window, { icon, nudge, hideDownloads, report }) {
+    const { document } = window;
+    const gift = document.createXULElement("toolbarbutton");
+    gift.id = "arc-gift-button";
+    gift.className = "toolbarbutton-1 zen-sidebar-action-button arc-icon-button arc-ui";
+    gift.setAttribute("aria-label", "Library (hover for downloads)");
+    gift.setAttribute("aria-haspopup", "menu");
+    gift.setAttribute("aria-expanded", "false");
+    gift.setAttribute("aria-pressed", "false");
+    gift.append(icon("gift"));
+    const popup = document.createXULElement("menupopup");
+    popup.id = "arc-legacy-library";
+    function addItem(label, action) {
+      const item = document.createXULElement("menuitem");
+      item.setAttribute("label", label);
+      item.addEventListener("command", action);
+      popup.append(item);
+    }
+    function populate() {
+      popup.replaceChildren();
+      addItem("Downloads", () => window.BrowserCommands.downloadsUI());
+      addItem("Bookmarks", () => window.PlacesCommandHook.showPlacesOrganizer("AllBookmarks"));
+      addItem("History", () => window.PlacesCommandHook.showPlacesOrganizer("History"));
+      popup.append(document.createXULElement("menuseparator"));
+      const label = document.createXULElement("menuitem");
+      label.setAttribute("label", "Recently closed tabs");
+      label.setAttribute("disabled", "true");
+      popup.append(label);
+      try {
+        const { RecentlyClosedTabsAndWindowsMenuUtils } = window.ChromeUtils.importESModule(
+          "moz-src:///browser/components/sessionstore/RecentlyClosedTabsAndWindowsMenuUtils.sys.mjs",
+        );
+        const entries = RecentlyClosedTabsAndWindowsMenuUtils.getTabsFragment(window, "menuitem");
+        if (entries.childNodes.length) popup.append(entries);
+        else label.setAttribute("label", "No recently closed tabs");
+      } catch (error) { report(error); }
+    }
+    const isOpen = () => popup.state === "open" || popup.state === "showing";
+    async function setRail(open) {
+      if (open) {
+        hideDownloads();
+        if (!isOpen()) { populate(); popup.openPopup(gift, "before_start", 0, 0); }
+      } else popup.hidePopup();
+    }
+    popup.addEventListener("popupshown", () => {
+      gift.setAttribute("aria-expanded", "true");
+      gift.setAttribute("aria-pressed", "true");
+    });
+    popup.addEventListener("popuphidden", () => {
+      gift.setAttribute("aria-expanded", "false");
+      gift.setAttribute("aria-pressed", "false");
+    });
+    gift.addEventListener("command", () => { void setRail(!isOpen()).catch(report); });
+    gift.addEventListener("pointerdown", event => { if (event.button === 0) nudge(gift, "gift"); });
+    document.getElementById("mainPopupSet").append(popup);
+    (document.getElementById("zen-sidebar-foot-buttons") || document.getElementById("navigator-toolbox")).prepend(gift);
+    return { gift, setRail, isOpen, destroy() { popup.hidePopup(); popup.remove(); gift.remove(); } };
   },
 };

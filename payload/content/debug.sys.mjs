@@ -56,7 +56,7 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
   const {document}=win;
   const library=document.querySelector("zen-library");
   const {SessionStore}=ChromeUtils.importESModule("moz-src:///browser/components/sessionstore/SessionStore.sys.mjs");
-  const available=!isPrivate&&win.gZenWorkspaces.workspaceEnabled;
+  const available=!!library&&!isPrivate&&win.gZenWorkspaces.workspaceEnabled;
   let enabled=false,destroyed=false,queue=Promise.resolve(),observer=null,data=null,downloads=[],files=[],tabs=[],originalTab=null,originalLibraryTab=null,originalRail=false,originalHistoryPref=null;
   const patches=new Map(),viewStates=new Map(),optInStates=new Map();
   const enqueue=fn=>(queue=queue.catch(()=>{}).then(fn));

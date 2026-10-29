@@ -50,6 +50,14 @@ async function run(action,win) {
   if(action.id==="debug-disable"){await win.ZenArc.debug.disable();return;}
   if(action.id==="debug-reset"){await win.ZenArc.debug.reset();return;}
   const library=win.document.querySelector("zen-library");
+  if(!library){
+    if(action.id==="downloads"){
+      win.ZenArc.hideDownloads();
+      await win.ZenArc.setRail(false);
+      win.BrowserCommands.downloadsUI();
+    }else await win.ZenArc.setRail(true);
+    return;
+  }
   if(action.id==="downloads")library.activeTab="downloads";
   else {
     win.Services.prefs.setBoolPref("zen.library.history.closed-tabs",true);

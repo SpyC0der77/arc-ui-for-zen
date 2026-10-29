@@ -2,4 +2,5 @@
 artifacts/
 release/
 node_modules/
+__pycache__/
 dev/references/arc/

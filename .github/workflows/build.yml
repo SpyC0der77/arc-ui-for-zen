@@ -1,5 +1,7 @@
 name: Build Arc UI for Zen installer
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
   workflow_call:
@@ -9,6 +11,56 @@ concurrency:
   group: installer-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  runtime-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.versions.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: versions
+        run: echo "matrix=$(node scripts/fetch-zen-runtime.cjs --matrix)" >> "$GITHUB_OUTPUT"
+  runtime:
+    needs: runtime-matrix
+    runs-on: windows-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.runtime-matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install native pointer test driver
+        run: python -m pip install --target artifacts/test-python -r tests/runtime-requirements.txt
+      - name: Fetch pinned Zen runtime
+        run: pnpm fetch:zen -- ${{ matrix.version }}
+      - name: Verify isolated Zen runtime
+        run: pnpm test:runtime -- "artifacts/zen-builds/${{ matrix.version }}/core" --pointer
+      - name: Upload runtime diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zen-runtime-${{ matrix.version }}-diagnostics
+          if-no-files-found: ignore
+          # Only explicit diagnostic outputs, never application copies or profiles.
+          path: |
+            artifacts/runtime-*/results.json
+            artifacts/runtime-*/diagnostics/*.json
+            artifacts/runtime-*/diagnostics/*.log
+            artifacts/runtime-*/diagnostics/*.png
   build:
     strategy:
       fail-fast: false

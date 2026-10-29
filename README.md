@@ -1,6 +1,8 @@
 # Arc UI for Zen
 
-An Arc-style interface for Zen **1.23.4b**, with a lavender sidebar, centered address bar, library, auto-archive and animated downloads. It brings Arc's visual design to Zen's native tabs and browser features through local CSS and JavaScript patches, installed with an Electron app. It does not replace the browser engine or fork Zen.
+An Arc-style interface for Zen **1.22.3b, 1.23.3b, 1.23.4b and 1.24b**, with a lavender sidebar, centered address bar, library, auto-archive and animated downloads. It brings Arc's visual design to Zen's native tabs and browser features through local CSS and JavaScript patches, installed with an Electron app. It does not replace the browser engine or fork Zen.
+
+On 1.22.3b, which predates Zen's native library, the gift button opens a native menu with Downloads, Bookmarks, History and restorable recently closed tabs. Downloads uses the browser's native downloads view, including its private-window behavior. Auto-archive and Debug Mode require the newer native library and are unavailable on 1.22.3b. Idle tabs stay open on that version, and sidebar transitions use the older browser's native behavior. Other versions retain the existing library interface. These versions have Windows runtime coverage; macOS/Linux runtime validation remains pending.
 
 ## Install
 
@@ -130,7 +132,21 @@ pnpm dist:linux
 
 Historical Arc screenshots and their source notes live in [`dev/references/`](dev/references/README.md). They are excluded from installer packages. Pull requests run unit tests and build installers on Windows, macOS, and Linux; `pnpm verify:package` checks the resulting ASAR files for complete runtime contents and excluded development files. Pass an output directory to verify a separate build, for example `pnpm verify:package artifacts/pr-build`.
 
-`node tests/runtime.cjs <unpatched Zen application folder>` requires a Zen application folder without an installed Arc UI theme or another AutoConfig loader. It makes an isolated application copy and profile, installs the patch there, runs native browser checks, captures browser chrome, and verifies removal. It does not modify the real installation or profile. Its temporary copies and screenshots stay under the ignored `artifacts` directory.
+`pnpm test:runtime -- <unpatched Zen application folder>` requires a Zen application folder without an installed Arc UI theme or another AutoConfig loader. It makes an isolated application copy and fresh profile, uses the production version gates, disables updates only in that copy, runs native browser checks, captures browser chrome on success or failure, and verifies removal. A browser-side watchdog requests graceful shutdown on timeout. It never force-kills Zen or changes the source application or your personal profile. Temporary copies remain under ignored `artifacts/runtime-*`; each run prints its `diagnostics` directory.
+
+On Windows, fetch an exact supported build and run the same checks as CI:
+
+```sh
+pnpm fetch:zen -- 1.22.3b
+python -m pip install --target artifacts/test-python -r tests/runtime-requirements.txt
+pnpm test:runtime -- artifacts/zen-builds/1.22.3b/core --pointer
+```
+
+`fetch:zen` needs `7z` on PATH. It downloads the official Windows x64 installer, verifies its pinned SHA-256 from `scripts/zen-runtime-builds.json`, and extracts it without executing the installer. It refuses to overwrite an existing extracted build. A verified downloaded installer can be reused if extraction needs retrying into an absent destination.
+
+`--pointer` adds native Marionette hover/click checks on a dynamically allocated loopback port, including the 1.22.3b menu and actual closed-tab restoration. It requires Python and the optional driver above. Remote system access is enabled only on the disposable child process. Without this flag, no driver is enabled or required.
+
+Pull requests and releases run a Windows runtime matrix for every pinned supported version, alongside the existing installer builds. The manifest must match the installer's exact allowlist; adding support requires adding a pinned download and checksum. Release publication waits for the complete reusable build workflow, including every runtime job. CI uploads only allowlisted test JSON, logs and screenshots, including on failure, rather than full browser profiles or application copies. macOS/Linux runtime coverage is still pending.
 
 `tests/installer-smoke.cjs` runs with Electron and tests the actual install/remove UI and renderer isolation against temporary fixture folders. `tests/onboarding-motion.cjs` runs with Electron and checks page geometry throughout navigation, the final position, reversal during motion, and reduced-motion behavior. `pnpm test` covers all platform layouts, conflicts, version checks, preservation and receipt validation.
 

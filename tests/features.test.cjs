@@ -26,6 +26,15 @@ function clock() {
     },
   };
 }
+test("legacy browsers keep idle tabs open when native Archive storage is absent", () => {
+  let started = false;
+  const feature = load("features/archive/auto-archive.js", "ArcAutoArchive").install({
+    document: {querySelector: () => null},
+  }, {createMotion() { started = true; throw Error("must not start timers"); }});
+  assert.equal(feature.hours(), null);
+  assert.equal(started, false);
+  feature.destroy();
+});
 test("one feature can stop without cancelling another feature in the same window", () => {
   const window = clock();
   const motion = load("shared/motion.js", "ArcMotion");

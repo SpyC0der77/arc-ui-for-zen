@@ -26,6 +26,16 @@ for(const platform of ['win32','darwin','linux'])test('install/remove preserves 
  assert.deepEqual(await fs.readFile(user),original);assert.equal(await fs.readFile(path.join(f.profile,'prefs.js'),'utf8'),'user_pref("unrelated", "keep me");\nuser_pref("zen.urlbar.replace-newtab", false);\n');
  await assert.rejects(fs.access(path.join(f.resources,'arc-ui.cfg')));
 });
+for(const version of engine.SUPPORTED_VERSIONS)test('installs and removes supported Zen '+version,async t=>{
+ const f=await fixture(t);await fs.writeFile(path.join(f.resources,'application.ini'),`[App]\nVersion=${version}\n`);
+ await engine.install(f.app,f.profile,f.options);await engine.remove(f.app,f.profile,f.options);
+ await assert.rejects(fs.access(engine.receiptFile(f.profile)));
+});
+test('loader and installer enforce the same exact versions',async()=>{
+ const cfg=await fs.readFile(path.join(__dirname,'../payload/arc-ui.cfg'),'utf8');
+ const versions=JSON.parse(cfg.match(/if \(!(?<versions>\[[^\]]+\])\.includes\(Services\.appinfo\.version\)\)/).groups.versions);
+ assert.deepEqual(versions,engine.SUPPORTED_VERSIONS);
+});
 test('rejects unsupported versions before modifying',async t=>{const f=await fixture(t);await fs.writeFile(path.join(f.resources,'application.ini'),'[App]\nVersion=99\n');await assert.rejects(engine.install(f.app,f.profile,f.options),/supports Zen/);await assert.rejects(fs.access(engine.receiptFile(f.profile)));});
 test('refuses existing startup loaders',async t=>{const f=await fixture(t);const dir=path.join(f.resources,'defaults','pref');await fs.mkdir(dir,{recursive:true});await fs.writeFile(path.join(dir,'other.js'),'pref("general.config.filename", "other.cfg");');await assert.rejects(engine.install(f.app,f.profile,f.options),/Another AutoConfig/);await assert.rejects(fs.access(engine.receiptFile(f.profile)));});
 test('refuses running Zen without killing it',async t=>{const f=await fixture(t);await assert.rejects(engine.install(f.app,f.profile,{checkClosed:async()=>{throw new Error('running');}}),/running/);await assert.rejects(fs.access(engine.receiptFile(f.profile)));});

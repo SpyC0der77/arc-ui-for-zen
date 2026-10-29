@@ -3,6 +3,10 @@ var ArcAutoArchive = {
   install(window, dependencies = {}) {
     const { document, gBrowser } = window;
     const { Services, PrivateBrowsingUtils, createMotion } = dependencies;
+    // Older Zen has no persistent Archive. Do not close idle tabs into its
+    // bounded undo history and imply they have the newer Archive's retention.
+    if (!document.querySelector("zen-library"))
+      return { hours: () => null, destroy() {} };
     const motion = createMotion(window);
     const { later, clear, animate } = motion;
     let archiveAPI = null,

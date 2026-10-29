@@ -6,7 +6,8 @@ const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const run = promisify(execFile);
 const VERSION = '0.1.0';
-const SUPPORTED = '1.23.4b';
+const SUPPORTED_VERSIONS = Object.freeze(['1.22.3b', '1.23.3b', '1.23.4b', '1.24b']);
+const SUPPORTED = SUPPORTED_VERSIONS.join(', ');
 const BEGIN = '// BEGIN Arc UI for Zen';
 const END = '// END Arc UI for Zen';
 const utf8 = bytes => new TextDecoder('utf-8', { fatal: true }).decode(bytes);
@@ -63,7 +64,7 @@ async function validate(installation,profile,{platform=process.platform,checkClo
   for(const file of [path.join(target.resources,'application.ini'),path.join(target.resources,'browser','application.ini')])if(await exists(file)){ini=parseIni(await fs.readFile(file,'utf8'));break;}
   const version=ini?.App?.Version;
   if(!version)throw new Error('Could not read the Zen version from application.ini.');
-  if(requireVersion&&version!==SUPPORTED)throw new Error(`This patch supports Zen ${SUPPORTED}; found ${version}. No files were changed.`);
+  if(requireVersion&&!SUPPORTED_VERSIONS.includes(version))throw new Error(`This patch supports Zen ${SUPPORTED}; found ${version}. No files were changed.`);
   await checkClosed(target.exe,platform);
   return {...target,profile:selected,version};
 }
@@ -193,4 +194,4 @@ async function discover(options={}) {
   }
   return {platform,version:VERSION,supportedZen:SUPPORTED,apps,profiles};
 }
-module.exports={VERSION,SUPPORTED,BEGIN,END,parseIni,layout,candidates,discover,install,remove,validate,receiptFile,digest};
+module.exports={VERSION,SUPPORTED,SUPPORTED_VERSIONS,BEGIN,END,parseIni,layout,candidates,discover,install,remove,validate,receiptFile,digest};

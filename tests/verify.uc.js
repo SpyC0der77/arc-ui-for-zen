@@ -6,6 +6,7 @@
     await wait(2500);
     check(!!window.ZenArc,'startup loader and patch');
     if(!window.ZenArc)throw new Error('ZenArc did not initialize');
+    const nativeLibrary=document.querySelector('zen-library');
     const {ProvidersManager}=ChromeUtils.importESModule('moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs');
     const commandProvider=ProvidersManager.getInstanceForSap('urlbar').getProvider('ArcCommandProvider');
     check(!!commandProvider,'native command provider registered');
@@ -97,8 +98,9 @@
       liveFolders.onLiveFolderFetch(prFolder,[]);await wait(500);
       check(!nativeFolder.tabs.some(t=>t.hasAttribute('zen-live-folder-item-id')),'GitHub entry disappears when it no longer matches');
     }
-    check(ZenArc.diagnostics().archiveHours===12,'auto-archive loaded with a 12 hour idle window');
-    check(Services.prefs.getBoolPref('zen.library.history.closed-tabs',false),'library Archive view enabled');
+    check(ZenArc.diagnostics().archiveHours===(nativeLibrary?12:null),'auto-archive requires native Archive storage');
+    if(nativeLibrary)check(Services.prefs.getBoolPref('zen.library.history.closed-tabs',false),'library Archive view enabled');
+    else check(!Services.prefs.prefHasUserValue('arc-ui.archive-initialized'),'legacy startup does not initialize native Archive');
     const toggleRect=document.getElementById('arc-sidebar-toggle').getBoundingClientRect();
     const controlsRect=document.getElementById('arc-top-controls').getBoundingClientRect();
     check(Math.abs(toggleRect.left-controlsRect.left-2)<1&&toggleRect.width===32,'sidebar toggle moves left with full hit area');
@@ -110,7 +112,7 @@
     if(savedSide===null)document.documentElement.removeAttribute('zen-right-side');else document.documentElement.setAttribute('zen-right-side',savedSide);
     check(Math.abs(document.getElementById('arc-navigation-controls').getBoundingClientRect().left-navBefore.left)<1,'toggle side changes preserve navigation position');
     check(document.querySelectorAll('#arc-sidebar-toggle').length===1&&['zen-toggle-compact-mode','zen-expand-sidebar-button'].every(id=>!document.getElementById(id)||getComputedStyle(document.getElementById(id)).display==='none'),'one visible sidebar toggle');
-    check(typeof document.querySelector('zen-library').constructor.animateProgress==='function','native functional library available');
+    check(nativeLibrary?typeof nativeLibrary.constructor.animateProgress==='function':!!document.getElementById('arc-legacy-library'),'functional library or native fallback menu available');
     check(['zen-library-button','library-button','downloads-button'].every(id=>!document.getElementById(id)||getComputedStyle(document.getElementById(id)).display==='none'),'duplicate native library and downloads buttons hidden');
     check(getComputedStyle(document.getElementById('navigator-toolbox')).backgroundColor==='rgb(206, 199, 212)','lavender palette');
     const frameNodes=['zen-browser-background','zen-toolbar-background','zen-appcontent-wrapper','zen-tabbox-wrapper'];
@@ -124,23 +126,29 @@
     gift.dispatchEvent(new PointerEvent('pointerenter'));await wait(100);
     check(ZenArc.diagnostics().popup,'gift hover opens download menu');
     const nativeDownloadList=document.getElementById('zen-library-download-list');
-    check(!!nativeDownloadList&&getComputedStyle(nativeDownloadList).display==='none','native Zen hover download list is hidden by ID');
+    check(!nativeDownloadList||getComputedStyle(nativeDownloadList).display==='none','native Zen hover download list is absent or hidden');
     check(getComputedStyle(document.getElementById('arc-download-popup')).display!=='none','custom download popup is visible on library hover');
     check(document.getElementById('arc-download-popup').matches(':popover-open'),'custom menu paints in the top layer');
     check(document.querySelector('.arc-download-empty')&&!document.querySelector('.arc-download-footer'),'empty menu uses the custom layout instead of the old footer');
     const giftBounds=gift.getBoundingClientRect(),giftX=giftBounds.x+giftBounds.width/2,giftY=giftBounds.y+giftBounds.height/2;
     check(gift.contains(document.elementFromPoint(giftX,giftY)),'gift is the actual mouse hit target');
     gift.doCommand();
-    check(document.querySelector('zen-library').style.transform==='translateX(-100%)','library is positioned offscreen before its first visible frame');
+    if(nativeLibrary)check(nativeLibrary.style.transform==='translateX(-100%)','library is positioned offscreen before its first visible frame');
     await wait(1000);
     check(ZenArc.diagnostics().rail&&!ZenArc.diagnostics().popup,'gift click opens native library and hides hover menu');
     gift.doCommand();await wait(1000);check(!ZenArc.diagnostics().rail,'gift click closes native library');
     await DownloadsPanel.showPanel();check(ZenArc.diagnostics().popup,'native download panel requests use Arc download menu');ZenArc.hideDownloads();
     const before=ZenArc.diagnostics().compact;
-    ZenArc.toggleDock();await wait(100);
+    ZenArc.toggleDock();
+    // Snapshot capture can take longer on older engines. Observe the actual
+    // animation rather than assuming it starts within a fixed 100 ms.
+    if(nativeLibrary)for(let i=0;i<200&&!document.getElementById('zen-tabbox-wrapper').getAnimations().length;i++)await wait(10);
+    else await wait(100);
     const pageAnimations=document.getElementById('zen-tabbox-wrapper').getAnimations();
-    check(pageAnimations.some(a=>a.effect.getKeyframes().some(k=>k.width)&&a.effect.getKeyframes().every(k=>!k.transform?.includes('scale'))),'sidebar transition resizes page without stretching text');
-    if(!before)check(!!document.getElementById('arc-sidebar-transition'),'sidebar animates out using captured chrome');
+    if(nativeLibrary){
+      check(pageAnimations.some(a=>a.effect.getKeyframes().some(k=>k.width)&&a.effect.getKeyframes().every(k=>!k.transform?.includes('scale'))),'sidebar transition resizes page without stretching text');
+      if(!before)check(!!document.getElementById('arc-sidebar-transition'),'sidebar animates out using captured chrome');
+    }
     await wait(500);check(ZenArc.diagnostics().compact!==before,'sidebar toggles');
     ZenArc.toggleDock();await wait(550);check(ZenArc.diagnostics().compact===before,'sidebar redocks');
     check(!document.getElementById('arc-sidebar-transition')&&!document.documentElement.hasAttribute('data-arc-sidebar-animating'),'sidebar transition cleans up');
@@ -232,12 +240,17 @@
     const commandRow=document.querySelector('.urlbarView-row[dynamicType="arc-command"] .urlbarView-row-inner');
     commandRow.dispatchEvent(new MouseEvent('mousedown',{bubbles:true,button:0}));
     commandRow.dispatchEvent(new MouseEvent('mouseup',{bubbles:true,button:0}));await wait(800);
-    check(library.activeTab==='downloads'&&ZenArc.diagnostics().rail,'mouse pick runs Downloads command');
+    if(library)check(library.activeTab==='downloads'&&ZenArc.diagnostics().rail,'mouse pick runs Downloads command');
+    else {
+      const organizer=Services.wm.getMostRecentWindow('Places:Organizer');
+      check(!!organizer,'legacy Downloads command opens native organizer');
+      organizer?.close();
+    }
     await ZenArc.setRail(false);
     commands=await commandQuery('archive');
     gURLBar.view.selectedRowIndex=commands[0].rowIndex;
     gURLBar.handleCommand(new KeyboardEvent('keydown',{key:'Enter',code:'Enter'}));await wait(800);
-    check(library.activeTab==='history'&&library.querySelector('zen-library-history-section')?.activeFilters.has('source:closed')&&ZenArc.diagnostics().rail,'keyboard selection opens Archive with closed-tab filter');
+    check(library?library.activeTab==='history'&&library.querySelector('zen-library-history-section')?.activeFilters.has('source:closed')&&ZenArc.diagnostics().rail:ZenArc.diagnostics().rail,'keyboard selection opens Archive or native recently closed menu');
     await ZenArc.setRail(false);
     check((await commandQuery('archive.org')).length===0,'URL query has no command results');
     check((await commandQuery('downloads for windows')).length===0,'ordinary search has no command results');
@@ -251,9 +264,10 @@
     gURLBar.view.selectedRowIndex=commands[0].rowIndex;
     gURLBar.handleCommand(new KeyboardEvent('keydown',{key:'Enter',code:'Enter'}));await wait(700);
     check(!gZenViewSplitter.splitViewActive,'Unsplit command removes native split');
+    if(library){
     const debugSpaceCount=gZenWorkspaces.getWorkspaces().length;
     const {SessionStore}=ChromeUtils.importESModule('moz-src:///browser/components/sessionstore/SessionStore.sys.mjs');
-    const debugClosedCount=SessionStore.getClosedTabCount(window);
+    const debugClosedCount=SessionStore.getClosedTabCountForWindow(window);
     commands=await commandQuery('debug');
     check(commands.length===1&&commands[0].payload.title==='Enable Debug Mode','debug command is available while fixtures are off');
     gURLBar.view.selectedRowIndex=commands[0].rowIndex;
@@ -267,19 +281,25 @@
     await ZenArc.debug.toggle();
     check(!ZenArc.debug.enabled&&gZenWorkspaces.getWorkspaces().length===debugSpaceCount,'debug toggle removes only its temporary Spaces');
     check(!gZenWorkspaces.allStoredTabs.some(t=>t.linkedBrowser?.currentURI?.spec.startsWith('chrome://arc-ui/content/debug.xhtml')),'all mock tabs are removed across inactive Spaces');
-    check(SessionStore.getClosedTabCount(window)===debugClosedCount,'debug cleanup does not add mock tabs to Archive');
+    check(SessionStore.getClosedTabCountForWindow(window)===debugClosedCount,'debug cleanup does not add mock tabs to Archive');
     check(!document.documentElement.hasAttribute('data-arc-debug')&&!Services.prefs.prefHasUserValue('arc-ui.debug.owned-data'),'debug marker and cleanup journal are removed');
+    }else {
+      check(!ZenArc.debug.available,'legacy version does not offer unsupported library mock views');
+      check((await commandQuery('debug')).length===0,'legacy command provider hides unavailable debug mode');
+    }
     await commandQuery('split');
-    try {
+    document.title='Arc UI verification';
+  } catch(error){result.errors.push(String(error)+'\n'+error.stack);}
+  // Capture failures too, before the disposable browser shuts down.
+  try {
       const snapshot = await window.browsingContext.currentWindowGlobal.drawSnapshot(new DOMRect(0,0,innerWidth,innerHeight),1,'white');
       const canvas = document.createElementNS('http://www.w3.org/1999/xhtml','canvas');
       canvas.width=innerWidth;canvas.height=innerHeight;canvas.getContext('2d').drawImage(snapshot,0,0);snapshot.close();
       const blob=await new Promise(resolve=>canvas.toBlob(resolve));
       await IOUtils.write(PathUtils.join(PathUtils.profileDir,'verified.png'),new Uint8Array(await blob.arrayBuffer()));
       result.checks.push({label:'browser chrome screenshot',pass:true});
-    }catch(error){result.screenshotError=String(error);}
-    document.title='Arc UI verification';
-  } catch(error){result.errors.push(String(error)+'\n'+error.stack);}
+  }catch(error){result.screenshotError=String(error);}
   await IOUtils.writeJSON(PathUtils.join(PathUtils.profileDir,'verification.json'),result);
-  window.setTimeout(()=>Services.startup.quit(Ci.nsIAppStartup.eAttemptQuit),100);
+  if(!Services.prefs.getBoolPref('arc-ui.test.pointer',false))
+    window.setTimeout(()=>Services.startup.quit(Ci.nsIAppStartup.eAttemptQuit),100);
 })();

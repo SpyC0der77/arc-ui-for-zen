@@ -27,6 +27,8 @@ jobs:
   build:
     needs: validate
     uses: ./.github/workflows/build.yml
+    # This reusable workflow must succeed in every installer and Zen runtime
+    # matrix job before the publishing job below can run.
 
   release:
     needs: build
