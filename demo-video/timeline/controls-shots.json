@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Collapsed folder",
+    "start": 0.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Expanded folder",
+    "start": 3.5,
+    "duration": 3.5
+  },
+  {
+    "name": "Native application menu",
+    "start": 7.0,
+    "duration": 4
+  },
+  {
+    "name": "Resize sidebar",
+    "start": 11.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Restore sidebar width",
+    "start": 14.5,
+    "duration": 3.5
+  }
+]

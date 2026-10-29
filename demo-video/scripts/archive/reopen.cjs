@@ -1,0 +1,1 @@
+const {spawn}=require('child_process');const s=require('../chrome-session-uHXx8n/session.json');const c=spawn(s.app+'/zen.exe',['-no-remote','-purgecaches','--marionette','-profile',s.profile,'https://developer.mozilla.org/en-US/'],{detached:true,stdio:'ignore',windowsHide:true,env:{...process.env,MOZ_REMOTE_ALLOW_SYSTEM_ACCESS:'1'}});c.unref();console.log(c.pid);

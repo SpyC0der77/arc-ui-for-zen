@@ -1,7 +1,7 @@
 ﻿const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
-const { spawn } = require('node:child_process');
+const { launch } = require('./launch.cjs');
 const engine = require('./engine.cjs');
 const page = path.join(__dirname,'ui','index.html');
 let window, busy=false;
@@ -24,12 +24,9 @@ async function boot() {
   });
   handle('arc:launch',async value=>{
     const choice=selected(value);
-    const target=await engine.validate(choice.installation,choice.profile,{checkClosed:async()=>{},requireVersion:false});
-    // Privileged chrome scripts/styles may otherwise survive a reinstall in startup cache.
-    const child=spawn(target.exe,['-purgecaches','-profile',target.profile],{detached:true,stdio:'ignore',windowsHide:false});
-    await new Promise((resolve,reject)=>{child.once('spawn',resolve);child.once('error',reject);});child.unref();return true;
+    return launch(choice.installation,choice.profile);
   });
-  window=new BrowserWindow({width:720,height:690,minWidth:600,minHeight:640,title:'Arc UI for Zen',show:false,backgroundColor:'#faf8fb',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,sandbox:true,nodeIntegration:false}});
+  window=new BrowserWindow({width:1080,height:740,minWidth:900,minHeight:660,title:'Arc UI for Zen',show:false,backgroundColor:'#faf8fb',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,sandbox:true,nodeIntegration:false}});
   window.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   window.webContents.on('will-navigate',(event,url)=>{if(url!==pathToFileURL(page).href)event.preventDefault();});
   window.on('close',event=>{if(busy)event.preventDefault();});

@@ -1,0 +1,201 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  /* Recent files share the sidebar surface, without a separate popup card. */
+  #arc-download-popup {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    z-index: 100000;
+    width: 264px;
+    max-width: calc(100vw - 16px);
+    max-height: min(400px, 80vh);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    background: var(--arc-surface);
+    color: var(--arc-text);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    -moz-window-dragging: no-drag;
+  }
+  #arc-download-popup[hidden] {
+    display: none;
+  }
+  #arc-download-popup::backdrop {
+    background: transparent;
+    pointer-events: none;
+  }
+  .arc-download-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .arc-download-list {
+    list-style: none;
+    margin: 0;
+    min-height: 0;
+    max-height: 288px;
+    overflow-y: auto;
+    padding: 0;
+    scrollbar-width: thin;
+    scrollbar-color: #65556f60 transparent;
+  }
+  .arc-download-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-inline: 4px;
+    padding-right: 4px;
+    border-radius: 8px;
+    transform-origin: 20px bottom;
+    transition: background-color 140ms ease;
+  }
+  .arc-download-row,
+  .arc-download-row .arc-download-main,
+  .arc-download-row > .arc-icon-button {
+    corner-shape: round !important;
+  }
+  .arc-download-row:hover,
+  .arc-download-row:focus-within {
+    background: #44375010;
+  }
+  .arc-download-row .arc-download-main {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 10px 8px 6px;
+    text-align: left;
+    border-radius: 8px;
+    color: var(--arc-text);
+  }
+  .arc-download-row .arc-download-main:hover {
+    background: transparent;
+  }
+  .arc-download-row .arc-download-main:disabled {
+    opacity: 1;
+  }
+  .arc-download-icon {
+    position: relative;
+    display: flex;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    color: #65556f;
+  }
+  .arc-download-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  .arc-download-file-icon {
+    position: absolute;
+    inset: 4px;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    opacity: 0;
+  }
+  .arc-download-icon.has-file-icon .arc-download-file-icon {
+    opacity: 1;
+  }
+  .arc-download-icon.has-file-icon svg {
+    visibility: hidden;
+  }
+  .arc-download-icon.has-preview {
+    overflow: hidden;
+    border-radius: 4px;
+    corner-shape: round !important;
+  }
+  .arc-download-preview {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+  }
+  .arc-download-icon.has-preview .arc-download-preview {
+    opacity: 1;
+  }
+  .arc-download-icon.has-preview :is(svg, .arc-download-file-icon) {
+    visibility: hidden;
+  }
+  .arc-download-row > .arc-icon-button {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    color: #65556f;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  .arc-download-row:hover > .arc-icon-button,
+  .arc-download-row:focus-within > .arc-icon-button {
+    opacity: 1;
+  }
+  #arc-gift-button[aria-expanded="true"] {
+    background: #44375018 !important;
+    border-radius: 8px;
+  }
+  .arc-download-row > .arc-icon-button:hover {
+    background: #44375014;
+  }
+  .arc-download-row > .arc-icon-button :is(svg, img) {
+    width: 16px;
+    height: 16px;
+  }
+  #arc-download-popup button:focus-visible {
+    outline: 2px solid #65556f;
+    outline-offset: -2px;
+  }
+  .arc-download-label {
+    min-width: 0;
+    flex: 1;
+  }
+  .arc-download-name,
+  .arc-download-meta {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .arc-download-name {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+  }
+  .arc-download-meta {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 17px;
+    color: #65556f;
+  }
+  .arc-download-label progress {
+    appearance: none;
+    display: block;
+    width: 100%;
+    height: 3px;
+    margin-top: 4px;
+    border: 0;
+    border-radius: 3px;
+    overflow: hidden;
+    background: #4437501a;
+  }
+  .arc-download-label progress::-moz-progress-bar {
+    background: #8b719e;
+    border-radius: 3px;
+  }
+  .arc-download-empty {
+    padding: 12px 8px;
+    color: #65556f;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 20px;
+    text-align: center;
+  }
+}

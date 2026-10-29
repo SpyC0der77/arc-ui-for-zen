@@ -7,13 +7,14 @@
   "main": "installer/main.cjs",
   "scripts": {
     "start": "node scripts/start.cjs",
-    "test": "node --test tests/engine.test.cjs tests/github.test.cjs tests/archive.test.cjs tests/native-actions.test.cjs tests/commands.test.cjs tests/debug.test.cjs tests/package.test.cjs",
+    "test": "node --test tests/engine.test.cjs tests/github.test.cjs tests/archive.test.cjs tests/native-actions.test.cjs tests/commands.test.cjs tests/debug.test.cjs tests/package.test.cjs tests/cli.test.cjs tests/split-actions.test.cjs tests/features.test.cjs",
     "pack": "electron-builder --dir",
     "verify:package": "node scripts/verify-package.cjs",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win portable",
     "dist:mac": "electron-builder --mac dmg zip",
-    "dist:linux": "electron-builder --linux AppImage"
+    "dist:linux": "electron-builder --linux AppImage",
+    "cli": "node installer/cli.cjs"
   },
   "devDependencies": {
     "@electron/asar": "3.4.1",
@@ -55,5 +56,8 @@
       "category": "Utility",
       "artifactName": "Arc-UI-Zen-${version}-Linux-${arch}.${ext}"
     }
+  },
+  "bin": {
+    "arc-ui-zen": "installer/cli.cjs"
   }
 }

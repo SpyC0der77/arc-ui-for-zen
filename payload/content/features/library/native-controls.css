@@ -1,0 +1,17 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  :root[data-arc-ui] #zen-sidebar-foot-buttons {
+    min-height: 40px !important;
+  }
+  /* Retain native download services, expose only the Arc gift entry point. */
+  :root[data-arc-ui]
+    :is(
+      #zen-library-button,
+      #library-button,
+      #downloads-button,
+      #zen-library-download-list,
+      .zen-library-sprite
+    ) {
+    display: none !important;
+  }
+}

@@ -16,3 +16,12 @@ test('command prefixes and aliases match without swallowing ordinary searches',a
     assert.deepEqual(matchActions(query),[],query);
   }
 });
+
+test('displayed command names match and explicit debug commands retain their intent',async()=>{
+  const {ACTIONS,matchActions}=await commands;
+  for(const action of ACTIONS)assert.ok(matchActions(action.title).some(match=>match.id===action.id),action.title);
+  assert.equal(matchActions('  ENABLE   DEBUG MODE ')[0].id,'debug-enable');
+  assert.equal(matchActions('disable debug mode')[0].id,'debug-disable');
+  assert.equal(matchActions('split view top to bottom')[0].id,'split-horizontal');
+  assert.deepEqual(matchActions('disable debug mode tutorial'),[]);
+});

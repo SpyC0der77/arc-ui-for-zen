@@ -1,0 +1,7 @@
+recordings/
+exports/
+review/
+runtime/
+**/__pycache__/
+timeline/cursor-track.json
+timeline/cursor-commands.txt

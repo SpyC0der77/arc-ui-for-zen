@@ -1,0 +1,15 @@
+@font-face {
+  font-family: Geist;
+  src: url("chrome://arc-ui/content/geist-400.woff2");
+  font-weight: 400;
+}
+@font-face {
+  font-family: Geist;
+  src: url("chrome://arc-ui/content/geist-500.woff2");
+  font-weight: 500;
+}
+@font-face {
+  font-family: Geist;
+  src: url("chrome://arc-ui/content/geist-600.woff2");
+  font-weight: 600;
+}

@@ -1,0 +1,30 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  #arc-file-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 100001;
+    pointer-events: none;
+    overflow: clip;
+  }
+  .arc-flying-file {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 36px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    color: #65556f;
+    filter: drop-shadow(0 2px 3px #44375030);
+  }
+  .arc-flying-file svg {
+    width: 36px;
+    height: 36px;
+    fill: white;
+  }
+  .arc-fallback-gift {
+    position: absolute;
+    color: #65556f;
+  }
+}

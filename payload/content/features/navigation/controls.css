@@ -1,0 +1,69 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  #arc-top-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 6px 4px 10px;
+    min-height: 44px;
+    -moz-window-dragging: drag;
+  }
+  #arc-top-controls button {
+    -moz-window-dragging: no-drag;
+  }
+  /* Move only the toggle toward the frame edge, preserving its hit area. */
+  #arc-sidebar-toggle {
+    position: relative;
+    inset-inline-start: -8px;
+  }
+  :root[data-arc-ui][zen-right-side="true"] #arc-sidebar-toggle {
+    inset-inline-start: 8px;
+  }
+  #arc-navigation-controls {
+    display: flex;
+    gap: 4px;
+  }
+  #arc-navigation-controls > #PanelUI-menu-button,
+  #arc-navigation-controls > #zen-appmenu-button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 6px !important;
+    -moz-window-dragging: no-drag !important;
+  }
+  #arc-navigation-controls
+    > :is(#PanelUI-menu-button, #zen-appmenu-button)
+    .toolbarbutton-text {
+    display: none !important;
+  }
+  #arc-navigation-controls
+    > :is(#PanelUI-menu-button, #zen-appmenu-button)
+    .toolbarbutton-icon {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+  }
+  #arc-navigation-controls
+    > :is(#PanelUI-menu-button, #zen-appmenu-button):hover {
+    background: #14141418 !important;
+  }
+  #arc-navigation-controls
+    > :is(#PanelUI-menu-button, #zen-appmenu-button):focus-visible {
+    outline: 2px solid #65556f !important;
+    outline-offset: -2px;
+  }
+  .arc-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+  }
+}

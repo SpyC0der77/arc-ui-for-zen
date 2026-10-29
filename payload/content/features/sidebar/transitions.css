@@ -1,0 +1,14 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  :root[data-arc-ui]
+    :is(
+      #zen-toggle-compact-mode,
+      toolbarbutton[command="cmd_toggleCompactModeIgnoreHover"],
+      toolbarbutton[command="cmd_zenToggleSidebar"]
+    ) {
+    display: none !important;
+  }
+  :root[data-arc-ui][data-arc-sidebar-animating] #browser {
+    overflow: clip !important;
+  }
+}

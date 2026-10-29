@@ -1,0 +1,25 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  :root[data-arc-ui] #zen-library-footer {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  :root[data-arc-ui]
+    #zen-library-footer
+    [data-l10n-id="library-footer-close-button"] {
+    margin-inline-end: auto;
+  }
+  :root[data-arc-ui]
+    #zen-library-footer
+    :is(
+      [data-l10n-id="library-footer-donate-button"],
+      #arc-project-github-button
+    )
+    .toolbarbutton-icon {
+    width: 18px;
+    height: 18px;
+    -moz-context-properties: fill;
+    fill: currentColor;
+  }
+}

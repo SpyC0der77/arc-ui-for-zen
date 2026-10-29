@@ -1,0 +1,11 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  /* Library toggles remove the native border. Account for that in the thumb's
+     travel instead of reserving the native token's hard-coded 2px. */
+  :root[data-arc-ui] .zen-library-row-actions moz-toggle {
+    --toggle-dot-transform-x: calc(
+      var(--toggle-width) - 2 * var(--toggle-dot-margin) - 2 *
+        var(--toggle-border-width) - var(--toggle-dot-width)
+    ) !important;
+  }
+}

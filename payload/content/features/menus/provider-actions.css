@@ -1,0 +1,22 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  /* Providers own list structure, entry titles and canonical URLs. Ordinary
+     folders and tabs keep their native menus, including after detachment. */
+  :root[data-arc-ui]
+    #zenFolderActions[data-arc-provider-owned]
+    :is(
+      #context_zenFolderUnpack,
+      #context_zenFolderNewSubfolder,
+      #context_zenFolderToSpace
+    ),
+  :root[data-arc-ui]
+    #tabContextMenu[data-arc-provider-owned]
+    :is(
+      #context_zen-edit-tab-title,
+      #context_zen-edit-pinned-page,
+      #context_zen-edit-pinned-url,
+      #context_zen-replace-pinned-url-with-current
+    ) {
+    display: none !important;
+  }
+}

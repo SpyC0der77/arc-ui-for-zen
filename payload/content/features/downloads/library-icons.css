@@ -1,0 +1,21 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  :root[data-arc-ui]
+    [data-section="downloads"]
+    [data-l10n-id="library-downloads-cancel-button"]
+    img {
+    content: url("chrome://arc-ui/content/lucide/x.svg");
+  }
+  :root[data-arc-ui]
+    [data-section="downloads"]
+    [data-l10n-id="library-downloads-show-button"]
+    img {
+    content: url("chrome://arc-ui/content/lucide/folder-open.svg");
+  }
+  :root[data-arc-ui]
+    [data-section="downloads"]
+    [data-l10n-id="library-downloads-retry-button"]
+    img {
+    content: url("chrome://arc-ui/content/lucide/rotate-cw.svg");
+  }
+}

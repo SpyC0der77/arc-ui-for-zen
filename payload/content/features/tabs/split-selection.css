@@ -1,0 +1,19 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  /* Paint selection above the page content, inside the clipped split pane.
+     An outside outline is cut off beside the docked sidebar. */
+  :root[data-arc-ui]:not([inDOMFullscreen="true"])
+    #tabbrowser-tabpanels[zen-split-view="true"]
+    .browserSidebarContainer.deck-selected:not(.zen-glance-overlay) {
+    outline: none !important;
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      border: 2px solid var(--zen-active-split-outline-color);
+      border-radius: inherit;
+    }
+  }
+}

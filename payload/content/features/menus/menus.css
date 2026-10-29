@@ -1,0 +1,221 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  /* Shared chrome popup palette covers lazy panels and nested menus too. */
+  :root[data-arc-ui] :is(panel, menupopup) {
+    --arrowpanel-background: var(--arc-popup-surface) !important;
+    --arrowpanel-color: var(--arc-text);
+    --arrowpanel-border-color: #44375026;
+    --arrowpanel-border-radius: 10px;
+    --arrowpanel-padding: 6px;
+    --arrowpanel-menuitem-border-radius: 6px;
+    --arrowpanel-menuitem-padding: 6px 8px;
+    --panel-separator-color: #44375020;
+    --panel-shadow: 0 2px 8px #44375026;
+    --panel-background: var(--arc-popup-surface) !important;
+    --panel-color: var(--arc-text);
+    --panel-border-color: #44375026;
+    --panel-border-radius: 10px;
+    --panel-padding: 6px;
+    --panel-item-hover-bgcolor: var(--arc-popup-hover);
+    --panel-item-active-bgcolor: var(--arc-popup-active);
+    --button-background-color: var(--arc-popup-control);
+    --button-background-color-hover: var(--arc-popup-hover);
+    --button-background-color-active: var(--arc-popup-active);
+    --button-border-radius: 6px;
+    --input-background-color: #ffffff;
+    --input-color: var(--arc-text);
+    --input-border-color: #44375040;
+    --focus-outline-color: #65556f;
+    --menu-background-color: var(--arc-popup-surface);
+    --menu-color: var(--arc-text);
+    --menuitem-hover-background-color: var(--arc-popup-hover);
+    --menuitem-hover-color: var(--arc-text);
+    --menuitem-disabled-color: var(--arc-muted);
+    font-family: var(--arc-font) !important;
+    color-scheme: light !important;
+  }
+  :root[data-arc-ui] menupopup:not(#zenCreateNewPopup) {
+    appearance: none !important;
+    background: transparent !important;
+    color: var(--arc-text) !important;
+    border: 0 !important;
+    padding: 0 !important;
+  }
+  :root[data-arc-ui] menupopup :is(menu, menuitem) {
+    appearance: none !important;
+    border-radius: 6px !important;
+    corner-shape: round !important;
+    font-family: var(--arc-font) !important;
+  }
+  :root[data-arc-ui] menupopup:not(#zenCreateNewPopup) :is(menu, menuitem) {
+    min-height: 28px !important;
+    padding: 5px 8px !important;
+    color: var(--arc-text) !important;
+    &[_moz-menuactive="true"]:not([disabled="true"]) {
+      background: var(--arc-popup-hover) !important;
+    }
+    &[disabled="true"] {
+      color: var(--arc-muted) !important;
+    }
+  }
+  :root[data-arc-ui] menupopup menuseparator {
+    appearance: none !important;
+    margin: 4px 6px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-top: 1px solid #44375020 !important;
+  }
+  :root[data-arc-ui]
+    panel
+    :is(panelview, .panel-viewstack, .panel-subview-body) {
+    background-color: var(--arrowpanel-background) !important;
+    color: var(--arc-text) !important;
+  }
+  :root[data-arc-ui] panel .subviewbutton:not([disabled="true"]) {
+    border-radius: 6px !important;
+    corner-shape: round !important;
+    &:is(:hover, :focus-visible) {
+      background-color: var(--arc-popup-hover) !important;
+    }
+  }
+  :root[data-arc-ui] .translations-panel :is(menulist, button, toolbarbutton) {
+    border-radius: 6px !important;
+    corner-shape: round !important;
+  }
+  :root[data-arc-ui] #appMenu-popup {
+    --menu-panel-width-wide: 302px !important;
+    --menu-panel-width: 302px !important;
+    --panel-width: 302px !important;
+    --arrowpanel-menuitem-padding: 4px 8px !important;
+  }
+  :root[data-arc-ui]
+    #appMenu-popup
+    :is(#appMenu-mainView, .panel-viewstack, .panel-subview-body) {
+    background: var(--arc-popup-surface) !important;
+  }
+  :root[data-arc-ui] #appMenu-mainView {
+    min-width: 302px !important;
+    width: 302px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup .panel-subview-body {
+    padding: 4px 6px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup .subviewbutton:not(.subviewbutton-iconic) {
+    min-height: 28px !important;
+    padding-block: 4px !important;
+    margin-block: 0 !important;
+  }
+  :root[data-arc-ui] #appMenu-popup toolbarseparator {
+    margin: 4px 8px !important;
+    border-color: #44375020 !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls {
+    box-sizing: border-box !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding-block: 2px !important;
+  }
+  :root[data-arc-ui] #appMenu-zoom-controls > toolbarbutton {
+    box-sizing: border-box !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    padding-block: 4px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls + toolbarseparator {
+    appearance: none !important;
+    box-sizing: border-box !important;
+    height: 1px !important;
+    min-height: 1px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-top: 1px solid #44375020 !important;
+    background: none !important;
+    &::before,
+    &::after {
+      display: none !important;
+    }
+  }
+  :root[data-arc-ui] #appMenu-fxa-sign-in-promo {
+    background: var(--arc-popup-group) !important;
+    color: var(--arc-text) !important;
+    border-radius: 6px !important;
+    margin: 4px 6px !important;
+    & a {
+      color: var(--arc-text) !important;
+    }
+  }
+  :root[data-arc-ui]
+    #appMenu-popup
+    :is(.subviewbutton, .toolbarbutton-text, label) {
+    font-family: var(--arc-font) !important;
+    font-size: 13px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup .subviewbutton:not([disabled]):hover {
+    background-color: var(--arc-popup-hover) !important;
+    border-radius: 6px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup .toolbarbutton-icon {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  :root[data-arc-ui] #zenCreateNewPopup {
+    appearance: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    corner-shape: round !important;
+    padding: 0 !important;
+    box-shadow: 0 2px 8px #44375026 !important;
+    color: var(--arc-text) !important;
+    --panel-background: #fff !important;
+    min-width: 232px !important;
+  }
+  :root[data-arc-ui] #zenCreateNewPopup::part(content) {
+    appearance: none !important;
+    background: #fff !important;
+    border: 1px solid #44375026 !important;
+    border-radius: 10px !important;
+    padding: 5px !important;
+    box-shadow: 0 2px 8px #44375026 !important;
+  }
+  :root[data-arc-ui] #zenCreateNewPopup > menuitem {
+    appearance: none !important;
+    min-height: 40px !important;
+    padding: 8px 10px !important;
+    margin: 0 !important;
+    border-radius: 6px !important;
+    corner-shape: round !important;
+    font: 500 14px var(--arc-font) !important;
+    color: var(--arc-text) !important;
+    &[_moz-menuactive="true"] {
+      background: var(--arc-popup-hover) !important;
+    }
+  }
+  :root[data-arc-ui] #zenCreateNewPopup .menu-icon {
+    width: 20px !important;
+    height: 20px !important;
+    margin-inline-end: 12px !important;
+  }
+  :root[data-arc-ui] #zenCreateNewPopup .menu-text {
+    font-weight: 500 !important;
+  }
+  :root[data-arc-ui] #zenCreateNewPopup .menu-accel {
+    color: #9b918a !important;
+    font-size: 12px !important;
+  }
+  :root[data-arc-ui] #zenCreateNewPopup > menuitem[disabled="true"] {
+    color: #8d8782 !important;
+  }
+  :root[data-arc-ui]
+    #zenCreateNewPopup
+    > menuitem:not([_moz-menuactive="true"]) {
+    background: transparent !important;
+  }
+  :root[data-arc-ui] #zenCreateNewPopup > menuseparator {
+    appearance: none !important;
+    margin: 8px 6px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-top: 1px solid #44375020 !important;
+  }
+}
