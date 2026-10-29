@@ -1,0 +1,42 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  .arc-ui {
+    font-family: var(--arc-font);
+    font-size: 14px;
+    font-weight: 500;
+    color: #141414;
+    box-sizing: border-box;
+  }
+  .arc-ui *,
+  .arc-ui *::before,
+  .arc-ui *::after {
+    box-sizing: border-box;
+  }
+  .arc-ui button,
+  button.arc-ui {
+    appearance: none;
+    font: inherit;
+    color: inherit;
+    cursor: default;
+    border: 0;
+    background: transparent;
+    border-radius: 6px;
+  }
+  .arc-ui button:hover,
+  button.arc-ui:hover {
+    background: #14141418;
+  }
+  .arc-ui button:disabled {
+    opacity: 0.4;
+  }
+  .arc-ui button:focus-visible {
+    outline: 2px solid #65556f;
+    outline-offset: -2px;
+  }
+  .arc-ui svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    pointer-events: none;
+  }
+}

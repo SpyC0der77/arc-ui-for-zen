@@ -278,7 +278,8 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
   }).finally(()=>{recovery=null;})):Promise.resolve();
   ready.catch(error=>console.error("[Arc UI] Debug recovery:",error));
   const controller={win,available,get enabled(){return enabled;},ready,
-    toggle:()=>enqueue(()=>enabled?disable():enable()),disable:()=>enqueue(disable),
+    toggle:()=>enqueue(()=>enabled?disable():enable()),
+    enable:()=>enqueue(()=>enabled?undefined:enable()),disable:()=>enqueue(disable),
     reset:()=>enqueue(async()=>{if(enabled){const rail=originalRail;await disable();await enable(rail);}}),
     destroy(){destroyed=true;void controller.disable().catch(error=>console.error("[Arc UI] Debug cleanup:",error));},
   };

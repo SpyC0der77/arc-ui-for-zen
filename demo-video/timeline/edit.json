@@ -1,0 +1,87 @@
+{
+  "segments": [
+    [
+      "onboarding.mp4",
+      0,
+      19
+    ],
+    [
+      "browser.mp4",
+      0,
+      3.5
+    ],
+    [
+      "controls.mp4",
+      0,
+      7
+    ],
+    [
+      "browser.mp4",
+      10.5,
+      35
+    ],
+    [
+      "controls.mp4",
+      11,
+      18
+    ],
+    [
+      "browser.mp4",
+      35,
+      49.5
+    ],
+    [
+      "details.mp4",
+      7,
+      18
+    ],
+    [
+      "browser.mp4",
+      49.5,
+      84.5
+    ],
+    [
+      "details.mp4",
+      18,
+      22
+    ],
+    [
+      "details.mp4",
+      33.5,
+      37
+    ],
+    [
+      "browser.mp4",
+      84.5,
+      88
+    ],
+    [
+      "archive-real.mp4",
+      0,
+      19.5
+    ]
+  ],
+  "duration": 152.0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "overlays": false,
+  "capture": "Actual Electron installer and actual Zen browser chrome, scripted with Marionette. Real website pages.",
+  "notes": [
+    "Actual theme install into disposable app copy and profile.",
+    "Work, Personal, Reading are native Spaces, using Lucide SVG icons.",
+    "Auto archive uses the installed code, with one real visited tab aged 13 hours and its initial timer shortened.",
+    "Download flight uses the product preview API. Completed image is a genuine native local-file download.",
+    "No personal data or accounts. GitHub Live Folders are signed out.",
+    "Native separate-window application menu is omitted because chrome screenshots do not capture it.",
+    "No source product files changed.",
+    "Final auto archive sequence uses a real JavaScript reference page."
+  ],
+  "cursorRevision": {
+    "output": "arc-ui-for-zen-demo-cursor.mp4",
+    "cursor": "Windows aero_arrow.cur",
+    "method": "Programmatic cursor composition with timed positions",
+    "duration": 152,
+    "fps": 30
+  }
+}

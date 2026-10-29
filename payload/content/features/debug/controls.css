@@ -1,0 +1,46 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  :root[data-arc-debug] .arc-debug-action {
+    appearance: none;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    min-width: 48px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: color-mix(in srgb, currentColor 6%, transparent);
+    color: var(--arc-text);
+    font: 500 12px var(--arc-font) !important;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+    & :is(svg, img) {
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+    }
+    &:hover {
+      background: color-mix(in srgb, currentColor 10%, transparent);
+    }
+    &:active {
+      background: color-mix(in srgb, currentColor 14%, transparent);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--arc-muted);
+      outline-offset: 2px;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+  :root[data-arc-debug] .arc-debug-media-item {
+    appearance: none;
+    border: 0;
+    color: inherit;
+    font: inherit;
+  }
+}

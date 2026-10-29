@@ -1,6 +1,24 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const vm=require('node:vm');
 const fixtures=import('../payload/content/debug-data.mjs');
+
+test('debug page waits for its XHTML body and initializes already-loaded documents',()=>{
+  const source=fs.readFileSync(path.join(__dirname,'../payload/content/debug-page.js'),'utf8');
+  for(const readyState of ['loading','interactive','complete']){
+    let loaded=readyState!=='loading',onReady;
+    const elements={title:{textContent:''},description:{textContent:''}};
+    const document={readyState,title:'Debug sample',getElementById:id=>loaded?elements[id]:null};
+    const window={addEventListener:(name,callback,options)=>{assert.equal(name,'DOMContentLoaded');assert.equal(options.once,true);onReady=callback;}};
+    vm.runInNewContext(source,{document,window,URLSearchParams,location:{search:'?title=Release+checklist&text=Check+the+release.'}});
+    if(!loaded){assert.equal(document.title,'Debug sample');loaded=true;onReady();}
+    assert.equal(document.title,'Release checklist');
+    assert.equal(elements.title.textContent,'Release checklist');
+    assert.equal(elements.description.textContent,'Check the release.');
+  }
+});
 
 test('debug page ownership never matches a normal page or another session',async()=>{
   const {PAGE,ownsPage}=await fixtures;

@@ -14,7 +14,7 @@
     const topControls=document.getElementById('arc-top-controls');
     const nativeTopRow=document.getElementById('zen-sidebar-top-buttons');
     check(nativeTopRow.getBoundingClientRect().height===0,'hidden native controls reserve no toolbar height');
-    check(Math.abs(document.getElementById('nav-bar').getBoundingClientRect().top-topControls.getBoundingClientRect().bottom)<1,'search follows top controls without a blank toolbar row');
+    check(Math.abs(document.getElementById('nav-bar').getBoundingClientRect().top-topControls.getBoundingClientRect().bottom-8)<1,'search keeps the existing 8px gap below top controls');
 
     const label=document.querySelector('.tab-label');
     check(label&&getComputedStyle(label).fontFamily.includes('Geist'),'native tab uses theme typography');

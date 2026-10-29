@@ -12,6 +12,21 @@ The Windows executable is built into `release/Arc-UI-Zen-0.1.0-Windows.exe`. The
 
 Select your actual profile explicitly when there is more than one. Zen's `about:profiles` page lists its root directory. This installer never closes your existing browser automatically, imports private data, or changes your default browser.
 
+## Command line
+
+With Node.js installed, run from this checkout:
+
+```sh
+node installer/cli.cjs discover
+node installer/cli.cjs install --installation "/path/to/Zen" --profile "/path/to/profile" --open
+node installer/cli.cjs open --installation "/path/to/Zen" --profile "/path/to/profile"
+node installer/cli.cjs remove --installation "/path/to/Zen" --profile "/path/to/profile"
+```
+
+Use quoted Windows paths on Windows. `pnpm cli <command>` also works. Folders can be omitted when discovery finds exactly one application and one profile. Multiple matches require explicit selection. The CLI installs the theme into an existing supported Zen installation, not Zen itself. Close Zen before install or remove. To update, remove first, then install with `--open`. Opening uses the same cache-purging launcher as the graphical installer.
+
+The installer starts with a centered welcome page, followed by a split view with product screenshots beside three setup pages: browser folder, profile, and review/install. Pages move together on a fixed horizontal track over 520ms, with motion skipped when reduced motion is requested. After installation it offers Open Zen. Returning users can manage or remove the theme from the review page. The screenshots show local sample data.
+
 ## Features
 
 "Theme" means added styling, controls or animations. "Patch" means changes to Zen's existing UI behavior or settings. Some features use both. All patches load at startup; they do not modify Zen's packaged source files.
@@ -37,6 +52,8 @@ Select your actual profile explicitly when there is more than one. Zen's `about:
 | Hidden sidebar during download | Temporary gift target at the bottom-left | Theme: draws a temporary gift icon when the actual library button is outside the window. |
 | Demo Download button | Plays the animation without a network request or downloaded file | Theme: a bundled local preview page calls the same file-animation function directly. |
 | Reduced motion | Skips file flight, icon movement and gift highlight; retains the menu and accessibility announcement | Theme: checks the reduced-motion media query before running JavaScript animations; CSS also disables the address-bar entrance. |
+
+The library sidebar footer retains Zen's donation link with an outline heart, and adds a GitHub button for this project beside it.
 
 The gift-shaped button combines the library and downloads controls, following Arc's sidebar design. Hover over it to reveal recent files rising from the gift, directly on the sidebar surface. Completed images show thumbnails and relative timestamps; other files use the system's file-type icons. Click the gift to open Zen's library, or use the Downloads command to open its Downloads section. The list replaces Zen's native download popup and hover stack, retaining native file actions and separate public and private lists.
 
@@ -107,7 +124,9 @@ Historical Arc screenshots and their source notes live in [`dev/references/`](de
 
 `node tests/runtime.cjs <unpatched Zen application folder>` requires a Zen application folder without an installed Arc UI theme or another AutoConfig loader. It makes an isolated application copy and profile, installs the patch there, runs native browser checks, captures browser chrome, and verifies removal. It does not modify the real installation or profile. Its temporary copies and screenshots stay under the ignored `artifacts` directory.
 
-`tests/installer-smoke.cjs` runs with Electron and tests the actual install/remove UI and renderer isolation against temporary fixture folders. `pnpm test` covers all platform layouts, conflicts, version checks, preservation and receipt validation.
+`tests/installer-smoke.cjs` runs with Electron and tests the actual install/remove UI and renderer isolation against temporary fixture folders. `tests/onboarding-motion.cjs` runs with Electron and checks page geometry throughout navigation, the final position, reversal during motion, and reduced-motion behavior. `pnpm test` covers all platform layouts, conflicts, version checks, preservation and receipt validation.
+
+`python tests/address-bar-layout.py [port]` checks that opening the command bar preserves the parked address-field height and its gap below navigation controls in a disposable Marionette session.
 
 `tests/interactive.py` adds pointer-input checks through Mozilla's Marionette driver. It exercises library hover/click from docked and peeked sidebars, then records sidebar and child visibility throughout closing. It also moves the pointer along the reveal edge beyond Zen's hover timeout, checks that an intentional exit and return rearms the sidebar, and confirms the peeked panel floats (rounded card with its shadow) over rounded page corners. It attaches only to an explicitly launched test session with `--marionette` and `MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1`. Install its optional Python client into `artifacts/test-python` as described in the script. Close that session and reopen Zen normally afterward; the installer never enables the driver.
 

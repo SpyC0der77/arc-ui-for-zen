@@ -1,0 +1,30 @@
+:root[data-arc-ui]
+  .urlbarView-row[dynamicType="arc-command"]
+  .urlbarView-row-inner {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+}
+:root[data-arc-ui] .urlbarView-dynamic-arc-command-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:root[data-arc-ui] .urlbarView-dynamic-arc-command-hint {
+  font-size: 12px;
+  color: #54485e;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+:root[data-arc-ui]
+  .urlbarView-row[selected][dynamicType="arc-command"]
+  :is(
+    .urlbarView-dynamic-arc-command-title,
+    .urlbarView-dynamic-arc-command-hint
+  ) {
+  color: #141414 !important;
+}

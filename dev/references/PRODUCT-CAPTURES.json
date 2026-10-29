@@ -1,0 +1,78 @@
+{
+  "capturedAt": "2026-10-29T00:03:49.364372Z",
+  "zen": "1.23.4b",
+  "capture": "Actual browser chrome, Marionette, disposable application and profile",
+  "content": "Public real websites and official favicons, arranged only in the disposable capture profile. Debug Mode fixtures in the project are unchanged. Downloads retain local mock files.",
+  "payloadHashes": {
+    "payload/arc.css": "120671849f244332f582ea1778f3a5b6237d26f44621aac283f4994789a4b5fc",
+    "payload/arc.uc.js": "b0e5dd140efc938c0a1023369789a32f25ac4b8344f313898b54cef470f14f15",
+    "payload/content/menu-popup.css": "63de3eedd7232cdf93970838975e1698a6cdc8b15d17905643661e73b06d21e1",
+    "payload/content/debug.sys.mjs": "203b917d982012456298511a3a19f17c7cd1ce9e8b87267c21ee5adc28ff154b"
+  },
+  "screenshots": [
+    {
+      "file": "product-sidebar.png",
+      "caption": "Your folders and tabs, together in the sidebar. Sample data.",
+      "sha256": "c7e414a4cfd3f23c8eb7a0df5ba05e749e13d6f4bc9368567343beaaaaa1663e",
+      "capturedAt": "2026-10-29T00:03:49.364372Z",
+      "width": 2048,
+      "height": 1544,
+      "devicePixelRatio": 2
+    },
+    {
+      "file": "product-spaces.png",
+      "caption": "Keep work and personal tabs in separate Spaces. Sample data.",
+      "sha256": "18194ab3d29e08f15687220d781ceca5c7aada8ba02486964e386b3d323eaed8",
+      "capturedAt": "2026-10-29T00:03:49.364372Z",
+      "width": 1945,
+      "height": 1543,
+      "note": "Native library element screenshot at 2x density with Work, Personal and Reading Spaces. Fractional CSS bounds produce odd pixel dimensions. The webpage is outside the captured element.",
+      "devicePixelRatio": 2
+    },
+    {
+      "file": "product-commands.png",
+      "caption": "Open browser actions from the command bar. Sample data.",
+      "sha256": "a15b50c858b33da2344ec77376d2e79ef2993379f6f2394af674bb7b32e2ea53",
+      "capturedAt": "2026-10-29T00:03:49.364372Z",
+      "width": 2048,
+      "height": 1544,
+      "devicePixelRatio": 2
+    },
+    {
+      "file": "product-library.png",
+      "caption": "Find and manage your downloads in the library. Sample data.",
+      "sha256": "fe29848c89a84e02936a266d9ee410cfe66bb684224b2856bbc8c07e41605c92",
+      "capturedAt": "2026-10-29T00:03:49.364372Z",
+      "width": 2048,
+      "height": 1544,
+      "devicePixelRatio": 2
+    }
+  ],
+  "width": 2048,
+  "height": 1544,
+  "websites": [
+    "https://github.com/SpyC0der77/arc-ui-for-zen",
+    "https://github.com/",
+    "https://developer.mozilla.org/en-US/",
+    "https://en.wikipedia.org/wiki/Main_Page",
+    "https://www.youtube.com/",
+    "https://open.spotify.com/",
+    "https://mail.google.com/",
+    "https://calendar.google.com/"
+  ],
+  "faviconSources": [
+    "https://github.com/favicon.ico",
+    "https://developer.mozilla.org/favicon.ico",
+    "https://en.wikipedia.org/static/favicon/wikipedia.ico",
+    "https://www.youtube.com/s/desktop/12d6b690/img/favicon_48x48.png",
+    "https://open.spotifycdn.com/cdn/images/favicon32.b64ecc03.png",
+    "https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico",
+    "https://calendar.google.com/googlecalendar/images/favicons_2020q4/calendar_31.ico"
+  ],
+  "captureNotes": "Captured natively at layout.css.devPixelsPerPx=2 in a disposable profile, keeping the 1024x772 CSS viewport. No upscaling or image resampling. The Marionette robot badge is hidden only by a temporary capture stylesheet, as in the previous images; production code does not suppress it.",
+  "cssViewport": {
+    "width": 1024,
+    "height": 772
+  },
+  "devicePixelRatio": 2
+}

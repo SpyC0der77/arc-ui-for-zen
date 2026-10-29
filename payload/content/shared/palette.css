@@ -1,0 +1,58 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  :root[data-arc-ui] {
+    --arc-font: -apple-system, BlinkMacSystemFont, Geist, sans-serif;
+    font-family: var(--arc-font) !important;
+    font-synthesis: none;
+    --arc-surface: #cec7d4;
+    --arc-text: #141414;
+    --arc-muted: #65556f;
+    --arc-popup-surface: #f6f4f3;
+    --arc-popup-hover: #e8e3df;
+    --arc-popup-active: #ded7d2;
+    --arc-popup-control: #eeebe8;
+    --arc-popup-group: #ece7ef;
+    --zen-primary-color: #cec7d4 !important;
+    --zen-main-browser-background: #cec7d4 !important;
+    --zen-main-browser-background-toolbar: #cec7d4 !important;
+    --zen-main-browser-background-old: #cec7d4 !important;
+    --zen-main-browser-background-toolbar-old: #cec7d4 !important;
+    --zen-themed-toolbar-bg: #cec7d4 !important;
+    --zen-themed-toolbar-bg-transparent: #cec7d4 !important;
+    background: #cec7d4 !important;
+    --toolbar-bgcolor: #cec7d4 !important;
+    --toolbar-color: #141414 !important;
+    --lwt-text-color: #141414 !important;
+    --tab-selected-bgcolor: white !important;
+    --tab-selected-textcolor: #141414 !important;
+    --zen-native-inner-radius: 10px !important;
+    --zen-border-radius: 8px !important;
+    --zen-big-shadow: 0 1px 6px #44375038 !important;
+    --zen-element-separation: 10px !important;
+    color-scheme: light !important;
+  }
+  :root[data-arc-ui] #zen-main-app-wrapper,
+  :root[data-arc-ui] body,
+  :root[data-arc-ui] #browser,
+  :root[data-arc-ui] #zen-browser-background,
+  :root[data-arc-ui] #zen-toolbar-background,
+  :root[data-arc-ui] #zen-appcontent-wrapper,
+  :root[data-arc-ui] #zen-tabbox-wrapper,
+  :root[data-arc-ui] #navigator-toolbox,
+  :root[data-arc-ui] #titlebar,
+  :root[data-arc-ui] .zen-toolbar-background,
+  :root[data-arc-ui] #zen-appcontent-navbar-wrapper {
+    background: var(--arc-surface) !important;
+    color: var(--arc-text) !important;
+  }
+  :root[data-arc-ui] .zen-browser-grain,
+  :root[data-arc-ui] #zen-browser-background::before,
+  :root[data-arc-ui] #zen-browser-background::after,
+  :root[data-arc-ui] #zen-toolbar-background::before,
+  :root[data-arc-ui] #zen-toolbar-background::after {
+    display: none !important;
+  }
+  :root[data-arc-ui] #navigator-toolbox {
+    min-width: 200px !important;
+  }
+}

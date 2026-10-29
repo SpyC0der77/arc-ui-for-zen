@@ -7,6 +7,8 @@ export const ACTIONS = Object.freeze([
   {id:"unsplit", title:"Unsplit View", aliases:["unsplit", "unsplit view", "close split view"], command:"cmd_zenSplitViewUnsplit", icon:"sidebars"},
   {id:"sidebar", title:"Toggle Sidebar", aliases:["sidebar", "toggle sidebar"], icon:"sidebars"},
   {id:"debug", title:"Toggle Debug Mode", aliases:["debug", "debug mode", "toggle debug", "toggle debug mode", "mock", "mock data"], icon:"debug"},
+  {id:"debug-enable", title:"Enable Debug Mode", aliases:["enable debug"], icon:"debug"},
+  {id:"debug-disable", title:"Disable Debug Mode", aliases:["disable debug"], icon:"debug"},
   {id:"debug-reset", title:"Reset Debug Data", aliases:["reset debug", "reset debug data", "reset mock", "reset mock data"], icon:"debug"},
 ]);
 
@@ -15,8 +17,9 @@ export function matchActions(input) {
   // Require a deliberate prefix. URLs, search operators and unrelated phrases
   // never become commands; the native search result remains available.
   if(query.length<2)return [];
-  return ACTIONS.filter(action=>action.aliases.some(alias=>alias.startsWith(query)))
-    .sort((a,b)=>Number(b.aliases.includes(query))-Number(a.aliases.includes(query)));
+  const terms=action=>[action.title.toLowerCase(),...action.aliases];
+  return ACTIONS.filter(action=>terms(action).some(alias=>alias.startsWith(query)))
+    .sort((a,b)=>Number(terms(b).includes(query))-Number(terms(a).includes(query)));
 }
 
 const windows=new Set();
@@ -24,7 +27,7 @@ let provider=null, manager=null;
 
 function available(action,win) {
   if(!win?.ZenArc||win.closed)return false;
-  if(action.id==="debug")return !!win.ZenArc.debug?.available;
+  if(["debug","debug-enable","debug-disable"].includes(action.id))return !!win.ZenArc.debug?.available;
   if(action.id==="debug-reset")return !!win.ZenArc.debug?.enabled;
   if(!action.command)return true;
   const command=win.document.getElementById(action.command);
@@ -43,6 +46,8 @@ async function run(action,win) {
   }
   if(action.id==="sidebar"){win.ZenArc.toggleDock();return;}
   if(action.id==="debug"){await win.ZenArc.debug.toggle();return;}
+  if(action.id==="debug-enable"){await win.ZenArc.debug.enable();return;}
+  if(action.id==="debug-disable"){await win.ZenArc.debug.disable();return;}
   if(action.id==="debug-reset"){await win.ZenArc.debug.reset();return;}
   const library=win.document.querySelector("zen-library");
   if(action.id==="downloads")library.activeTab="downloads";

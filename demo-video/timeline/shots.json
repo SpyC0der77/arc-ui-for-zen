@@ -1,0 +1,152 @@
+[
+  {
+    "name": "Work space, Essentials and real documentation",
+    "start": 0.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Collapse Web development folder",
+    "start": 3.5,
+    "duration": 3.5
+  },
+  {
+    "name": "Expand Web development folder",
+    "start": 7.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Personal Space",
+    "start": 10.5,
+    "duration": 3.5
+  },
+  {
+    "name": "Reading Space",
+    "start": 14.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Back to Work",
+    "start": 17.5,
+    "duration": 3.5
+  },
+  {
+    "name": "Undock the sidebar",
+    "start": 21.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Hover peek",
+    "start": 24.5,
+    "duration": 3.5
+  },
+  {
+    "name": "Full page with hidden sidebar",
+    "start": 28.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Dock the sidebar",
+    "start": 31.5,
+    "duration": 3.5
+  },
+  {
+    "name": "Centered command bar",
+    "start": 35.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Side by side split view",
+    "start": 38.5,
+    "duration": 4
+  },
+  {
+    "name": "Unsplit command",
+    "start": 42.5,
+    "duration": 3.5
+  },
+  {
+    "name": "Return to one page",
+    "start": 46.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Downloads command",
+    "start": 49.5,
+    "duration": 3.5
+  },
+  {
+    "name": "Library downloads",
+    "start": 53.0,
+    "duration": 4
+  },
+  {
+    "name": "Library Spaces",
+    "start": 57.0,
+    "duration": 4
+  },
+  {
+    "name": "Media library",
+    "start": 61.0,
+    "duration": 4
+  },
+  {
+    "name": "Return from library",
+    "start": 65.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Downloads hover menu",
+    "start": 68.5,
+    "duration": 4
+  },
+  {
+    "name": "Download file flight",
+    "start": 72.5,
+    "duration": 4
+  },
+  {
+    "name": "Hidden sidebar download",
+    "start": 76.5,
+    "duration": 4.5
+  },
+  {
+    "name": "Dock after download",
+    "start": 81.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Archive command",
+    "start": 84.5,
+    "duration": 3.5
+  },
+  {
+    "name": "Archive a background page",
+    "start": 88.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Archive library",
+    "start": 91.5,
+    "duration": 4
+  },
+  {
+    "name": "Restore archived tab",
+    "start": 95.5,
+    "duration": 4
+  },
+  {
+    "name": "Close library",
+    "start": 99.5,
+    "duration": 3.5
+  },
+  {
+    "name": "Application menu",
+    "start": 103.0,
+    "duration": 3.5
+  },
+  {
+    "name": "Finish on Work",
+    "start": 106.5,
+    "duration": 4
+  }
+]

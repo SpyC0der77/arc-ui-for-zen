@@ -1,0 +1,30 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  :root[data-arc-ui] #arc-top-controls {
+    order: -1;
+  }
+  /* Native navigation stays in this customizable row, hidden by Arc's
+     replacement controls. Let empty wrappers collapse instead of reserving
+     Zen's fixed toolbar height. Real customized controls retain their height. */
+  :root[data-arc-ui]:not([customizing]) #zen-sidebar-top-buttons {
+    height: auto !important;
+    min-height: 0 !important;
+    flex: 0 0 auto !important;
+    margin-block: 0 !important;
+  }
+  :root[data-arc-ui]:not([customizing])
+    #zen-sidebar-top-buttons-customization-target {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  :root[data-arc-ui]
+    :is(
+      #back-button,
+      #forward-button,
+      #reload-button,
+      #stop-button,
+      #zen-expand-sidebar-button
+    ) {
+    display: none !important;
+  }
+}

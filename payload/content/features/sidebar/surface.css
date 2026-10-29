@@ -1,0 +1,69 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  :root[data-arc-ui] .browserSidebarContainer:not(.zen-glance-overlay) {
+    border-radius: 10px !important;
+    box-shadow: 0 1px 6px #44375038 !important;
+  }
+  :root[data-arc-ui][zen-compact-mode="true"]
+    .browserSidebarContainer:not(.zen-glance-overlay) {
+    border-radius: 10px !important;
+  }
+  /* Undocked: the page keeps its corners across the whole window, and Zen's peek
+     panel becomes the only sidebar surface so it floats over the content instead
+     of sitting in a full-height band. */
+  :root[data-arc-ui][zen-compact-mode="true"]
+    :is(#navigator-toolbox, #titlebar) {
+    background: transparent !important;
+  }
+  :root[data-arc-ui][zen-compact-mode="true"] #zen-toolbar-background {
+    top: calc(
+      -1 * var(--arc-top-controls-height, 44px)
+    ) !important; /* reach over the added control row */
+    border-radius: 12px !important;
+    box-shadow: 0 1px 8px 3px #33263f66 !important;
+  }
+  /* A hidden panel must not leave its shadow on the page edge. */
+  :root[data-arc-ui][zen-compact-mode="true"]
+    #navigator-toolbox:not([animate="true"]):not(
+      :is(
+        [zen-has-hover],
+        [zen-user-show],
+        [flash-popup],
+        [has-popup-menu],
+        [movingtab],
+        [zen-compact-mode-active]
+      )
+    )
+    #zen-toolbar-background {
+    box-shadow: none !important;
+  }
+  :root[data-arc-ui] #navigator-toolbox[zen-has-hover] {
+    transition: translate 120ms ease !important;
+  }
+  :root[data-arc-ui] #navigator-toolbox:not([zen-has-hover]) {
+    transition-timing-function: ease !important;
+  }
+  /* Keep these after the hover rules, which otherwise win at equal specificity. */
+  :root[data-arc-ui][data-arc-sidebar-animating]
+    :is(#navigator-toolbox, #titlebar) {
+    transition: none !important;
+  }
+  :root[data-arc-ui][data-arc-sidebar-animating="opening"] #navigator-toolbox {
+    translate: none !important;
+    z-index: 10 !important;
+  }
+  :root[data-arc-ui][data-arc-sidebar-animating="opening"]
+    :is(#navigator-toolbox, #titlebar, #zen-toolbar-background) {
+    background: transparent !important;
+  }
+  :root[data-arc-ui][inDOMFullscreen="true"]
+    :is(
+      #arc-library-rail,
+      #arc-top-controls,
+      #arc-download-popup,
+      #arc-file-layer,
+      #arc-gift-button
+    ) {
+    display: none !important;
+  }
+}

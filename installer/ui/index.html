@@ -3,24 +3,49 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self';">
 <title>Arc UI for Zen</title><link rel="stylesheet" href="style.css"><script src="renderer.js" defer></script>
-</head><body><main>
-<p class="title">Arc UI for Zen</p>
-<p class="intro">Install the theme and browser interaction patches.</p>
-<form id="installer">
-<label for="installation">Zen installation</label>
-<div class="path-row"><input id="installation" spellcheck="false" autocomplete="off" placeholder="Choose your Zen application folder" required><button id="browse-installation" type="button">Browse…</button></div>
-<label for="profiles">Zen profile</label>
-<select id="profiles"><option value="">Select a profile…</option></select>
-<div class="path-row"><input id="profile" spellcheck="false" autocomplete="off" placeholder="Or choose a profile folder" required><button id="browse-profile" type="button">Browse…</button></div>
-<p class="help">Find your profile in Zen at <code>about:profiles</code>. Close Zen before installing or removing.</p>
-<details><summary>What this installs</summary><ul>
-<li>Lavender theme, tabs, page corners and address popup</li>
-<li>Sidebar docking, hover reveal and icon feedback</li>
-<li>Gift menu, library rail and real download controls</li>
-<li>File flight animation and a download preview page</li>
-</ul><p>The library’s six selectors match the Arc UI layout. Placeholder sections do not add new Arc services.</p></details>
-<p class="notice">Includes privileged local browser UI scripts and a startup loader. Website sandboxing stays enabled. Existing configuration is backed up; conflicting loaders are left untouched.</p>
-<div class="actions"><button id="install" class="primary" type="submit">Install</button><button id="remove" type="button">Remove</button><button id="launch" type="button">Open Zen</button></div>
-</form>
-<p id="status" role="status" aria-live="polite">Looking for Zen…</p><p id="version" class="help"></p>
-</main></body></html>
+</head><body><main class="viewport"><div id="page-track"><article class="screen welcome-layout"><div class="screen-content"><div class="setup-column"><header><img src="arc-mark.svg" width="32" height="32" alt=""><p>Arc UI for Zen</p></header><div class="pages"><section id="welcome" class="welcome-page">
+<img class="welcome-mark" src="arc-mark.svg" width="80" height="80" alt="Arc UI for Zen">
+<p class="title" tabindex="-1">Make yourself at home.</p>
+<p class="intro">Arc UI for Zen brings your tabs, spaces and downloads into a familiar sidebar.</p>
+<div class="actions"><button id="begin" class="primary" type="button">Start setup</button></div>
+<p class="help">For an existing Zen 1.23.4b installation. No account needed.</p>
+</section></div><footer><p class="status-copy">Looking for Zen...</p><p class="version-copy help"></p></footer></div></div></article>
+<article class="screen" inert aria-hidden="true"><div class="screen-content"><div class="setup-column"><header><img src="arc-mark.svg" width="32" height="32" alt=""><p>Arc UI for Zen</p></header><div class="pages"><section id="setup">
+<p class="progress">1 of 3</p>
+<p class="title" tabindex="-1">Choose your browser.</p>
+<p class="intro">Select the Zen application you want to style.</p>
+<label for="installation">Zen application folder</label>
+<input id="installation" spellcheck="false" autocomplete="off" placeholder="Choose your Zen application folder" required>
+<button id="browse-installation" class="browse" type="button">Choose folder...</button>
+<p class="help">Use the folder containing Zen, or Zen.app on macOS.</p>
+<div class="actions"><button type="button" data-back="welcome">Back</button><button id="browser-next" class="primary" type="button">Continue</button></div>
+</section></div><footer><p class="status-copy">Looking for Zen...</p><p class="version-copy help"></p></footer></div><figure class="product-column"><div class="product-image"><img id="product-image" src="product-sidebar.png" width="1024" height="772" alt="Current Arc UI for Zen sidebar with sample folders and tabs"></div><figcaption>Your folders and tabs, together in the sidebar. Sample data.</figcaption></figure></div></article>
+<article class="screen" inert aria-hidden="true"><div class="screen-content"><div class="setup-column"><header><img src="arc-mark.svg" width="32" height="32" alt=""><p>Arc UI for Zen</p></header><div class="pages"><section id="profile-step">
+<p class="progress">2 of 3</p>
+<p class="title" tabindex="-1">Choose your profile.</p>
+<p class="intro">Use the profile with the tabs and spaces you want to keep.</p>
+<label for="profiles">Detected profiles</label>
+<select id="profiles"><option value="">Select a profile...</option></select>
+<label for="profile">Profile folder</label>
+<input id="profile" spellcheck="false" autocomplete="off" placeholder="Or choose a profile folder" required>
+<button id="browse-profile" class="browse" type="button">Choose folder...</button>
+<p class="help">Find the root directory in Zen at <code>about:profiles</code>.</p>
+<div class="actions"><button type="button" data-back="setup">Back</button><button id="profile-next" class="primary" type="button">Continue</button></div>
+</section></div><footer><p class="status-copy">Looking for Zen...</p><p class="version-copy help"></p></footer></div><figure class="product-column"><div class="product-image"><img src="product-spaces.png" width="973" height="771" alt="Current Arc UI for Zen Spaces library with sample work and personal spaces"></div><figcaption>Keep work and personal tabs in separate Spaces. Sample data.</figcaption></figure></div></article>
+<article class="screen" inert aria-hidden="true"><div class="screen-content"><div class="setup-column"><header><img src="arc-mark.svg" width="32" height="32" alt=""><p>Arc UI for Zen</p></header><div class="pages"><section id="review">
+<p class="progress">3 of 3</p>
+<p class="title" tabindex="-1">Ready to install.</p>
+<p class="intro">Close all Zen windows before continuing.</p>
+<dl class="review-paths"><dt>Browser</dt><dd id="review-installation"></dd><dt>Profile</dt><dd id="review-profile"></dd></dl>
+<p class="notice">Installs privileged local browser UI scripts and a startup loader. Website sandboxing stays enabled. Existing configuration is backed up; conflicting loaders are left untouched.</p>
+<details><summary>What this installs</summary><ul><li>Lavender theme, sidebar and command bar</li><li>Library and download controls</li><li>Sidebar and download animations</li></ul></details>
+<form id="installer"><div class="actions"><button type="button" data-back="profile-step">Back</button><button id="install" class="primary" type="submit">Install</button></div></form>
+<div class="manage-actions"><button id="remove" type="button">Remove theme</button><button id="launch" type="button">Open Zen</button></div>
+</section></div><footer><p class="status-copy">Looking for Zen...</p><p class="version-copy help"></p></footer></div><figure class="product-column"><div class="product-image"><img src="product-commands.png" width="1024" height="772" alt="Current Arc UI for Zen command bar showing the Open Archive action"></div><figcaption>Open browser actions from the command bar. Sample data.</figcaption></figure></div></article>
+<article class="screen" inert aria-hidden="true"><div class="screen-content"><div class="setup-column"><header><img src="arc-mark.svg" width="32" height="32" alt=""><p>Arc UI for Zen</p></header><div class="pages"><section id="complete">
+<p class="title" tabindex="-1">You are all set.</p>
+<p class="intro">Open Zen to use your new sidebar. Your tabs and browsing data stay in your selected profile.</p>
+<p class="help">Ctrl+B or Cmd+B shows and hides the sidebar.</p>
+<div class="actions"><button id="finish" class="primary" type="button">Open Zen</button></div>
+<button id="manage" class="browse" type="button">Manage installation</button>
+</section></div><footer><p class="status-copy">Looking for Zen...</p><p class="version-copy help"></p></footer></div><figure class="product-column"><div class="product-image"><img src="product-library.png" width="1024" height="772" alt="Current Arc UI for Zen downloads with retry, resume and pause icons"></div><figcaption>Find and manage your downloads in the library. Sample data.</figcaption></figure></div></article></div></main><p id="status" class="sr-only" role="status" aria-live="polite">Looking for Zen...</p><p id="version" hidden></p></body></html>

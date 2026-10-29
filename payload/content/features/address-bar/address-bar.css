@@ -1,0 +1,142 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  :root[data-arc-ui] #urlbar:not([breakout-extend]) .urlbar-background {
+    background: #bcb3c5 !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+  }
+  :root[data-arc-ui] #urlbar-input {
+    color: #141414 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+  }
+  :root[data-arc-ui] #urlbar:not([zen-floating-urlbar="true"]) #urlbar-input {
+    caret-color: transparent !important;
+  }
+  :root[data-arc-ui]
+    #urlbar:not([zen-floating-urlbar="true"])
+    #urlbar-input::selection {
+    background: transparent !important;
+    color: inherit !important;
+  }
+  :root[data-arc-ui] #urlbar[zen-floating-urlbar="true"] #urlbar-input {
+    caret-color: auto !important;
+  }
+  :root[data-arc-ui] #urlbar-container {
+    position: relative !important;
+  }
+  /* Zen's inherited superellipse makes small radii look almost square. */
+  :root[data-arc-ui] #urlbar:not([zen-floating-urlbar="true"]),
+  :root[data-arc-ui]
+    #urlbar:not([zen-floating-urlbar="true"])
+    :is(.urlbar-background, .urlbar-input-container),
+  :root[data-arc-ui] #arc-sidebar-address-label {
+    border-radius: 10px !important;
+    corner-shape: round !important;
+  }
+
+  :root[data-arc-ui]
+    #urlbar-container:has(#urlbar[open][zen-floating-urlbar="true"]) {
+    background: transparent !important;
+  }
+  #arc-sidebar-address-label {
+    display: none;
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    border-radius: 10px;
+    box-sizing: border-box;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    font: 500 13px var(--arc-font);
+    color: var(--arc-text);
+  }
+  .arc-sidebar-address-icon {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    width: 16px;
+    height: 16px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    -moz-context-properties: fill, fill-opacity;
+  }
+  .arc-sidebar-address-icon[hidden] {
+    display: none;
+  }
+  .arc-sidebar-address-text {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    align-content: center;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  :root[data-arc-ui]
+    #urlbar-container:has(#urlbar[open][zen-floating-urlbar="true"])
+    > #arc-sidebar-address-label {
+    display: flex;
+  }
+  :root[data-arc-ui] #urlbar[breakout-extend] .urlbar-background {
+    background: white !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 8px #44375030 !important;
+  }
+  :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] {
+    position: fixed !important;
+    top: 24vh !important;
+    left: 50% !important;
+    right: auto !important;
+    translate: -50% 0 !important;
+    width: min(640px, calc(100vw - 40px)) !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 40px) !important;
+    max-height: 70vh;
+    border-radius: 16px !important;
+    --urlbar-inner-border-radius: 12px !important;
+    --urlbar-container-height: 56px !important;
+    transform-origin: 50% 28px;
+    animation: arc-search-open 180ms cubic-bezier(0.2, 0.7, 0.3, 1) both !important;
+  }
+  :root[data-arc-ui]
+    #urlbar[open][zen-floating-urlbar="true"]
+    .urlbar-background {
+    border-radius: 16px !important;
+    background: white !important;
+  }
+  :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] #urlbar-input {
+    font-size: 18px !important;
+  }
+  :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] .urlbarView {
+    max-height: calc(70vh - 72px);
+    overflow-y: auto;
+    border-radius: 0 0 12px 12px;
+  }
+  @keyframes arc-search-open {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] {
+      animation: none !important;
+    }
+  }
+  :root[data-arc-ui] .urlbarView-row[selected] .urlbarView-row-inner {
+    background: #bcb3c5 !important;
+    color: #141414 !important;
+    border-radius: 6px !important;
+  }
+}

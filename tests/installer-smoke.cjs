@@ -16,20 +16,51 @@ app.whenReady().then(async()=>{
  engine.discover=async()=>({platform:'win32',version:engine.VERSION,supportedZen:engine.SUPPORTED,apps:[zen],profiles:[{name:'Verification profile',path:profile,installed:false}]});
  require(path.join(appRoot,'installer','main.cjs'));
  let window;
- for(let i=0;i<100;i++){window=BrowserWindow.getAllWindows()[0];if(window&&!window.webContents.isLoading()&&await window.webContents.executeJavaScript('!!window.zenInstaller && document.getElementById("status")?.textContent.includes("Choose your Zen profile")'))break;await delay(50);}
+ for(let i=0;i<100;i++){window=BrowserWindow.getAllWindows()[0];if(window&&!window.webContents.isLoading()&&await window.webContents.executeJavaScript('!!window.zenInstaller && document.getElementById("status")?.textContent.includes("Zen found")'))break;await delay(50);}
  assert.ok(window);
  const errors=[];window.webContents.on('console-message',event=>{if(event.level==='error')errors.push(event.message);});
  assert.equal(await window.webContents.executeJavaScript('typeof require'), 'undefined');
  assert.equal(await window.webContents.executeJavaScript('typeof process'),'undefined');
+ await window.webContents.executeJavaScript('document.getElementById("begin").click()');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("setup").hidden'),false);
+ await window.webContents.executeJavaScript('document.getElementById("installation").value="   ";document.getElementById("browser-next").click()');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("setup").closest(".screen").inert'),false,'Whitespace browser paths stay on the browser step');
+ assert.equal(await window.webContents.executeJavaScript('document.activeElement.id'),'installation');
+ await window.webContents.executeJavaScript(`{const e=document.getElementById("installation");e.value=${JSON.stringify('  '+zen+'  ')};e.dispatchEvent(new Event('input',{bubbles:true}));document.getElementById("browser-next").click();}`);
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("installation").value'),zen,'Trims surrounding spaces');
+ assert.equal(await window.webContents.executeJavaScript('document.querySelector(".status-copy").dataset.error'),'false','Typing a corrected path clears its error');
+ await window.webContents.executeJavaScript('document.getElementById("profile").value="  ";document.getElementById("profile-next").click()');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("profile-step").closest(".screen").inert'),false,'Whitespace profiles stay on the profile step');
+ assert.equal(await window.webContents.executeJavaScript('document.activeElement.id'),'profile');
+ await window.webContents.executeJavaScript('document.getElementById("profiles").dispatchEvent(new Event("change",{bubbles:true}));document.querySelector("[data-back=setup]").click()');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("profile").value'),profile);
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("profile").validity.valid'),true,'Selecting a detected profile clears custom validity');
+ assert.equal(await window.webContents.executeJavaScript('document.querySelector(".status-copy").dataset.error'),'false','Selecting a profile clears its error');
+ await window.webContents.executeJavaScript('document.getElementById("browser-next").click();document.querySelector("[data-back=setup]").click()');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("installation").value'),zen);
+ await window.webContents.executeJavaScript('document.getElementById("browser-next").click();document.getElementById("profile-next").click()');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("review-profile").textContent'),profile);
+ await window.webContents.executeJavaScript(`document.querySelector("[data-back=profile-step]").click();{const e=document.getElementById("profile");e.value=${JSON.stringify(path.join(fixture,'Missing profile'))};e.dispatchEvent(new Event('input',{bubbles:true}));}document.getElementById("profile-next").click();document.getElementById("install").click()`);
+ for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('document.querySelector(".status-copy").dataset.error==="true"'))break;await delay(50);}
+ assert.equal(await window.webContents.executeJavaScript('document.querySelector(".status-copy").dataset.error'),'true','An invalid profile reports the backend validation error');
+ await assert.rejects(fs.access(engine.receiptFile(profile)),'A failed selection does not install into the valid profile');
+ await window.webContents.executeJavaScript('document.querySelector("[data-back=profile-step]").click();document.getElementById("profiles").dispatchEvent(new Event("change",{bubbles:true}));document.getElementById("profile-next").click()');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("review-profile").textContent'),profile);
+ assert.equal(await window.webContents.executeJavaScript('document.querySelector(".status-copy").dataset.error'),'false','Correcting the profile clears a previous operation error');
+ window.setSize(900,660);await delay(150);
+ assert.equal(await window.webContents.executeJavaScript('document.documentElement.scrollHeight<=innerHeight'),true,'Review fits the minimum window height');
+ assert.equal(await window.webContents.executeJavaScript('new Set([...document.querySelectorAll(".product-image img")].map(img=>img.src)).size'),4,'Every setup/completion page has a distinct current product view');
+ assert.equal(await window.webContents.executeJavaScript('[...document.querySelectorAll(".product-image img")].every(img=>img.naturalWidth>0)'),true,'All current product screenshots load');
+ window.setSize(1080,740);
  await window.webContents.executeJavaScript('document.getElementById("install").click()');
  for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('document.getElementById("status").textContent.startsWith("Installed.")'))break;await delay(50);}
  assert.ok(await fs.stat(engine.receiptFile(profile)));
- await window.webContents.executeJavaScript('document.getElementById("remove").click()');
+ await window.webContents.executeJavaScript('document.getElementById("manage").click();document.getElementById("remove").click()');
  for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('document.getElementById("status").textContent.startsWith("Removed." )'))break;await delay(50);}
  await assert.rejects(fs.access(engine.receiptFile(profile)));
  assert.equal(await fs.readFile(path.join(profile,'prefs.js'),'utf8'),'user_pref("untouched", true);\n');
  assert.equal(await window.webContents.executeJavaScript('document.documentElement.scrollWidth<=innerWidth'),true);
- window.showInactive();await delay(250);
+ await delay(250);
  const artifacts=path.join(__dirname,'..','artifacts');await fs.mkdir(artifacts,{recursive:true});await fs.writeFile(path.join(artifacts,'installer.png'),(await window.webContents.capturePage()).toPNG());
  assert.deepEqual(errors,[]);
  console.log('PASS: Electron UI install/remove, profile preservation, renderer isolation, layout');

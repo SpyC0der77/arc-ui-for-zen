@@ -1,0 +1,12 @@
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  /* Keep the parked address field below navigation when the command bar detaches. */
+  :root[data-arc-ui] #nav-bar {
+    margin-block-start: 8px !important;
+  }
+  :root[data-arc-ui]
+    #urlbar-container:has(#urlbar[open][zen-floating-urlbar="true"]) {
+    min-height: 40px !important;
+    height: 40px !important;
+  }
+}
