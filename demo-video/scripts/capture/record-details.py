@@ -37,7 +37,7 @@ try:
  # Run the installed auto-archive code with one genuine, visited tab aged 13 hours.
  js("window.demoIdleTab=gBrowser.addTab('https://example.com/',{triggeringPrincipal:Services.scriptSecurityManager.getSystemPrincipal(),skipAnimation:true})")
  shot('Background tab before auto archive',duration=3.5)
- source=Path('payload/arc.uc.js').read_text(encoding='utf-8')
+ source=Path('payload/content/features/archive/auto-archive.js').read_text(encoding='utf-8')
  info=source[source.index('  function archiveTabInfo'):source.index('  // Zen keeps the table')]
  announce=source[source.index('  function announceArchive'):source.index('  if (!PrivateBrowsingUtils.isWindowPrivate(window))',source.index('  function announceArchive'))]
  js("const fixture={};Services.scriptloader.loadSubScript('chrome://arc-ui/content/archive.js',fixture,'UTF-8');const later=(fn,ms)=>window.setTimeout(fn,ms);const animate=(node,frames,options)=>node.animate(frames,options).finished;"+info+announce+"window.demoIdleTab._lastAccessed=Date.now()-13*3600000;window.demoArchiveStop=fixture.ArcArchive.start({tabs:()=>[archiveTabInfo(window.demoIdleTab)],close:row=>gBrowser.removeTab(row.tab,{animate:false}),announce:announceArchive,getHours:()=>12,schedule:later,cancel:clearTimeout,delay:600,interval:3600000});")

@@ -34,7 +34,8 @@ function parse(args){
 }
 async function main(args,api={...engine,launch},write=console.log){
  const options=parse(args);if(options.help){write(HELP);return;}
- const info=await api.discover();
+ const info=options.command==='discover'||!options.installation||!options.profile
+  ?await api.discover():null;
  if(options.command==='discover'){write(JSON.stringify(info,null,2));return;}
  const installation=options.installation||(info.apps.length===1?info.apps[0]:null);
  const profile=options.profile||(info.profiles.length===1?info.profiles[0].path:null);

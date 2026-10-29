@@ -22,9 +22,29 @@ var ArcDownloadRows = {
           return relativeTime.format(-Math.floor(seconds / length), unit);
       }
     }
+    const lists = new WeakMap();
     function render(list, downloads) {
-      list.replaceChildren();
+      const previous = lists.get(list) || new Map();
+      const current = new Map();
+      let index = 0;
       for (const download of [...downloads].reverse().slice(0, 20)) {
+        const state = JSON.stringify([
+          download.target.path, download.succeeded, download.stopped,
+          download.hasPartialData, !!download.error, download.hasProgress,
+        ]);
+        const cached = previous.get(download);
+        if (cached?.state === state) {
+          const { row } = cached;
+          if (!download.stopped && download.hasProgress) {
+            row.querySelector('progress').value = download.progress;
+            row.querySelector('.arc-download-meta').textContent =
+              `${size(download.currentBytes)} of ${size(download.totalBytes)}`;
+          }
+          if (list.children[index] !== row) list.insertBefore(row, list.children[index] || null);
+          current.set(download, cached);
+          index++;
+          continue;
+        }
         const row = el("li", { class: "arc-download-row" });
         const name = PathUtils.filename(download.target.path);
         const main = el("button", {
@@ -102,12 +122,6 @@ var ArcDownloadRows = {
         label.append(
           el("span", { class: "arc-download-name", title: name }, name),
         );
-        const size = (bytes) =>
-          bytes >= 1048576
-            ? `${(bytes / 1048576).toFixed(1)} MB`
-            : bytes >= 1024
-              ? `${Math.round(bytes / 1024)} KB`
-              : `${bytes} B`;
         const meta = download.succeeded
           ? downloadAge(download)
           : download.error
@@ -167,13 +181,25 @@ var ArcDownloadRows = {
             ),
           );
         }
-        list.append(row);
+        if (cached) cached.row.replaceWith(row);
+        if (list.children[index] !== row) list.insertBefore(row, list.children[index] || null);
+        current.set(download, { row, state });
+        index++;
       }
+      for (const [download, cached] of previous)
+        if (!current.has(download)) cached.row.remove();
+      for (const empty of list.querySelectorAll('.arc-download-empty')) empty.remove();
+      lists.set(list, current);
       if (!downloads.length) {
         const empty = el("li", { class: "arc-download-empty" });
         empty.textContent = "No downloads yet";
         list.append(empty);
       }
+    }
+
+    function size(bytes) {
+      return bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB`
+        : bytes >= 1024 ? `${Math.round(bytes / 1024)} KB` : `${bytes} B`;
     }
 
     return { render, downloadAge };

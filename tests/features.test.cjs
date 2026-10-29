@@ -165,3 +165,27 @@ test("stylesheet entrypoint imports existing local styles exactly once", () => {
     assert.ok(!file.includes(".."));
   }
 });
+
+test("a failed sidebar measurement does not block the next dock attempt", async () => {
+  let missing = true, updates = 0;
+  const node = {getBoundingClientRect: () => ({width:0,height:0}), matches: () => false,
+    removeAttribute() {}};
+  const manager = {preference:false, _setElementExpandAttribute() {},
+    clearFlashTimeout() {}, _updateEvent() { updates++; }};
+  const window = {
+    document: {documentElement:{removeAttribute() {}}, getElementById(id) {
+      return id === 'zen-toolbar-background' && missing ? null : node;
+    }},
+    gZenCompactModeManager: manager,
+    getComputedStyle: () => ({visibility:'hidden'}),
+    addEventListener() {}, removeEventListener() {},
+  };
+  const feature = load('features/sidebar/compact-mode.js', 'ArcCompactSidebar').install(window, {
+    createMotion: () => ({reduced: () => true, destroy() {}}), updateNav() {},
+  });
+  await assert.rejects(manager._updateEvent());
+  missing = false;
+  await manager._updateEvent();
+  assert.equal(updates, 1);
+  feature.destroy();
+});

@@ -46,7 +46,6 @@ var ArcCompactSidebar = {
       ...args
     ) {
       if (destroyed || sidebarAnimating) return;
-      sidebarAnimating = true;
       const before = content.getBoundingClientRect(),
         sideBefore = toolbox.getBoundingClientRect();
       const wasCompact = this.preference;
@@ -81,6 +80,7 @@ var ArcCompactSidebar = {
       let snapshot = null,
         ghost = null,
         surface = null;
+      sidebarAnimating = true;
       try {
         if (
           !wasCompact &&

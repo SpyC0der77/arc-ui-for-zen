@@ -38,8 +38,8 @@ var ArcSplitActions = {
       const button = event.target.closest?.(".tab-close-button");
       const tab = button?.closest(".tabbrowser-tab");
       if (!tab?.closest("tab-group[split-view-group]")) return;
-      // Read the click's modifiers too, in case focus arrived while held.
-      if (!active && !(mac ? event.metaKey : event.ctrlKey)) return;
+      // Chrome can miss keyup while focus is in web content. The click is authoritative.
+      if (!(mac ? event.metaKey : event.ctrlKey)) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       if (event.type !== "click") return;

@@ -3,3 +3,15 @@ test('CLI rejects bad flags and missing values',()=>{assert.throws(()=>parse(['i
 test('ambiguous discovery does not mutate anything',async()=>{await assert.rejects(main(['install'],{discover:async()=>({apps:['a','b'],profiles:[{path:'p'}]})},()=>{}),/Specify/);});
 test('install opens only after success and preserves explicit paths',async()=>{const calls=[];const api={discover:async()=>({apps:[],profiles:[]}),install:async(...args)=>{calls.push(args);return {message:'Installed.'};},launch:async(...args)=>calls.push(['open',...args])};await main(['install','--installation','app with spaces','--profile','profile with spaces','--open'],api,()=>{});assert.deepEqual(calls,[['app with spaces','profile with spaces'],['open','app with spaces','profile with spaces']]);api.install=async()=>{throw Error('conflict');};calls.length=0;await assert.rejects(main(['install','--installation','a','--profile','p','--open'],api,()=>{}),/conflict/);assert.deepEqual(calls,[]);});
 test('open calls launcher without installing',async()=>{const calls=[];await main(['open'],{discover:async()=>({apps:['a'],profiles:[{path:'p'}]}),launch:async(...args)=>calls.push(args)},()=>{});assert.deepEqual(calls,[['a','p']]);});
+
+test('explicit operations do not depend on profile discovery', async () => {
+ for (const command of ['install', 'remove', 'open']) {
+  const calls = [];
+  const perform = async (...args) => { calls.push(args); return {message:'Done.'}; };
+  await main([command, '--installation', 'app', '--profile', 'profile'], {
+   discover: async () => { throw Error('Unreadable profiles.ini'); },
+   install: perform, remove: perform, launch: perform,
+  }, () => {});
+  assert.deepEqual(calls, [['app', 'profile']]);
+ }
+});
