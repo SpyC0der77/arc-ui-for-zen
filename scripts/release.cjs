@@ -34,7 +34,7 @@ function prepare(directory = 'release', notesFile = 'release-notes.md') {
 
 Download the file for your operating system. Zen must already be installed in a user-writable application folder. Immutable Flatpak/Snap/AppImage browser installations are not supported directly.
 
-Close Zen before installing. To update an existing theme, remove it with the installer first, then install this version into the same application and profile. Use **Open Zen** in the installer afterward to refresh startup caches. Keep your profile and browser data.
+Close Zen before installing. To update an existing theme, install this version into the same application and profile; the installer removes the previous version and installs the new one automatically. Use **Open Zen** in the installer afterward to refresh startup caches. Keep your profile and browser data.
 
 ## Checksums
 

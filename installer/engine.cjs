@@ -5,7 +5,7 @@ const crypto = require('node:crypto');
 const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const run = promisify(execFile);
-const VERSION = '0.1.2';
+const VERSION = '0.1.3';
 const SUPPORTED_VERSIONS = Object.freeze(['1.22.3b', '1.23.3b', '1.23.4b', '1.24b']);
 const SUPPORTED = SUPPORTED_VERSIONS.join(', ');
 const BEGIN = '// BEGIN Arc UI for Zen';
@@ -87,7 +87,13 @@ async function writable(folder) {
 async function install(installation,profile,{payload=path.join(__dirname,'..','payload'),...options}={}) {
   const target=await validate(installation,profile,options);
   const manifest=receiptFile(target.profile);
-  if(await exists(manifest))throw new Error('Arc UI is already installed in this profile. Remove it before reinstalling.');
+  if(await exists(manifest)) {
+    // Same installation and profile: treat the install as an upgrade and remove the previous version first.
+    const previous=JSON.parse(await fs.readFile(manifest,'utf8'));
+    const same=eq(previous.profile,target.profile)&&eq(previous.resources,target.resources);
+    if(!same)throw new Error('Arc UI is already installed in this profile. Remove it before reinstalling.');
+    await remove(target.app,target.profile,options);
+  }
   const prefDir=path.join(target.resources,'defaults','pref');
   for(const file of await fs.readdir(prefDir).catch(e=>{if(e.code==='ENOENT')return [];throw e;})) {
     if(!file.endsWith('.js'))continue;
