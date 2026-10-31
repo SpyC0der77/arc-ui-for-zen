@@ -10,10 +10,11 @@ const originalInstall=engine.install,originalRemove=engine.remove;
 engine.install=(installation,profile)=>originalInstall(installation,profile,{checkClosed:async()=>{}});
 engine.remove=(installation,profile)=>originalRemove(installation,profile,{checkClosed:async()=>{}});
 app.whenReady().then(async()=>{
- fixture=await fs.mkdtemp(path.join(os.tmpdir(),'arc-ui-ui-'));
- const zen=path.join(fixture,'Zen'),profile=path.join(fixture,'Profile');await fs.mkdir(zen);await fs.mkdir(profile);
- await fs.writeFile(path.join(zen,'zen.exe'),'fixture');await fs.writeFile(path.join(zen,'application.ini'),'[App]\nVersion=1.23.4b\n');await fs.writeFile(path.join(profile,'prefs.js'),'user_pref("untouched", true);\n');
- engine.discover=async()=>({platform:'win32',version:engine.VERSION,supportedZen:engine.SUPPORTED,apps:[zen],profiles:[{name:'Verification profile',path:profile,installed:false}]});
+ fixture=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'arc-ui-ui-')));
+ const zen=path.join(fixture,process.platform==='darwin'?'Zen.app':'Zen'),profile=path.join(fixture,'Profile'),layout=engine.layout(zen);await fs.mkdir(path.dirname(layout.exe),{recursive:true});await fs.mkdir(layout.resources,{recursive:true});await fs.mkdir(profile);
+ await fs.writeFile(layout.exe,'fixture');await fs.writeFile(path.join(layout.resources,'application.ini'),'[App]\nVersion=1.23.4b\n');await fs.writeFile(path.join(profile,'prefs.js'),'user_pref("untouched", true);\n');
+ const discovery={platform:process.platform,version:engine.VERSION,supportedZen:engine.SUPPORTED,apps:[zen],profiles:[{name:'Verification profile',path:profile,installed:false}],instances:[{app:zen,profile}]};
+ engine.discover=async()=>discovery;
  require(path.join(appRoot,'installer','main.cjs'));
  let window;
  for(let i=0;i<100;i++){window=BrowserWindow.getAllWindows()[0];if(window&&!window.webContents.isLoading()&&await window.webContents.executeJavaScript('!!window.zenInstaller && document.getElementById("status")?.textContent.includes("Zen found")'))break;await delay(50);}
@@ -21,9 +22,19 @@ app.whenReady().then(async()=>{
  const errors=[];window.webContents.on('console-message',event=>{if(event.level==='error')errors.push(event.message);});
  assert.equal(await window.webContents.executeJavaScript('typeof require'), 'undefined');
  assert.equal(await window.webContents.executeJavaScript('typeof process'),'undefined');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("applications").value'),zen,'Automatically selects the detected browser');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("manual-installation").open'),false,'Manual browsing stays optional when Zen is detected');
+ const other=path.join(fixture,'Another Zen'),otherProfile=path.join(fixture,'Other Profile');
+ discovery.apps.push(other);discovery.profiles.push({name:'Other profile',path:otherProfile,installed:false});discovery.instances.push({app:other,profile:otherProfile});
+ await window.webContents.executeJavaScript('document.getElementById("search-again").click()');
+ for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('document.getElementById("applications").options.length===3&&!document.getElementById("search-again").disabled'))break;await delay(50);}
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("applications").value'),zen,'Rescanning preserves the selection');
+ await window.webContents.executeJavaScript(`{const e=document.getElementById("applications");e.value=${JSON.stringify(other)};e.dispatchEvent(new Event("change"));}`);
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("profile").value'),otherProfile,'Selecting an instance selects its matching profile');
+ await window.webContents.executeJavaScript(`{const e=document.getElementById("applications");e.value=${JSON.stringify(zen)};e.dispatchEvent(new Event("change"));}`);
  await window.webContents.executeJavaScript('document.getElementById("begin").click()');
  assert.equal(await window.webContents.executeJavaScript('document.getElementById("setup").hidden'),false);
- await window.webContents.executeJavaScript('document.getElementById("installation").value="   ";document.getElementById("browser-next").click()');
+ await window.webContents.executeJavaScript('document.getElementById("manual-installation").open=true;document.getElementById("installation").value="   ";document.getElementById("browser-next").click()');
  assert.equal(await window.webContents.executeJavaScript('document.getElementById("setup").closest(".screen").inert'),false,'Whitespace browser paths stay on the browser step');
  assert.equal(await window.webContents.executeJavaScript('document.activeElement.id'),'installation');
  await window.webContents.executeJavaScript(`{const e=document.getElementById("installation");e.value=${JSON.stringify('  '+zen+'  ')};e.dispatchEvent(new Event('input',{bubbles:true}));document.getElementById("browser-next").click();}`);
@@ -58,6 +69,11 @@ app.whenReady().then(async()=>{
  await window.webContents.executeJavaScript('document.getElementById("manage").click();document.getElementById("remove").click()');
  for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('document.getElementById("status").textContent.startsWith("Removed." )'))break;await delay(50);}
  await assert.rejects(fs.access(engine.receiptFile(profile)));
+ discovery.apps=[];discovery.profiles=[];discovery.instances=[];
+ await window.webContents.executeJavaScript('document.getElementById("search-again").click()');
+ for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('document.getElementById("status").textContent.startsWith("No Zen found")'))break;await delay(50);}
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("manual-installation").open'),true,'An empty search offers manual selection');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("installation").value'),zen,'An empty rescan preserves a manually chosen path');
  assert.equal(await fs.readFile(path.join(profile,'prefs.js'),'utf8'),'user_pref("untouched", true);\n');
  assert.equal(await window.webContents.executeJavaScript('document.documentElement.scrollWidth<=innerWidth'),true);
  await delay(250);

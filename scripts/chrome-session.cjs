@@ -3,7 +3,10 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const net = require('node:net');
-const {spawn} = require('node:child_process');
+const os = require('node:os');
+const {spawn, execFile} = require('node:child_process');
+const {promisify} = require('node:util');
+const run = promisify(execFile);
 const engine = require('../installer/engine.cjs');
 
 (async () => {
@@ -19,7 +22,12 @@ const engine = require('../installer/engine.cjs');
   const artifacts = path.resolve(__dirname, '../artifacts');
   await fs.mkdir(artifacts, {recursive:true});
   const folder = await fs.mkdtemp(path.join(artifacts, 'chrome-session-'));
-  const app = path.join(folder, process.platform === 'darwin' ? 'Zen.app' : 'Zen');
+  // macOS signing can fail in cloud-managed workspaces. Keep the disposable
+  // bundle local; diagnostics and its fresh profile remain under artifacts.
+  const appFolder = process.platform === 'darwin'
+    ? await fs.mkdtemp(path.join(await fs.realpath(os.tmpdir()), 'arc-ui-chrome-session-'))
+    : folder;
+  const app = path.join(appFolder, process.platform === 'darwin' ? 'Zen.app' : 'Zen');
   const profile = path.join(folder, 'profile');
   await fs.cp(path.resolve(source), app, {recursive:true});
   await fs.mkdir(profile);
@@ -34,6 +42,22 @@ const engine = require('../installer/engine.cjs');
   // Only this freshly created application copy is modified. A running personal
   // Zen is unrelated; the installer's normal conflict/receipt checks still run.
   await engine.install(app, profile, {checkClosed:async () => {}});
+  if (process.platform === 'darwin') {
+    // Installing startup resources invalidates the publisher's bundle seal.
+    // Sign only this new disposable copy, retaining local browser capabilities
+    // without publisher-only identity/passkey entitlements or Gatekeeper changes.
+    const capabilities = ['cs.allow-jit', 'cs.disable-library-validation',
+      'device.audio-input', 'device.camera', 'device.usb',
+      'personal-information.location', 'smartcard'];
+    const entitlements = path.join(folder, 'local-entitlements.plist');
+    await fs.writeFile(entitlements, '<?xml version="1.0" encoding="UTF-8"?>\n'+
+      '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n'+
+      '<plist version="1.0"><dict>'+capabilities.map(key=>
+        `<key>com.apple.security.${key}</key><true/>`).join('')+'</dict></plist>\n');
+    await run('codesign', ['--force', '--sign', '-', '--options', 'runtime',
+      '--entitlements', entitlements, app]);
+    await run('codesign', ['--verify', '--deep', '--strict', app]);
+  }
   const child = spawn(engine.layout(app).exe, [
     '-no-remote', '-purgecaches', '--marionette', '-profile', profile, 'about:blank'
   ], {

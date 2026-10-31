@@ -73,6 +73,27 @@ var ArcDownloads = {
     function placePopup() {
       const r = gift.getBoundingClientRect();
       const sidebar = toolbox.getBoundingClientRect();
+      if (list.querySelector(".arc-download-empty")) {
+        const footerNode = document.getElementById("zen-sidebar-foot-buttons");
+        const footer = footerNode.getBoundingClientRect();
+        if (footer.width > 0 && footer.height > 0) {
+          // The footer is inset from the sidebar surface. Cover the whole
+          // surface, including the margins beside its buttons. In compact
+          // mode the visible surface is Zen's floating background panel.
+          const background = document
+            .getElementById("zen-toolbar-background")
+            ?.getBoundingClientRect();
+          const surface = background?.width > 0 ? background : sidebar;
+          popup.style.width = `${surface.width}px`;
+          popup.style.left = `${surface.left}px`;
+          // A short workspace ends far above the footer. Anchor to the footer
+          // and its layout gap so the empty state stays beside the gift for
+          // every tab count. The blur extends 2px below the popup itself.
+          const gap = parseFloat(window.getComputedStyle(footerNode.parentElement).rowGap) || 0;
+          popup.style.bottom = `${window.innerHeight - footer.top + gap + 2}px`;
+          return;
+        }
+      }
       const width = Math.min(
         Math.max(sidebar.width, 200),
         264,

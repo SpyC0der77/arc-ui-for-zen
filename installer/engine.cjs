@@ -5,7 +5,7 @@ const crypto = require('node:crypto');
 const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const run = promisify(execFile);
-const VERSION = '0.1.3';
+const VERSION = '0.1.4';
 const SUPPORTED_VERSIONS = Object.freeze(['1.22.3b', '1.23.3b', '1.23.4b', '1.24b']);
 const SUPPORTED = SUPPORTED_VERSIONS.join(', ');
 const BEGIN = '// BEGIN Arc UI for Zen';
@@ -189,15 +189,56 @@ function candidates(platform=process.platform,home=os.homedir(),env=process.env)
 }
 async function discover(options={}) {
   const platform=options.platform||process.platform;
-  const places=candidates(platform,options.home,options.env);const apps=[],profiles=[];
-  for(const app of places.apps)if(await exists(layout(app,platform).exe))apps.push(app);
+  const home=options.home||os.homedir(),env=options.env||process.env;
+  const places=candidates(platform,home,env);const apps=[],profiles=[],instances=[];
+  const discovery=require('./discovery.cjs');
+  const running=options.instances??(options.home?[]:await discovery.runningInstances(platform,options.runCommand));
+  const scanned=await discovery.scanApplications(options.appDirectories??discovery.applicationDirectories(platform,home,env),platform);
+  const indexed=options.indexedApps??(options.home?[]:await discovery.indexedApplications(platform,options.runCommand));
+  const addApp=async app=>{
+    if(typeof app!=='string'||!app||!await exists(layout(app,platform).exe))return null;
+    const real=await fs.realpath(app);
+    if(!apps.some(p=>eq(p,real,platform)))apps.push(real);
+    return real;
+  };
+  const addProfile=async(profile,name)=>{
+    if(typeof profile!=='string'||!profile||!await exists(path.join(profile,'prefs.js')))return null;
+    const real=await fs.realpath(profile);
+    if(!profiles.some(p=>eq(p.path,real,platform)))profiles.push({name:name||path.basename(real),path:real,installed:await exists(receiptFile(real))});
+    return real;
+  };
+  for(const instance of running){
+    const app=await addApp(instance.app),profile=await addProfile(instance.profile);
+    if(app)instances.push({app,profile,pid:instance.pid});
+  }
+  for(const app of [...places.apps,...scanned,...indexed])await addApp(app);
   for(const root of places.profileRoots) {
-    let sections;try{sections=parseIni(await fs.readFile(path.join(root,'profiles.ini'),'utf8'));}catch(e){if(e.code==='ENOENT')continue;throw e;}
+    let sections;try{sections=parseIni(await fs.readFile(path.join(root,'profiles.ini'),'utf8'));}catch(e){if(['ENOENT','EACCES','EPERM'].includes(e.code))continue;throw e;}
     for(const [key,entry] of Object.entries(sections))if(/^Profile\d+$/.test(key)&&entry.Path) {
       const profile=entry.IsRelative==='0'?path.resolve(entry.Path):path.resolve(root,entry.Path);
-      if(await exists(path.join(profile,'prefs.js')))profiles.push({name:entry.Name||key,path:profile,installed:await exists(receiptFile(profile))});
+      await addProfile(profile,entry.Name||key);
     }
   }
-  return {platform,version:VERSION,supportedZen:SUPPORTED,apps,profiles};
+  for(const profile of profiles){
+    const receipt=await fs.readFile(receiptFile(profile.path),'utf8').then(text=>{try{return JSON.parse(text);}catch{return null;}},()=>null);
+    if(receipt?.installation)await addApp(receipt.installation);
+    const compatibility=await fs.readFile(path.join(profile.path,'compatibility.ini'),'utf8').then(parseIni,()=>({}));
+    for(const directory of [compatibility.Compatibility?.LastPlatformDir,compatibility.Compatibility?.LastAppDir].filter(Boolean)){
+      if(platform==='darwin')await addApp(directory.split('/Contents/')[0]);
+      else {await addApp(directory);await addApp(path.dirname(directory));}
+    }
+  }
+  // App ownership receipts connect an installed theme to its exact profile.
+  for(const app of apps){
+    const owner=await fs.readFile(path.join(layout(app,platform).resources,'arc-ui-owner.json'),'utf8').then(text=>{try{return JSON.parse(text);}catch{return null;}},()=>null);
+    if(owner?.profile){
+      const profile=await addProfile(owner.profile);
+      if(profile&&!instances.some(i=>eq(i.app,app,platform)&&i.profile&&eq(i.profile,profile,platform))){
+        const unmatched=instances.find(i=>eq(i.app,app,platform)&&!i.profile);
+        if(unmatched)unmatched.profile=profile;else instances.push({app,profile});
+      }
+    }
+  }
+  return {platform,version:VERSION,supportedZen:SUPPORTED,apps,profiles,instances};
 }
 module.exports={VERSION,SUPPORTED,SUPPORTED_VERSIONS,BEGIN,END,parseIni,layout,candidates,discover,install,remove,validate,receiptFile,digest};

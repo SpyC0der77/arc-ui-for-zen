@@ -36,9 +36,31 @@
       transparent calc(100% - 10px)
     );
   }
-  /* The empty message belongs to the primary sidebar surface. */
+  /* Fade up from the footer instead of letting tab labels compete with the
+     empty message. Keep the blur behind the text and out of pointer input. */
   :root[data-arc-ui] #arc-download-popup:has(.arc-download-empty) {
     background: transparent !important;
+    overflow: visible;
+  }
+  /* Match Zen's native bottom separator, including its scroll-end state.
+     Inactive workspaces must not turn on the blur for the current workspace. */
+  :root[data-arc-ui]:has(
+      zen-workspace[active] > .workspace-arrowscrollbox[overflowing]:not([scrolledtoend])
+    ) #arc-download-popup:has(.arc-download-empty)::before {
+    content: "";
+    position: absolute;
+    inset: -28px 0 -2px;
+    background: color-mix(in srgb, var(--arc-surface) 85%, transparent);
+    backdrop-filter: blur(12px);
+    mask-image: linear-gradient(to bottom, transparent, black 28px);
+    border-bottom: 1px solid #44375026;
+    pointer-events: none;
+  }
+  :root[data-arc-ui] #arc-download-popup:has(.arc-download-empty) .arc-download-list {
+    padding-inline-end: 0;
+  }
+  #arc-download-popup:has(.arc-download-empty) .arc-download-content {
+    position: relative;
   }
   .arc-download-content {
     display: flex;

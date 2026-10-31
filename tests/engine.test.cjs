@@ -5,6 +5,48 @@ const path=require('node:path');
 const os=require('node:os');
 const engine=require('../installer/engine.cjs');
 const options={checkClosed:async()=>{}};
+test('discovery finds running portable Zen and its unregistered profile without duplicates',async t=>{
+ const f=await fixture(t,'linux');
+ const result=await engine.discover({platform:'linux',home:path.join(f.root,'home'),env:{},appDirectories:[f.root],instances:[{app:f.app,profile:f.profile,pid:123}]});
+ assert.deepEqual(result.apps,[await fs.realpath(f.app)]);
+ assert.equal(result.profiles[0].path,await fs.realpath(f.profile));
+ assert.equal(result.instances[0].profile,result.profiles[0].path);
+ assert.equal(result.instances[0].pid,123);
+});
+test('discovery scans renamed macOS applications and ignores non-browser folders',async t=>{
+ const f=await fixture(t,'darwin');
+ const directory=path.join(f.root,'Applications'),app=path.join(directory,'My Zen.app');
+ await fs.mkdir(directory);await fs.rename(f.app,app);
+ await fs.mkdir(path.join(directory,'Other.app'));
+ const result=await engine.discover({platform:'darwin',home:path.join(f.root,'home'),env:{},instances:[],appDirectories:[directory]});
+ assert.deepEqual(result.apps.filter(p=>p.startsWith(f.root+path.sep)),[await fs.realpath(app)]);
+});
+test('discovery follows registered profile compatibility records to a custom application',async t=>{
+ const f=await fixture(t,'linux'),home=path.join(f.root,'home'),root=path.join(home,'.zen');
+ await fs.mkdir(root,{recursive:true});
+ await fs.writeFile(path.join(root,'profiles.ini'),`[Profile0]\nName=Personal\nIsRelative=0\nPath=${f.profile}\n`);
+ await fs.writeFile(path.join(f.profile,'compatibility.ini'),`[Compatibility]\nLastPlatformDir=${f.app}\n`);
+ const result=await engine.discover({platform:'linux',home,env:{},instances:[],appDirectories:[]});
+ assert.deepEqual(result.apps,[await fs.realpath(f.app)]);
+});
+test('running process discovery accepts profile paths with spaces and trailing URLs',async t=>{
+ const f=await fixture(t,'linux'),profile=path.join(f.root,'Profile with spaces');
+ await fs.rename(f.profile,profile);
+ const {runningInstances,profileFromCommand}=require('../installer/discovery.cjs');
+ assert.equal(await profileFromCommand(`zen -profile "${profile}" -purgecaches`),profile);
+ const result=await runningInstances('linux',async(command,args)=>({stdout:args.includes('-axo')?`123 ${f.app}/zen\n`:`${f.app}/zen -profile ${profile} about:blank\n`}));
+ assert.equal(result[0].profile,profile);
+ assert.equal(result[0].app,f.app);
+ assert.deepEqual(await runningInstances('linux',async()=>{throw new Error('denied');}),[]);
+});
+test('discovery validates indexed macOS apps and ignores stale index entries',async t=>{
+ const f=await fixture(t,'darwin');
+ const result=await engine.discover({platform:'darwin',home:path.join(f.root,'home'),env:{},instances:[],appDirectories:[],indexedApps:[f.app,path.join(f.root,'Missing.app'),f.app]});
+ assert.deepEqual(result.apps.filter(p=>p.startsWith(f.root+path.sep)),[await fs.realpath(f.app)]);
+ const {indexedApplications}=require('../installer/discovery.cjs');
+ assert.deepEqual(await indexedApplications('darwin',async()=>({stdout:'/Applications/Custom Zen.app\n/invalid\n'})),['/Applications/Custom Zen.app']);
+ assert.deepEqual(await indexedApplications('darwin',async()=>{throw new Error('unavailable');}),[]);
+});
 async function fixture(t,platform=process.platform) {
  const root=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'arc-ui-test-')));
  t.after(()=>fs.rm(root,{recursive:true,force:true}));

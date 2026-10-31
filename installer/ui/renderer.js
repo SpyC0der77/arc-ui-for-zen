@@ -4,6 +4,7 @@ const api = window.zenInstaller;
 const steps=['welcome','setup','profile-step','review','complete'];
 let busy=false,currentStep='welcome',focusPending=false,pageTransition;
 let errorSelection=null;
+let discoveredInstances=[];
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const track=$('page-track');
 const screens=[...document.querySelectorAll('.screen')];
@@ -37,6 +38,7 @@ function status(text,error=false){errorSelection=error?selection():null;$('statu
 function selectionChanged(key){
  $(key).setCustomValidity('');
  const value=selection();
+ if(key==='installation')$('applications').value=value.installation;
  if(errorSelection&&(value.installation!==errorSelection.installation||value.profile!==errorSelection.profile))status('Review the selected folders before installing.');
 }
 function validFolder(key){
@@ -44,6 +46,10 @@ function validFolder(key){
  field.value=field.value.trim();
  const message=key==='installation'?'Choose a Zen application folder.':'Choose a Zen profile folder.';
  field.setCustomValidity(field.value?'':message);
+ if(key==='installation'&&!field.value&&$('applications').options.length>1&&!$('manual-installation').open){
+  status('Select a detected Zen installation.',true);$('applications').focus();return false;
+ }
+ if(!field.value)field.closest('details')?.setAttribute('open','');
  if(field.reportValidity())return true;
  status(message,true);field.focus();return false;
 }
@@ -64,6 +70,14 @@ for(const key of ['installation','profile']){
  $('browse-'+key).addEventListener('click',()=>void execute(async()=>{const folder=unwrap(await api.chooseFolder());if(folder){$(key).value=folder;selectionChanged(key);}}));
 }
 $('profiles').addEventListener('change',()=>{if($('profiles').value){$('profile').value=$('profiles').value;selectionChanged('profile');}});
+function selectDetectedApplication(){
+ $('installation').value=$('applications').value;
+ selectionChanged('installation');
+ const matches=discoveredInstances.filter(instance=>instance.app===$('applications').value&&instance.profile);
+ if(matches.length===1){$('profiles').value=matches[0].profile;$('profile').value=matches[0].profile;selectionChanged('profile');}
+}
+$('applications').addEventListener('change',selectDetectedApplication);
+$('search-again').addEventListener('click',()=>void execute(searchForZen));
 $('installer').addEventListener('submit',event=>{
  event.preventDefault();
  const missing=!selection().installation?'installation':!selection().profile?'profile':null;
@@ -74,13 +88,25 @@ $('remove').addEventListener('click',()=>void execute(async()=>{status('Removing
 const openZen=()=>void execute(async()=>{unwrap(await api.launch(selection()));status('Zen opened.');});
 $('launch').addEventListener('click',openZen);
 $('finish').addEventListener('click',openZen);
-void execute(async()=>{
+async function searchForZen(){
+ status('Looking for Zen...');
  const info=unwrap(await api.discover());
  await Promise.all([imagesReady,document.fonts.ready]);
  $('version').textContent=`Installer ${info.version} / Zen ${info.supportedZen} / ${info.platform}`;
  for(const copy of document.querySelectorAll('.version-copy'))copy.textContent=$('version').textContent;
- if(info.apps.length)$('installation').value=info.apps[0];
+ discoveredInstances=info.instances||[];
+ const previous=selection();
+ $('applications').replaceChildren(new Option(info.apps.length?'Select a Zen installation...':'No Zen installations found',''));
+ for(const app of info.apps)$('applications').append(new Option(app,app));
+ $('profiles').replaceChildren(new Option('Select a profile...',''));
  for(const profile of info.profiles){const option=document.createElement('option');option.value=profile.path;option.textContent=profile.name+(profile.installed?' (installed)':'');$('profiles').append(option);}
- if(info.profiles.length===1){$('profiles').value=info.profiles[0].path;$('profile').value=info.profiles[0].path;}
- status(info.apps.length?'Zen found. Choose a profile during setup.':'Choose your Zen application folder to get started.');
-});
+ if(info.profiles.some(p=>p.path===previous.profile))$('profiles').value=previous.profile;
+ else if(!previous.profile&&info.profiles.length===1){$('profiles').value=info.profiles[0].path;$('profile').value=info.profiles[0].path;}
+ const running=discoveredInstances.filter(instance=>instance.pid);
+ const preferred=info.apps.includes(previous.installation)?previous.installation:
+  !previous.installation?(running.length===1?running[0].app:discoveredInstances.length===1?discoveredInstances[0].app:info.apps.length===1?info.apps[0]:null):null;
+ if(preferred){$('applications').value=preferred;selectDetectedApplication();}
+ $('manual-installation').open=!info.apps.length;
+ status(info.apps.length?'Zen found. Review the detected browser and profile during setup.':'No Zen found. Open Zen and search again, or choose its folder manually.');
+}
+void execute(searchForZen);

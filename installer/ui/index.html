@@ -14,9 +14,14 @@
 <p class="progress">1 of 3</p>
 <p class="title" tabindex="-1">Choose your browser.</p>
 <p class="intro">Select the Zen application you want to style.</p>
+<label for="applications">Detected Zen installations</label>
+<select id="applications"><option value="">Searching for Zen...</option></select>
+<button id="search-again" class="browse" type="button">Search again</button>
+<details id="manual-installation" class="manual-location"><summary>Choose a different location</summary>
 <label for="installation">Zen application folder</label>
 <input id="installation" spellcheck="false" autocomplete="off" placeholder="Choose your Zen application folder" required>
 <button id="browse-installation" class="browse" type="button">Choose folder...</button>
+</details>
 <p class="help">Use the folder containing Zen, or Zen.app on macOS.</p>
 <div class="actions"><button type="button" data-back="welcome">Back</button><button id="browser-next" class="primary" type="button">Continue</button></div>
 </section></div><footer><p class="status-copy">Looking for Zen...</p><p class="version-copy help"></p></footer></div><figure class="product-column"><div class="product-image"><img id="product-image" src="product-sidebar.png" width="1024" height="772" alt="Current Arc UI for Zen sidebar with sample folders and tabs"></div><figcaption>Your folders and tabs, together in the sidebar. Sample data.</figcaption></figure></div></article>

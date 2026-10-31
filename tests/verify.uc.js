@@ -131,6 +131,12 @@
     check(getComputedStyle(document.getElementById('arc-download-popup')).display!=='none','custom download popup is visible on library hover');
     check(document.getElementById('arc-download-popup').matches(':popover-open'),'custom menu paints in the top layer');
     check(document.querySelector('.arc-download-empty')&&!document.querySelector('.arc-download-footer'),'empty menu uses the custom layout instead of the old footer');
+    const emptyBounds=document.getElementById('arc-download-popup').getBoundingClientRect();
+    const sidebarFooter=document.getElementById('zen-sidebar-foot-buttons');
+    const footerGap=parseFloat(getComputedStyle(sidebarFooter.parentElement).rowGap)||0;
+    check(Math.abs(emptyBounds.bottom+2+footerGap-sidebarFooter.getBoundingClientRect().top)<1,'empty downloads stay anchored above the footer even with a short tab list');
+    const nativeBottomLine=document.querySelector('zen-workspace[active] > .workspace-arrowscrollbox[overflowing]:not([scrolledtoend])');
+    check((getComputedStyle(document.getElementById('arc-download-popup'),'::before').content!=='none')===!!nativeBottomLine,'empty downloads blur follows the active workspace bottom separator');
     const giftBounds=gift.getBoundingClientRect(),giftX=giftBounds.x+giftBounds.width/2,giftY=giftBounds.y+giftBounds.height/2;
     check(gift.contains(document.elementFromPoint(giftX,giftY)),'gift is the actual mouse hit target');
     gift.doCommand();

@@ -49,7 +49,9 @@
   :root[data-arc-ui] #zen-browser-background::before,
   :root[data-arc-ui] #zen-browser-background::after,
   :root[data-arc-ui] #zen-toolbar-background::before,
-  :root[data-arc-ui] #zen-toolbar-background::after {
+  :root[data-arc-ui] #zen-toolbar-background::after,
+  :root[data-arc-ui] .zen-library-space-background::before,
+  :root[data-arc-ui] .zen-library-space-background::after {
     display: none !important;
   }
   :root[data-arc-ui] #navigator-toolbox {
@@ -75,7 +77,8 @@
     :root[data-arc-ui] #sidebar-box {
       background: var(--arc-surface) !important;
     }
-    :root[data-arc-ui] #zen-library-side {
+    /* Space cards and the raised navigation rail share one surface tint. */
+    :root[data-arc-ui] :is(#zen-library-side, .zen-library-space-background) {
       background: rgba(206, 199, 212, 0.35) !important;
     }
     :root[data-arc-ui] zen-library {

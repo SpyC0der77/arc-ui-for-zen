@@ -1,3 +1,12 @@
+## v0.1.4
+
+- Discover running, portable, renamed, and custom Zen installations and their profiles; add an installation picker and Search again action.
+- Improve the empty downloads popup's placement and blur over overflowing tabs.
+- Give library space cards a distinct lavender background and subtle border, and refine macOS library tinting.
+- Sign and verify disposable macOS development bundles outside cloud-managed folders.
+
+## Theme features
+
 - Apply an Arc-style lavender browser frame, rounded tabs and page corners, and consistent typography.
 - Hide native background textures and duplicate navigation, sidebar, library and download controls.
 - Add a top control row with navigation, the application menu and a sidebar toggle.
