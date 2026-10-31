@@ -26,7 +26,9 @@ function prepare(directory = 'release', notesFile = 'release-notes.md') {
 - Zen Browser **${SUPPORTED}** only. Other versions are rejected by the installer.
 - Installer **${version}**.
 - Windows portable executable, macOS DMG/ZIP, and Linux AppImage are attached below. Architecture is included in macOS/Linux filenames.
-- Builds are unsigned. macOS and Linux installation paths have automated filesystem coverage; browser runtime and distribution signing have not been validated on those platforms.
+- macOS bundles are ad-hoc signed and signature-verified, but are not Developer ID signed or notarized. Windows and Linux builds are unsigned.
+- macOS may require approval in System Settings → Privacy & Security → Open Anyway after the first launch attempt. Do not disable Gatekeeper globally.
+- macOS and Linux installation paths have automated filesystem coverage; full hosted browser runtime coverage remains Windows-only.
 
 ## Installation and updates
 

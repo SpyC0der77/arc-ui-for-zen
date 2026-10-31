@@ -12,7 +12,9 @@ Open the installer, select your Zen application and profile, close Zen, then cli
 
 Set the same installer version in `package.json` and `installer/engine.cjs`, commit the changes, then push a matching tag such as `v0.1.0`. The **Create release** workflow tests and builds Windows, macOS and Linux installers before publishing a GitHub release with all four distribution files, SHA-256 checksums, supported Zen versions, installation notes and GitHub-generated changes since the previous release. Tags with a prerelease suffix, such as `v0.2.0-beta.1`, produce prereleases.
 
-To retry a failed run, rerun it in Actions, or run **Create release** manually with the existing version tag selected. Branch runs and version mismatches fail before building. An existing published release is never overwritten. No signing credentials are configured; these builds remain unsigned.
+To retry a failed run, rerun it in Actions, or run **Create release** manually with the existing version tag selected. Branch runs and version mismatches fail before building. An existing published release is never overwritten. macOS bundles use ad-hoc signing and pass strict signature verification before publication. They are not Developer ID signed or notarized; Windows and Linux builds are unsigned.
+
+On macOS, copy the installer to Applications before opening it. If macOS blocks the first launch as an unidentified developer, approve it in **System Settings → Privacy & Security → Open Anyway**. Version 0.1.1 shipped with an incomplete macOS signature and may report the app as damaged; replace it with version 0.1.2 or later. Do not disable Gatekeeper globally.
 
 ## Installation details
 
@@ -128,7 +130,7 @@ pnpm dist:mac
 pnpm dist:linux
 ```
 
-`start` launches the local Electron app, with no development server. Build only the target for the host OS. The release is currently unsigned.
+`start` launches the local Electron app, with no development server. Build only the target for the host OS. macOS builds use ad-hoc signing without notarization; other platforms remain unsigned.
 
 Historical Arc screenshots and their source notes live in [`dev/references/`](dev/references/README.md). They are excluded from installer packages. Pull requests run unit tests and build installers on Windows, macOS, and Linux; `pnpm verify:package` checks the resulting ASAR files for complete runtime contents and excluded development files. Pass an output directory to verify a separate build, for example `pnpm verify:package artifacts/pr-build`.
 

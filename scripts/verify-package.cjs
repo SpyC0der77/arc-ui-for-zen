@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const asar = require('@electron/asar');
+const {execFileSync} = require('node:child_process');
 
 function filesIn(root) {
   return fs.readdirSync(root, {withFileTypes: true}).flatMap(entry => {
@@ -48,6 +49,11 @@ if (require.main === module) {
   assert(archives.length, 'No built app.asar found. Build the installer first.');
   for (const archive of archives) {
     console.log(`Verified ${verifyPackage(archive, root)} runtime files in ${path.relative(root, archive)}; development files excluded.`);
+    if (process.platform === 'darwin' && archive.includes('.app/Contents/Resources/')) {
+      const app = path.dirname(path.dirname(path.dirname(archive)));
+      execFileSync('codesign', ['--verify', '--deep', '--strict', '--verbose=2', app], {stdio: 'inherit'});
+      console.log(`Verified macOS bundle signature: ${app}`);
+    }
   }
 }
 
