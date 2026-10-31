@@ -55,9 +55,10 @@
   :root[data-arc-ui] #navigator-toolbox {
     min-width: 200px !important;
   }
-  @media (-moz-platform: macos) {
-    /* Paint the tint once over Zen's native window material. Opaque popup and
-       secondary surfaces keep using --arc-surface and their own colors. */
+  @media (-moz-platform: macos), (-moz-platform: windows) {
+    /* Paint the tint once over Zen's native window material (vibrancy on macOS,
+       DWM/Acrylic on Windows). Opaque popup and secondary surfaces keep using
+       --arc-surface and their own colors. */
     :root[data-arc-ui],
     :root[data-arc-ui] :is(
       body, #zen-main-app-wrapper, #browser, #zen-toolbar-background,
