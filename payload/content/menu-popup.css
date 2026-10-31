@@ -1,9 +1,9 @@
 /* This stylesheet lives inside Zen's native popup shadow root. */
 :host {
-  --panel-background: var(--arc-popup-surface, #f6f4f3) !important;
-  --arrowpanel-background: var(--arc-popup-surface, #f6f4f3) !important;
-  --panel-color: #141414 !important;
-  --arrowpanel-color: #141414 !important;
+  --panel-background: var(--arc-popup-surface, light-dark(#f6f4f3, #302c35)) !important;
+  --arrowpanel-background: var(--arc-popup-surface, light-dark(#f6f4f3, #302c35)) !important;
+  --panel-color: light-dark(#141414, #f0edf3) !important;
+  --arrowpanel-color: light-dark(#141414, #f0edf3) !important;
 }
 /* Panels and menupopups use different shadow-root containers. */
 .panel-arrowcontent {
@@ -15,8 +15,8 @@
 }
 arrowscrollbox.menupopup-arrowscrollbox {
   appearance: none !important;
-  background: var(--arc-popup-surface, #f6f4f3) !important;
-  color: #141414 !important;
+  background: var(--arc-popup-surface, light-dark(#f6f4f3, #302c35)) !important;
+  color: light-dark(#141414, #f0edf3) !important;
   border: 1px solid #44375026 !important;
   border-radius: 10px !important;
   corner-shape: round !important;
@@ -24,11 +24,11 @@ arrowscrollbox.menupopup-arrowscrollbox {
   box-shadow: none !important;
 }
 :host(#zenCreateNewPopup) {
-  --panel-background: #fff !important;
-  --arrowpanel-background: #fff !important;
+  --panel-background: light-dark(white, #39333f) !important;
+  --arrowpanel-background: light-dark(white, #39333f) !important;
 }
 :host(#zenCreateNewPopup) arrowscrollbox.menupopup-arrowscrollbox {
-  background: #fff !important;
+  background: light-dark(white, #39333f) !important;
   border: 1px solid #44375018 !important;
   border-radius: 10px !important;
   corner-shape: round !important;

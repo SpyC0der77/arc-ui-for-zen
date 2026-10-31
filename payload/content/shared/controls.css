@@ -4,7 +4,7 @@
     font-family: var(--arc-font);
     font-size: 14px;
     font-weight: 500;
-    color: #141414;
+    color: light-dark(#141414, #f0edf3);
     box-sizing: border-box;
   }
   .arc-ui *,
@@ -30,7 +30,7 @@
     opacity: 0.4;
   }
   .arc-ui button:focus-visible {
-    outline: 2px solid #65556f;
+    outline: 2px solid light-dark(#65556f, #e4d2f5);
     outline-offset: -2px;
   }
   .arc-ui svg {

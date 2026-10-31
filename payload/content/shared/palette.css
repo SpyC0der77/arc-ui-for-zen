@@ -4,33 +4,40 @@
     --arc-font: -apple-system, BlinkMacSystemFont, Geist, sans-serif;
     font-family: var(--arc-font) !important;
     font-synthesis: none;
-    --arc-surface: #cec7d4;
-    --arc-text: #141414;
-    --arc-muted: #65556f;
-    --arc-popup-surface: #f6f4f3;
-    --arc-popup-hover: #e8e3df;
-    --arc-popup-active: #ded7d2;
-    --arc-popup-control: #eeebe8;
-    --arc-popup-group: #ece7ef;
-    --zen-primary-color: #cec7d4 !important;
-    --zen-main-browser-background: #cec7d4 !important;
-    --zen-main-browser-background-toolbar: #cec7d4 !important;
-    --zen-main-browser-background-old: #cec7d4 !important;
-    --zen-main-browser-background-toolbar-old: #cec7d4 !important;
-    --zen-themed-toolbar-bg: #cec7d4 !important;
-    --zen-themed-toolbar-bg-transparent: #cec7d4 !important;
-    background: #cec7d4 !important;
-    --toolbar-bgcolor: #cec7d4 !important;
-    --toolbar-color: #141414 !important;
-    --lwt-text-color: #141414 !important;
-    --tab-selected-bgcolor: white !important;
-    --tab-selected-textcolor: #141414 !important;
+    --arc-surface: light-dark(#cec7d4, #292630);
+    --arc-text: light-dark(#141414, #f0edf3);
+    --arc-muted: light-dark(#65556f, #e4d2f5);
+    --arc-popup-surface: light-dark(#f6f4f3, #302c35);
+    --arc-popup-hover: light-dark(#e8e3df, #413b48);
+    --arc-popup-active: light-dark(#ded7d2, #514858);
+    --arc-popup-control: light-dark(#eeebe8, #39333f);
+    --arc-popup-group: light-dark(#ece7ef, #35303e);
+    --zen-primary-color: light-dark(#cec7d4, #292630) !important;
+    --zen-main-browser-background: light-dark(#cec7d4, #292630) !important;
+    --zen-main-browser-background-toolbar: light-dark(#cec7d4, #292630) !important;
+    --zen-main-browser-background-old: light-dark(#cec7d4, #292630) !important;
+    --zen-main-browser-background-toolbar-old: light-dark(#cec7d4, #292630) !important;
+    --zen-themed-toolbar-bg: light-dark(#cec7d4, #292630) !important;
+    --zen-themed-toolbar-bg-transparent: light-dark(#cec7d4, #292630) !important;
+    background: light-dark(#cec7d4, #292630) !important;
+    --toolbar-bgcolor: light-dark(#cec7d4, #292630) !important;
+    --toolbox-textcolor: var(--arc-text) !important;
+    --toolbar-color: light-dark(#141414, #f0edf3) !important;
+    --lwt-text-color: light-dark(#141414, #f0edf3) !important;
+    --tab-selected-bgcolor: light-dark(white, #39333f) !important;
+    --tab-selected-textcolor: light-dark(#141414, #f0edf3) !important;
     --zen-native-inner-radius: 10px !important;
     --zen-border-radius: 8px !important;
     --zen-big-shadow: 0 1px 6px #44375038 !important;
     --zen-element-separation: 10px !important;
     color-scheme: light !important;
   }
+  /* Zen's chrome media query follows its selected theme, including system mode.
+     Native surfaces must not retain an independent light color scheme. */
+  @media (prefers-color-scheme: dark) {
+    :root[data-arc-ui] { color-scheme: dark !important; }
+  }
+  :root[data-arc-ui] * { color-scheme: inherit !important; }
   :root[data-arc-ui] #zen-main-app-wrapper,
   :root[data-arc-ui] body,
   :root[data-arc-ui] #browser,
@@ -70,7 +77,7 @@
       background: transparent !important;
     }
     :root[data-arc-ui] #zen-browser-background {
-      background: rgba(206, 199, 212, 0.7) !important;
+      background: light-dark(rgba(206, 199, 212, 0.7), rgba(35, 32, 42, 0.88)) !important;
     }
     /* The selector is more opaque than the library content, which shares the
        translucent window background. Other secondary sidebars stay opaque. */
@@ -79,7 +86,7 @@
     }
     /* Space cards and the raised navigation rail share one surface tint. */
     :root[data-arc-ui] :is(#zen-library-side, .zen-library-space-background) {
-      background: rgba(206, 199, 212, 0.35) !important;
+      background: light-dark(rgba(206, 199, 212, 0.35), rgba(45, 40, 53, 0.65)) !important;
     }
     :root[data-arc-ui] zen-library {
       background: transparent !important;

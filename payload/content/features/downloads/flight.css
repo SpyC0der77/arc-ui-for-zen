@@ -15,16 +15,16 @@
     height: 44px;
     display: grid;
     place-items: center;
-    color: #65556f;
+    color: light-dark(#65556f, #e4d2f5);
     filter: drop-shadow(0 2px 3px #44375030);
   }
   .arc-flying-file svg {
     width: 36px;
     height: 36px;
-    fill: white;
+    fill: light-dark(white, #39333f);
   }
   .arc-fallback-gift {
     position: absolute;
-    color: #65556f;
+    color: light-dark(#65556f, #e4d2f5);
   }
 }
