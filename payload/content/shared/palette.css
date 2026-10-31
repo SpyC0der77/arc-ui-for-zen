@@ -55,4 +55,35 @@
   :root[data-arc-ui] #navigator-toolbox {
     min-width: 200px !important;
   }
+  @media (-moz-platform: macos) {
+    /* Paint the tint once over Zen's native window material. Opaque popup and
+       secondary surfaces keep using --arc-surface and their own colors. */
+    :root[data-arc-ui],
+    :root[data-arc-ui] :is(
+      body, #zen-main-app-wrapper, #browser, #zen-toolbar-background,
+      #zen-appcontent-wrapper, #zen-tabbox-wrapper, #navigator-toolbox,
+      #titlebar, .zen-toolbar-background, #zen-appcontent-navbar-wrapper
+    ) {
+      background: transparent !important;
+    }
+    :root[data-arc-ui] #zen-browser-background {
+      background: rgba(206, 199, 212, 0.7) !important;
+    }
+    /* The selector is more opaque than the library content, which shares the
+       translucent window background. Other secondary sidebars stay opaque. */
+    :root[data-arc-ui] #sidebar-box {
+      background: var(--arc-surface) !important;
+    }
+    :root[data-arc-ui] #zen-library-side {
+      background: rgba(206, 199, 212, 0.35) !important;
+    }
+    :root[data-arc-ui] zen-library {
+      background: transparent !important;
+    }
+    /* The undocked peek covers web content with a solid sidebar surface. */
+    :root[data-arc-ui][zen-compact-mode="true"] #zen-toolbar-background {
+      background: var(--arc-surface) !important;
+      backdrop-filter: none !important;
+    }
+  }
 }

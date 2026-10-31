@@ -27,6 +27,19 @@
     background: transparent;
     pointer-events: none;
   }
+  /* The popover paints in the top layer. Leave room for the page shadow at
+     the docked sidebar edge rather than covering it with the popup surface. */
+  :root[data-arc-ui]:not([zen-compact-mode="true"]) #arc-download-popup {
+    background: linear-gradient(
+      to right,
+      var(--arc-surface) calc(100% - 10px),
+      transparent calc(100% - 10px)
+    );
+  }
+  /* The empty message belongs to the primary sidebar surface. */
+  :root[data-arc-ui] #arc-download-popup:has(.arc-download-empty) {
+    background: transparent !important;
+  }
   .arc-download-content {
     display: flex;
     flex-direction: column;
@@ -39,8 +52,10 @@
     max-height: 288px;
     overflow-y: auto;
     padding: 0;
-    scrollbar-width: thin;
-    scrollbar-color: #65556f60 transparent;
+    scrollbar-width: none;
+  }
+  :root[data-arc-ui]:not([zen-compact-mode="true"]) .arc-download-list {
+    padding-inline-end: 10px;
   }
   .arc-download-row {
     display: flex;

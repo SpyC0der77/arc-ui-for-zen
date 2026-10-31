@@ -203,8 +203,9 @@
     color: #9b918a !important;
     font-size: 12px !important;
   }
-  :root[data-arc-ui] #zenCreateNewPopup > menuitem[disabled="true"] {
+  :root[data-arc-ui] #zenCreateNewPopup > menuitem[disabled]:not([disabled="false"]) {
     color: #8d8782 !important;
+    opacity: 0.5 !important;
   }
   :root[data-arc-ui]
     #zenCreateNewPopup

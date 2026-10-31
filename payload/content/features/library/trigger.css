@@ -1,9 +1,19 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
   :root[data-arc-ui] #zen-sidebar-foot-buttons {
+    flex-direction: row !important;
+    direction: ltr !important;
     align-items: center;
     padding-inline: 3px;
     box-sizing: border-box;
+  }
+  /* Native customization can move the new-tab button ahead of our injected
+     library trigger. Keep their physical positions independent of DOM order. */
+  :root[data-arc-ui] #zen-sidebar-foot-buttons > #arc-gift-button {
+    order: -1 !important;
+  }
+  :root[data-arc-ui] #zen-sidebar-foot-buttons > #zen-create-new-button {
+    order: 1 !important;
   }
   :root[data-arc-ui]
     #zen-sidebar-foot-buttons

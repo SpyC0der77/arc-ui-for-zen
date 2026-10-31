@@ -7,6 +7,14 @@ var ArcMenus = {
     const styledPopups = new Set();
     const createMenu = document.getElementById("zenCreateNewPopup");
     if (createMenu) {
+      // Cocoa menus bypass our popup styles. Render this menu in Gecko on all
+      // platforms so macOS uses the same custom surface as Windows.
+      const originalNative = createMenu.getAttribute("nonnative");
+      createMenu.setAttribute("nonnative", "true");
+      cleanups.push(() => {
+        if (originalNative === null) createMenu.removeAttribute("nonnative");
+        else createMenu.setAttribute("nonnative", originalNative);
+      });
       const { gZenBoostsManager } = ChromeUtils.importESModule(
         "resource:///modules/zen/boosts/ZenBoostsManager.sys.mjs",
       );
@@ -25,6 +33,7 @@ var ArcMenus = {
           "image",
           "class",
           "key",
+          "disabled",
         ].map((name) => [name, item.getAttribute(name)]);
         cleanups.push(() => {
           for (const [name, value] of originalAttributes) {
@@ -46,6 +55,21 @@ var ArcMenus = {
         '[command="cmd_zenNewEmptySplit"]',
       );
       const tab = createMenu.querySelector('[command="cmd_newNavigatorTab"]');
+      if (split) {
+        // A command broadcaster would overwrite this item's disabled state.
+        split.removeAttribute("command");
+        const runSplit = () => {
+          if (!split.disabled)
+            document.getElementById("cmd_zenNewEmptySplit")?.dispatchEvent(
+              new window.Event("command", { bubbles: true }),
+            );
+        };
+        split.addEventListener("command", runSplit);
+        cleanups.push(() => {
+          split.removeEventListener("command", runSplit);
+          split.setAttribute("command", "cmd_zenNewEmptySplit");
+        });
+      }
       const boost = document.createXULElement("menuitem");
       boost.id = "arc-new-boost";
       boost.classList.add("menuitem-iconic");
@@ -71,13 +95,20 @@ var ArcMenus = {
         createMenu.insertBefore(separator, tab);
         cleanups.push(() => separator.remove());
       }
-      function updateBoostAvailability() {
+      function updateCreateAvailability() {
         const uri = gBrowser.currentURI;
-        boost.disabled = !gZenBoostsManager.canBoostSite(uri);
+        const hasPage = !!gBrowser.selectedTab && !!uri &&
+          !["about:blank", "about:newtab", "about:home"].includes(uri.spec) &&
+          !document.getElementById("navigator-toolbox")?.hasAttribute("zen-has-empty-tab");
+        boost.disabled = !hasPage || !gZenBoostsManager.canBoostSite(uri);
+        if (split) {
+          const command = document.getElementById("cmd_zenNewEmptySplit");
+          split.disabled = !hasPage || command?.getAttribute("disabled") === "true";
+        }
       }
-      createMenu.addEventListener("popupshowing", updateBoostAvailability);
+      createMenu.addEventListener("popupshowing", updateCreateAvailability);
       cleanups.push(() =>
-        createMenu.removeEventListener("popupshowing", updateBoostAvailability),
+        createMenu.removeEventListener("popupshowing", updateCreateAvailability),
       );
     }
     // Native menu internals have their own stylesheet and override ::part rules.

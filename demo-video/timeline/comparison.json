@@ -1,0 +1,2306 @@
+{
+  "capture": "Three actual browser recordings; original themed recorder actions preserved",
+  "shots": [
+    {
+      "id": "work-space-essentials-and-real-documentation",
+      "title": "Work space, Essentials and real documentation",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 0.0,
+          "end": 3.5,
+          "ready": 1.85,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-01-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/work-space-essentials-and-real-documentation.mp4",
+          "start": 0,
+          "end": 2.5,
+          "ready": 1.9,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/work-space-essentials-and-real-documentation-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 0.0,
+          "end": 1.15,
+          "ready": 1.1,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "collapsed-folder",
+      "title": "Collapsed folder",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/controls.mp4",
+          "start": 0.0,
+          "end": 3.5,
+          "ready": 0.55,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/controls-01-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/collapsed-folder.mp4",
+          "start": 0,
+          "end": 1.55,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/collapsed-folder-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 1.15,
+          "end": 2.3,
+          "ready": 1.1,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "expanded-folder",
+      "title": "Expanded folder",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/controls.mp4",
+          "start": 3.5,
+          "end": 7.0,
+          "ready": 0.55,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/controls-02-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/expanded-folder.mp4",
+          "start": 0,
+          "end": 1.75,
+          "ready": 1.3,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/expanded-folder-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 2.3,
+          "end": 3.45,
+          "ready": 1.1,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "personal-space",
+      "title": "Personal Space",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 10.5,
+          "end": 14.0,
+          "ready": 0.8,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-04-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/personal-space.mp4",
+          "start": 0,
+          "end": 2.6,
+          "ready": 1.9666666666666666,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/personal-space-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 3.45,
+          "end": 4.65,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "reading-space",
+      "title": "Reading Space",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 14.0,
+          "end": 17.5,
+          "ready": 0.8,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-05-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/reading-space.mp4",
+          "start": 0,
+          "end": 2.65,
+          "ready": 2.0,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/reading-space-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 4.65,
+          "end": 5.85,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "back-to-work",
+      "title": "Back to Work",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 17.5,
+          "end": 21.0,
+          "ready": 0.85,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-06-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/back-to-work.mp4",
+          "start": 0,
+          "end": 2.6,
+          "ready": 1.9666666666666666,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/back-to-work-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 5.85,
+          "end": 7.0,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "undock-the-sidebar",
+      "title": "Undock the sidebar",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 21.0,
+          "end": 24.5,
+          "ready": 0.95,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-07-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/undock-the-sidebar.mp4",
+          "start": 0,
+          "end": 1.6,
+          "ready": 1.2,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/undock-the-sidebar-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 7.0,
+          "end": 8.2,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "hover-peek",
+      "title": "Hover peek",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 24.5,
+          "end": 28.0,
+          "ready": 0.55,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-08-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/hover-peek.mp4",
+          "start": 0,
+          "end": 1.45,
+          "ready": 1.0,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/hover-peek-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 8.2,
+          "end": 9.05,
+          "ready": 0.8333333333333334,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "notes": "Native pointer hover",
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "full-page-with-hidden-sidebar",
+      "title": "Full page with hidden sidebar",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 28.0,
+          "end": 31.5,
+          "ready": 0.8,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-09-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/full-page-with-hidden-sidebar.mp4",
+          "start": 0,
+          "end": 1.15,
+          "ready": 0.7333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/full-page-with-hidden-sidebar-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 9.05,
+          "end": 9.95,
+          "ready": 0.8666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "dock-the-sidebar",
+      "title": "Dock the sidebar",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 31.5,
+          "end": 35.0,
+          "ready": 0.95,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-10-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/dock-the-sidebar.mp4",
+          "start": 0,
+          "end": 2.05,
+          "ready": 1.6,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/dock-the-sidebar-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 9.95,
+          "end": 11.1,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "resize-sidebar",
+      "title": "Resize sidebar",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/controls.mp4",
+          "start": 11.0,
+          "end": 14.5,
+          "ready": 0.55,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/controls-04-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/resize-sidebar.mp4",
+          "start": 0,
+          "end": 2.1,
+          "ready": 1.6333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/resize-sidebar-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 11.1,
+          "end": 12.3,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "restore-sidebar-width",
+      "title": "Restore sidebar width",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/controls.mp4",
+          "start": 14.5,
+          "end": 18.0,
+          "ready": 0.55,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/controls-05-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/restore-sidebar-width.mp4",
+          "start": 0,
+          "end": 1.95,
+          "ready": 1.5,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/restore-sidebar-width-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 12.3,
+          "end": 13.5,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "centered-command-bar",
+      "title": "Centered command bar",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 35.0,
+          "end": 38.5,
+          "ready": 0.55,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-11-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/centered-command-bar.mp4",
+          "start": 0,
+          "end": 2.65,
+          "ready": 2.066666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/centered-command-bar-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 13.5,
+          "end": 14.7,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "notes": "Native address bar search; Arc-style command suggestions are not supplied by the theme",
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "side-by-side-split-view",
+      "title": "Side by side split view",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 38.5,
+          "end": 42.5,
+          "ready": 2.15,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600.0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-12-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/side-by-side-split-view.mp4",
+          "start": 0,
+          "end": 2.5,
+          "ready": 2.033333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/side-by-side-split-view-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 14.7,
+          "end": 15.85,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "unsplit-command",
+      "title": "Unsplit command",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 42.5,
+          "end": 46.0,
+          "ready": 0.6,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-13-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/unsplit-command.mp4",
+          "start": 0,
+          "end": 2.35,
+          "ready": 1.8333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/unsplit-command-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 15.85,
+          "end": 17.05,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "return-to-one-page",
+      "title": "Return to one page",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 46.0,
+          "end": 49.5,
+          "ready": 1.65,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600.0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-14-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/return-to-one-page.mp4",
+          "start": 0,
+          "end": 1.9,
+          "ready": 1.4333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/return-to-one-page-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 17.05,
+          "end": 18.25,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "horizontal-split-command",
+      "title": "Horizontal split command",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/recordings/details.mp4",
+          "start": 7.0,
+          "end": 10.5,
+          "ready": 0.6,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/timeline/details-03-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/horizontal-split-command.mp4",
+          "start": 0,
+          "end": 2.5,
+          "ready": 1.9666666666666666,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/horizontal-split-command-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 18.25,
+          "end": 19.4,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "top-to-bottom-split",
+      "title": "Top to bottom split",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/recordings/details.mp4",
+          "start": 10.5,
+          "end": 14.5,
+          "ready": 2.1,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600.0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/timeline/details-04-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/top-to-bottom-split.mp4",
+          "start": 0,
+          "end": 3.05,
+          "ready": 2.6,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/top-to-bottom-split-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 19.4,
+          "end": 20.55,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "unsplit-horizontal-view",
+      "title": "Unsplit horizontal view",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/recordings/details.mp4",
+          "start": 14.5,
+          "end": 18.0,
+          "ready": 1.6,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600.0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/timeline/details-05-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/unsplit-horizontal-view.mp4",
+          "start": 0,
+          "end": 1.85,
+          "ready": 1.4,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/unsplit-horizontal-view-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 20.55,
+          "end": 21.75,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "downloads-command",
+      "title": "Downloads command",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 49.5,
+          "end": 53.0,
+          "ready": 0.6,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-15-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/downloads-command.mp4",
+          "start": 0,
+          "end": 2.8,
+          "ready": 2.2333333333333334,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/downloads-command-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 21.75,
+          "end": 22.9,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "library-downloads",
+      "title": "Library downloads",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 53.0,
+          "end": 57.0,
+          "ready": 0.8,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-16-cursor.json",
+          "cursor_offset": [
+            20,
+            80
+          ]
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/library-downloads.mp4",
+          "start": 0,
+          "end": 3.75,
+          "ready": 3.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/library-downloads-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 22.9,
+          "end": 24.05,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "library-spaces",
+      "title": "Library Spaces",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 57.0,
+          "end": 61.0,
+          "ready": 0.75,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-17-cursor.json",
+          "cursor_offset": [
+            20,
+            76
+          ]
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/library-spaces.mp4",
+          "start": 0,
+          "end": 3.35,
+          "ready": 3.033333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                442,
+                0,
+                720,
+                1080
+              ]
+            },
+            {
+              "time": 1.8,
+              "rect": [
+                756,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "caption": "Native Spaces \u00b7 demo region",
+          "notes": "Only the three dedicated demo Space cards were captured directly with screencapture -R after foreground/bounds/privacy checks; global personal Spaces never entered a PNG.",
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/library-spaces-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 24.05,
+          "end": 25.25,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "media-library",
+      "title": "Media library",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 61.0,
+          "end": 65.0,
+          "ready": 0.85,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-18-cursor.json",
+          "cursor_offset": [
+            20,
+            74
+          ]
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/media-library.mp4",
+          "start": 0,
+          "end": 3.75,
+          "ready": 3.1666666666666665,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/media-library-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 25.25,
+          "end": 26.4,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "return-from-library",
+      "title": "Return from library",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 65.0,
+          "end": 68.5,
+          "ready": 0.85,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-19-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/return-from-library.mp4",
+          "start": 0,
+          "end": 2.2,
+          "ready": 1.6666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/return-from-library-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 26.4,
+          "end": 27.55,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "downloads-hover-menu",
+      "title": "Downloads hover menu",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 68.5,
+          "end": 72.5,
+          "ready": 0.55,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-20-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/downloads-hover-menu.mp4",
+          "start": 0,
+          "end": 2.55,
+          "ready": 1.8333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "caption": "Recent demo downloads",
+          "notes": "Only the verified demo rows and dock were captured; unrelated recent downloads were excluded before capture.",
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/downloads-hover-menu-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 27.55,
+          "end": 28.75,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                1200,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "notes": "Native Downloads popup, opened via its native API",
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "download-file-flight",
+      "title": "Download file flight",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 72.5,
+          "end": 76.5,
+          "ready": 2.4,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                918.0301507537688,
+                0,
+                720.0,
+                1080
+              ]
+            },
+            {
+              "time": 0.8,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-21-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/download-file-flight.mp4",
+          "start": 0,
+          "end": 1.55,
+          "ready": 1.2333333333333334,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/download-file-flight-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 28.75,
+          "end": 29.9,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "caption": "No native equivalent",
+          "notes": "Arc UI download flight has no corresponding vanilla Zen animation; unchanged native page is shown",
+          "availability": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "hidden-sidebar-download",
+      "title": "Hidden sidebar download",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 76.5,
+          "end": 81.0,
+          "ready": 3.1,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                1038.6331658291458,
+                0,
+                720.0,
+                1080
+              ]
+            },
+            {
+              "time": 0.8,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-22-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/hidden-sidebar-download.mp4",
+          "start": 0,
+          "end": 2.2,
+          "ready": 1.8666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                600,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/hidden-sidebar-download-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 29.9,
+          "end": 31.05,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "caption": "No native equivalent",
+          "notes": "Arc UI download flight has no corresponding vanilla Zen animation; unchanged native page is shown",
+          "availability": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "dock-after-download",
+      "title": "Dock after download",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 81.0,
+          "end": 84.5,
+          "ready": 0.95,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-23-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/dock-after-download.mp4",
+          "start": 0,
+          "end": 2.05,
+          "ready": 1.5333333333333334,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/dock-after-download-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 31.05,
+          "end": 32.25,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "github-live-folders",
+      "title": "GitHub Live Folders",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/recordings/details.mp4",
+          "start": 18.0,
+          "end": 22.0,
+          "ready": 1.3,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/timeline/details-06-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/github-live-folders.mp4",
+          "start": 0,
+          "end": 1.85,
+          "ready": 1.3666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "caption": "GitHub favorite",
+          "notes": "Arc GitHub favorite is shown as the native alternative to Zen Live Folders.",
+          "availability": "alternative",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/github-live-folders-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 32.25,
+          "end": 33.8,
+          "ready": 1.5,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "boosts-library",
+      "title": "Boosts library",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/recordings/details.mp4",
+          "start": 33.5,
+          "end": 37.0,
+          "ready": 0.55,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/timeline/details-10-cursor.json",
+          "cursor_offset": [
+            20,
+            78
+          ]
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/boosts-library.mp4",
+          "start": 0,
+          "end": 2.65,
+          "ready": 2.033333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/boosts-library-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 33.8,
+          "end": 34.95,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "archive-command",
+      "title": "Archive command",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/recordings/browser.mp4",
+          "start": 84.5,
+          "end": 88.0,
+          "ready": 0.6,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-05/timeline/browser-24-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/archive-command.mp4",
+          "start": 0,
+          "end": 3.25,
+          "ready": 2.566666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/archive-command-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 34.95,
+          "end": 36.15,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                480.0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "javascript-reference-as-a-background-tab",
+      "title": "JavaScript reference as a background tab",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/recordings/archive-real.mp4",
+          "start": 0.0,
+          "end": 3.5,
+          "ready": 0.7,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/timeline/archive-real-01-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/javascript-reference-as-a-background-tab.mp4",
+          "start": 0,
+          "end": 6.25,
+          "ready": 5.633333333333334,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/javascript-reference-as-a-background-tab-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 36.15,
+          "end": 38.2,
+          "ready": 2.0,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "auto-archive-javascript-reference",
+      "title": "Auto archive JavaScript reference",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/recordings/archive-real.mp4",
+          "start": 3.5,
+          "end": 7.5,
+          "ready": 3.45,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/timeline/archive-real-02-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/auto-archive-javascript-reference.mp4",
+          "start": 0,
+          "end": 2.35,
+          "ready": 1.8666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "caption": "Manual archive \u00b7 automatic on schedule",
+          "notes": "Arc archives tabs automatically on its schedule; this take shows the native manual archive command.",
+          "availability": "alternative",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/auto-archive-javascript-reference-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 38.2,
+          "end": 39.4,
+          "ready": 1.1666666666666667,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "caption": "No native equivalent",
+          "notes": "Arc UI auto-archive is not installed in this vanilla profile; tab remains visible",
+          "availability": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "archive-library",
+      "title": "Archive library",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/recordings/archive-real.mp4",
+          "start": 7.5,
+          "end": 11.5,
+          "ready": 0.85,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/timeline/archive-real-03-cursor.json",
+          "cursor_offset": [
+            20,
+            74
+          ]
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/archive-library.mp4",
+          "start": 0,
+          "end": 1.75,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "caption": "Archive filtered for demo privacy",
+          "notes": "Filtered to the demo marker to keep unrelated archived tabs private.",
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/archive-library-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 39.4,
+          "end": 40.55,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "notes": "Native closed-tab history after explicitly closing the background tab",
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "restore-javascript-reference",
+      "title": "Restore JavaScript reference",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/recordings/archive-real.mp4",
+          "start": 11.5,
+          "end": 16.0,
+          "ready": 1.9,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/timeline/archive-real-04-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/restore-javascript-reference.mp4",
+          "start": 0,
+          "end": 1.65,
+          "ready": 1.2,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "caption": "Reopen last archived tab",
+          "notes": "Restored with the native reopen-closed-tab shortcut.",
+          "availability": "alternative",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/restore-javascript-reference-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 40.55,
+          "end": 42.1,
+          "ready": 1.5,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    },
+    {
+      "id": "finish-on-work",
+      "title": "Finish on Work",
+      "panels": {
+        "themed": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/recordings/archive-real.mp4",
+          "start": 16.0,
+          "end": 19.5,
+          "ready": 0.55,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720.0,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/artifacts/comparison-themed-06/timeline/archive-real-05-cursor.json"
+        },
+        "arc": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/finish-on-work.mp4",
+          "start": 0,
+          "end": 5.55,
+          "ready": 4.933333333333334,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native",
+          "cursor_track": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/arc-native-04/finish-on-work-cursor.json"
+        },
+        "zen": {
+          "source": "/Users/carter/iCloud Drive (Archive)/Desktop/Code/arc-ui-for-zen/demo-video/recordings/comparison/vanilla-03.mp4",
+          "start": 42.1,
+          "end": 43.25,
+          "ready": 1.1333333333333333,
+          "camera": [
+            {
+              "time": 0,
+              "rect": [
+                0,
+                0,
+                720,
+                1080
+              ]
+            }
+          ],
+          "availability": "native"
+        }
+      }
+    }
+  ]
+}

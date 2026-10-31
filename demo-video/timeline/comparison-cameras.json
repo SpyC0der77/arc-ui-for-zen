@@ -1,0 +1,70 @@
+{
+  "library-spaces": {
+    "themed": {
+      "source_suffix": "comparison-themed-05/recordings/browser.mp4",
+      "cursor_offset": [
+        20,
+        76
+      ]
+    },
+    "arc": {
+      "source_suffix": "arc-native-04/library-spaces.mp4",
+      "keyframes": [
+        {
+          "time": 0,
+          "rect": [
+            442,
+            0,
+            720,
+            1080
+          ]
+        },
+        {
+          "time": 1.8,
+          "rect": [
+            756,
+            0,
+            720,
+            1080
+          ]
+        }
+      ]
+    }
+  },
+  "library-downloads": {
+    "themed": {
+      "source_suffix": "comparison-themed-05/recordings/browser.mp4",
+      "cursor_offset": [
+        20,
+        80
+      ]
+    }
+  },
+  "media-library": {
+    "themed": {
+      "source_suffix": "comparison-themed-05/recordings/browser.mp4",
+      "cursor_offset": [
+        20,
+        74
+      ]
+    }
+  },
+  "boosts-library": {
+    "themed": {
+      "source_suffix": "comparison-themed-06/recordings/details.mp4",
+      "cursor_offset": [
+        20,
+        78
+      ]
+    }
+  },
+  "archive-library": {
+    "themed": {
+      "source_suffix": "comparison-themed-06/recordings/archive-real.mp4",
+      "cursor_offset": [
+        20,
+        74
+      ]
+    }
+  }
+}

@@ -1,5 +1,12 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
+  /* Raise the navigation rail above the translucent library content so its
+     right-hand shadow remains visible. */
+  :root[data-arc-ui] #zen-library-side {
+    position: relative !important;
+    z-index: 1 !important;
+    box-shadow: 4px 0 12px #21172b38 !important;
+  }
   :root[data-arc-ui] #zen-library-footer {
     display: flex;
     align-items: center;

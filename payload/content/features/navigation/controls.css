@@ -11,6 +11,44 @@
   #arc-top-controls button {
     -moz-window-dragging: no-drag;
   }
+  @media (-moz-platform: macos) {
+    /* Zen's native button box remains in its own toolbar. Put it in the
+       replacement row and leave room for it instead of stacking two rows. */
+    :root[data-arc-ui] #zen-sidebar-top-buttons > .titlebar-buttonbox-container {
+      position: absolute !important;
+      top: 14px !important;
+      left: 6px !important;
+      z-index: 4 !important;
+    }
+    :root[data-arc-ui][zen-compact-mode="true"]
+      #zen-sidebar-top-buttons > .titlebar-buttonbox-container {
+      top: calc(14px - var(--arc-top-controls-height, 44px)) !important;
+    }
+    :root[data-arc-ui] #arc-top-controls {
+      padding-inline-start: 70px;
+    }
+    /* Native macOS fullscreen hides the traffic lights, so reclaim their
+       reserved space while keeping it in a normal or maximized window. */
+    :root[data-arc-ui][sizemode="fullscreen"] #arc-top-controls {
+      padding-inline-start: 10px;
+    }
+    :root[data-arc-ui] #arc-sidebar-toggle {
+      inset-inline-start: 0;
+      min-width: 24px;
+    }
+    :root[data-arc-ui][sizemode="fullscreen"]:not([zen-right-side="true"])
+      #arc-sidebar-toggle {
+      inset-inline-start: -8px;
+    }
+    :root[data-arc-ui] #arc-navigation-controls {
+      gap: 0;
+      min-width: 0;
+    }
+    :root[data-arc-ui] #arc-navigation-controls > :is(button, #PanelUI-menu-button, #zen-appmenu-button) {
+      width: 28px !important;
+      min-width: 24px !important;
+    }
+  }
   /* Move only the toggle toward the frame edge, preserving its hit area. */
   #arc-sidebar-toggle {
     position: relative;
@@ -25,6 +63,10 @@
   }
   #arc-navigation-controls > #PanelUI-menu-button,
   #arc-navigation-controls > #zen-appmenu-button {
+    appearance: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
@@ -48,6 +90,16 @@
     width: 18px !important;
     height: 18px !important;
     margin: 0 !important;
+  }
+  /* Native toolbar hover surfaces must not paint over the shared row hover. */
+  #arc-navigation-controls
+    > :is(#PanelUI-menu-button, #zen-appmenu-button)
+    :is(.toolbarbutton-badge-stack, .toolbarbutton-icon) {
+    appearance: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
   }
   #arc-navigation-controls
     > :is(#PanelUI-menu-button, #zen-appmenu-button):hover {

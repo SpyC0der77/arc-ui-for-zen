@@ -44,6 +44,26 @@ var ArcLibrary = {
     footerObserver.observe(library, { childList: true, subtree: true });
     syncLibraryFooter();
     const NativeLibrary = library.constructor;
+    const content = document.getElementById("zen-appcontent-wrapper");
+    const progressDescriptor = Object.getOwnPropertyDescriptor(
+      NativeLibrary.prototype, "openProgress",
+    );
+    const root = document.documentElement;
+    const resizeProgress = function (value) {
+      progressDescriptor.set.call(this, value);
+      if (this !== library) return;
+      const transform = content.style.getPropertyValue("transform");
+      const match = /^translateX\((-?[\d.]+)px\)$/.exec(transform);
+      const offset = value > 0 && match ? Number(match[1]) : 0;
+      root.style.setProperty("--arc-library-left", `${Math.max(0, offset)}px`);
+      root.style.setProperty("--arc-library-right", `${Math.max(0, -offset)}px`);
+      root.toggleAttribute("data-arc-library-resize", value > 0 && !!match);
+    };
+    if (progressDescriptor?.configurable && progressDescriptor.set) {
+      Object.defineProperty(NativeLibrary.prototype, "openProgress", {
+        ...progressDescriptor, set: resizeProgress,
+      });
+    }
     const originalLibraryAnimate = NativeLibrary.animateProgress;
     function animateLibrary(target) {
       // Zen unhides the library before its spring's first progress update. Give
@@ -94,6 +114,11 @@ var ArcLibrary = {
       setRail,
       isOpen: () => NativeLibrary.isLibrarySlightlyOpen,
       destroy() {
+        if (Object.getOwnPropertyDescriptor(NativeLibrary.prototype, "openProgress")?.set === resizeProgress)
+          Object.defineProperty(NativeLibrary.prototype, "openProgress", progressDescriptor);
+        root.removeAttribute("data-arc-library-resize");
+        root.style.removeProperty("--arc-library-left");
+        root.style.removeProperty("--arc-library-right");
         if (NativeLibrary.animateProgress === animateLibrary)
           NativeLibrary.animateProgress = originalLibraryAnimate;
         libraryObserver.disconnect();

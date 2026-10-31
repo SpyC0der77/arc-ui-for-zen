@@ -2,7 +2,24 @@
 {
   :root[data-arc-ui] .browserSidebarContainer:not(.zen-glance-overlay) {
     border-radius: 10px !important;
-    box-shadow: 0 1px 6px #44375038 !important;
+    box-shadow: 0 1px 9px #21172b66 !important;
+  }
+  /* Let the page's existing shadow fall over the docked sidebar edge. In
+     compact mode the sidebar must stay above the page for its hover peek. */
+  :root[data-arc-ui]:not([zen-compact-mode="true"]) #zen-appcontent-wrapper {
+    position: relative !important;
+    z-index: 3 !important;
+  }
+  /* The content-navbar background otherwise paints over the top shadow. */
+  :root[data-arc-ui]:not([zen-compact-mode="true"]) #zen-tabbox-wrapper {
+    z-index: 2 !important;
+  }
+  /* Zen animates the library by translating the page without shrinking it.
+     Use its measured offset as flex margins so the far edge stays visible. */
+  :root[data-arc-ui][data-arc-library-resize] #zen-appcontent-wrapper {
+    transform: none !important;
+    margin-left: var(--arc-library-left, 0px) !important;
+    margin-right: var(--arc-library-right, 0px) !important;
   }
   :root[data-arc-ui][zen-compact-mode="true"]
     .browserSidebarContainer:not(.zen-glance-overlay) {

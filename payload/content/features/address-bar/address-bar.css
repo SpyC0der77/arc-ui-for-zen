@@ -1,7 +1,7 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
   :root[data-arc-ui] #urlbar:not([breakout-extend]) .urlbar-background {
-    background: #bcb3c5 !important;
+    background: var(--zen-toolbar-element-bg) !important;
     border: 0 !important;
     border-radius: 10px !important;
     box-shadow: none !important;
