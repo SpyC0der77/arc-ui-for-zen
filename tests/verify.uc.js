@@ -115,12 +115,14 @@
     check(document.querySelectorAll('#arc-sidebar-toggle').length===1&&['zen-toggle-compact-mode','zen-expand-sidebar-button'].every(id=>!document.getElementById(id)||getComputedStyle(document.getElementById(id)).display==='none'),'one visible sidebar toggle');
     check(nativeLibrary?typeof nativeLibrary.constructor.animateProgress==='function':!!document.getElementById('arc-legacy-library'),'functional library or native fallback menu available');
     check(['zen-library-button','library-button','downloads-button'].every(id=>!document.getElementById(id)||getComputedStyle(document.getElementById(id)).display==='none'),'duplicate native library and downloads buttons hidden');
-    check(getComputedStyle(document.getElementById('navigator-toolbox')).backgroundColor==='rgb(206, 199, 212)','lavender palette');
+    const translucentFrame=matchMedia('(-moz-platform: macos), (-moz-platform: windows)').matches;
+    const expectedFrameColor=id=>translucentFrame?(id==='zen-browser-background'?'rgba(206, 199, 212, 0.7)':'rgba(0, 0, 0, 0)'):'rgb(206, 199, 212)';
+    check(getComputedStyle(document.getElementById('navigator-toolbox')).backgroundColor===expectedFrameColor('navigator-toolbox'),'lavender palette');
     const frameNodes=['zen-browser-background','zen-toolbar-background','zen-appcontent-wrapper','zen-tabbox-wrapper'];
     const savedTheme=document.documentElement.getAttribute('style');
     document.documentElement.style.setProperty('--zen-main-browser-background','linear-gradient(#aaffcc,#ffaaaa)');
     document.documentElement.style.setProperty('--zen-main-browser-background-old','#22aa66');
-    check(frameNodes.every(id=>getComputedStyle(document.getElementById(id)).backgroundColor==='rgb(206, 199, 212)'),'entire browser frame stays lavender despite custom Zen theme');
+    check(frameNodes.every(id=>getComputedStyle(document.getElementById(id)).backgroundColor===expectedFrameColor(id)),'entire browser frame stays lavender despite custom Zen theme');
     check(['::before','::after'].every(pseudo=>getComputedStyle(document.getElementById('zen-browser-background'),pseudo).display==='none'),'custom workspace background layers are suppressed');
     if(savedTheme===null)document.documentElement.removeAttribute('style');else document.documentElement.setAttribute('style',savedTheme);
     const gift=document.getElementById('arc-gift-button');
