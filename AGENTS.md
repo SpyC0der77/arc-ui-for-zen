@@ -1,5 +1,15 @@
 # Repository instructions
 
+## Personal and development Zen instances
+
+Keep one personal Zen at `/Applications/Zen.app` with its personal profile untouched. Keep one reusable development application and separate profile per tested Zen version under this checkout, at `artifacts/dev-zen/<version>/Zen.app` and `artifacts/dev-zen/<version>/profile`. The current macOS development version is `1.24b`; add another version only when testing that version actually requires it.
+
+Always reuse the existing versioned development instance for testing and screenshots. Do not create another random `chrome-session-*` application/profile or launch a temporary app outside the checkout when a reusable instance exists. Legacy copies under `artifacts/retired-dev-zen/` are backups, not testing targets; do not launch them. Do not reuse personal profiles, change the personal installation, or close personal Zen for development testing.
+
+Before relocating an installed development app/profile, close only that development instance, remove the theme through the installer at its original paths, move the pair, and reinstall at the new paths so ownership receipts remain valid. Never rewrite receipts to bypass checks. Reuse this same pair for later updates, using installer removal/reinstall and `-purgecaches`. The running-browser check may be overridden only for a verified development app while unrelated personal Zen remains open. Preserve all other installer safety checks. Keep Marionette and remote system access confined to the development child process.
+
+Documentation-only changes do not require reinstalling the theme. The development-instance rules above take precedence over the older disposable-session and personal-restart instructions below. Fully isolated automated runtime tests may create fixtures when their isolation is required; clean up or retire their app copies afterward and never use them as additional everyday development instances.
+
 ## UI change screenshots
 
 Whenever you make a UI improvement or change, show before and after screenshots in the chat. Capture the affected UI before editing and again after applying the change, using the same view and interaction state so the comparison is clear. Embed both screenshots in the final response.
