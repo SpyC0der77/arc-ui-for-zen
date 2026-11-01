@@ -34,3 +34,16 @@ arrowscrollbox.menupopup-arrowscrollbox {
   corner-shape: round !important;
   padding: 6px !important;
 }
+
+/* The application menu uses a panel, but shares the popup frame with menus. */
+:host(#appMenu-popup) .panel-arrowcontent,
+:host(#appMenu-popup) .panel-viewcontainer {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: inherit !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+:host(#appMenu-popup) .panel-arrowbox {
+  display: none !important;
+}

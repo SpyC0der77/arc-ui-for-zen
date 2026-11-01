@@ -83,30 +83,45 @@
     corner-shape: round !important;
   }
   :root[data-arc-ui] #appMenu-popup {
-    --menu-panel-width-wide: 302px !important;
-    --menu-panel-width: 302px !important;
-    --panel-width: 302px !important;
-    --arrowpanel-menuitem-padding: 4px 8px !important;
+    margin-inline: 8px !important;
+    appearance: none !important;
+    background: light-dark(white, #39333f) !important;
+    border: 1px solid #44375026 !important;
+    border-radius: 10px !important;
+    corner-shape: round !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    box-shadow: 0 2px 8px #44375026 !important;
+    /* Match the New and Arc menus instead of the native application panel. */
+    --arrowpanel-border-radius: 10px !important;
+    --panel-border-radius: 10px !important;
+    --arrowpanel-padding: 6px !important;
+    --panel-padding: 6px !important;
+    --menu-panel-width-wide: 320px !important;
+    --menu-panel-width: 320px !important;
+    --panel-width: 320px !important;
+    --arrowpanel-menuitem-padding: 6px 10px !important;
   }
   :root[data-arc-ui]
     #appMenu-popup
     :is(#appMenu-mainView, .panel-viewstack, .panel-subview-body) {
     background: var(--arc-popup-surface) !important;
+    border-radius: 10px !important;
   }
   :root[data-arc-ui] #appMenu-mainView {
-    min-width: 302px !important;
-    width: 302px !important;
+    min-width: 320px !important;
+    width: 320px !important;
   }
   :root[data-arc-ui] #appMenu-popup .panel-subview-body {
-    padding: 4px 6px !important;
+    padding: 6px !important;
   }
-  :root[data-arc-ui] #appMenu-popup .subviewbutton:not(.subviewbutton-iconic) {
-    min-height: 28px !important;
-    padding-block: 4px !important;
+  :root[data-arc-ui] #appMenu-popup .subviewbutton {
+    min-height: 32px !important;
+    padding: 6px 10px !important;
     margin-block: 0 !important;
   }
   :root[data-arc-ui] #appMenu-popup toolbarseparator {
-    margin: 4px 8px !important;
+    margin: 6px 10px !important;
     border-color: #44375020 !important;
   }
   :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls {
@@ -157,6 +172,234 @@
   :root[data-arc-ui] #appMenu-popup .toolbarbutton-icon {
     width: 16px !important;
     height: 16px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup .subviewbutton > .toolbarbutton-icon {
+    margin-inline: 0 10px !important;
+    opacity: 0.85;
+  }
+  :root[data-arc-ui] #appMenu-popup .subviewbutton[shortcut]::after {
+    font-size: 12px !important;
+    color: light-dark(#756f6a, #b9b0c2) !important;
+    opacity: 1;
+    margin-inline-start: 20px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls {
+    margin-inline: 4px !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-fxa-status2 {
+    margin: 4px 6px !important;
+    padding: 4px !important;
+    background: transparent !important;
+  }
+  /* Lavender application menu, sized for the browser rather than the mockup. */
+  :root[data-arc-ui] #appMenu-popup {
+    --panel-color: var(--arc-text) !important;
+    --arrowpanel-color: var(--arc-text) !important;
+    --menu-panel-width-wide: 332px !important;
+    --menu-panel-width: 332px !important;
+    --panel-width: 332px !important;
+    --arrowpanel-border-radius: 20px !important;
+    --panel-border-radius: 20px !important;
+    background: var(--arc-popup-surface) !important;
+    border: 1px solid light-dark(#ffffffdd, #79658b) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 2px 8px #35224d26 !important;
+  }
+  :root[data-arc-ui] #appMenu-mainView {
+    width: 332px !important;
+    min-width: 332px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup :is(#appMenu-mainView, .panel-viewstack) {
+    background: var(--arc-popup-surface) !important;
+    border-radius: 20px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup .panel-subview-body {
+    background: transparent !important;
+    padding: 8px 6px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup .subviewbutton {
+    min-height: 29px !important;
+    padding: 5px 10px !important;
+    color: var(--arc-text) !important;
+    border-radius: 10px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup :is(.subviewbutton, .toolbarbutton-text, label) {
+    font-size: 13px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup .subviewbutton > .toolbarbutton-icon {
+    width: 18px !important;
+    height: 18px !important;
+    margin-inline-end: 12px !important;
+    opacity: 1;
+  }
+  :root[data-arc-ui] #appMenu-popup .subviewbutton[shortcut]::after {
+    color: light-dark(#81748f, #c6b6d7) !important;
+    font-size: 12px !important;
+    margin-inline-start: 12px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup toolbarseparator {
+    margin: 6px 6px !important;
+    border-color: light-dark(#d9c8ef, #59466c) !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-fxa-status2 {
+    min-height: 44px !important;
+    padding: 0 !important;
+    margin: 0 8px 4px !important;
+    gap: 10px;
+  }
+  :root[data-arc-ui] #appMenu-fxa-text {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: light-dark(#361555, #e8d4ff) !important;
+  }
+  :root[data-arc-ui] #appMenu-fxa-text::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 28px;
+    height: 28px;
+    margin-inline-end: 10px;
+    border-radius: 50%;
+    background: light-dark(#eee2ff, #4c3667) url("chrome://arc-ui/content/menu-icons/cloud.svg") center / 21px no-repeat;
+    -moz-context-properties: fill;
+    fill: light-dark(#361555, #e8d4ff);
+  }
+  :root[data-arc-ui] #appMenu-nova-fxa-label {
+    --button-background-color: light-dark(#e3d1fa, #594073);
+    --button-background-color-hover: light-dark(#d8bff5, #684b86);
+    --button-text-color: light-dark(#361555, #f1e2ff);
+    --button-border-radius: 999px;
+    border-radius: 999px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls {
+    height: 36px !important;
+    min-height: 36px !important;
+    margin: 8px 8px 4px !important;
+    padding: 4px 8px !important;
+    background: light-dark(#ede2fb, #43334f) !important;
+    border-radius: 18px !important;
+  }
+  :root[data-arc-ui] #appMenu-zoom-controls > toolbarbutton {
+    min-height: 28px !important;
+    height: 28px !important;
+    padding: 4px 8px !important;
+    margin-inline: 3px !important;
+    background: light-dark(#faf5ff, #594369) !important;
+    border-radius: 16px !important;
+    border: 0 !important;
+  }
+  :root[data-arc-ui] #appMenu-zoom-controls + toolbarseparator {
+    border-top-color: light-dark(#d9c8ef, #59466c) !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls > toolbarbutton {
+    flex: 0 0 auto !important;
+    width: 28px !important;
+    min-width: 28px !important;
+    border-radius: 16px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls > #appMenu-zoomReset-button2 {
+    width: 52px !important;
+    min-width: 52px !important;
+  }
+  :root[data-arc-ui] #appMenu-zoom-controls > .toolbarbutton-text {
+    flex: 1 !important;
+    min-width: 48px !important;
+    padding-inline: 6px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-fxa-label2 {
+    background: light-dark(#e3d1fa, #594073) !important;
+    border-radius: 18px !important;
+    padding: 6px 18px !important;
+    min-height: 32px !important;
+    color: light-dark(#361555, #f1e2ff) !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls > toolbarbutton {
+    padding: 0 !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls .toolbarbutton-icon {
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0 !important;
+  }
+  /* Native combined-button padding and the fullscreen divider offset icons. */
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls > toolbarbutton {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls .toolbarbutton-icon {
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-sizing: content-box !important;
+    flex: 0 0 16px !important;
+  }
+  :root[data-arc-ui] #appMenu-fullscreen-button2::before {
+    content: none !important;
+    display: none !important;
+  }
+  /* Header navigation is an icon button, not a full menu row. */
+  :root[data-arc-ui] #appMenu-popup .panel-header > .subviewbutton-back {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 28px !important;
+    box-sizing: border-box !important;
+    width: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup .subviewbutton-back > .toolbarbutton-icon {
+    width: 16px !important;
+    height: 16px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  /* Footer actions sit outside the padded scrolling body. */
+  :root[data-arc-ui] #appMenu-popup .panel-subview-footer-button {
+    box-sizing: border-box !important;
+    margin: 4px 6px 8px !important;
+    padding: 6px 10px !important;
+    min-height: 32px !important;
+    border-radius: 8px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup .panel-subview-footer-button > .toolbarbutton-icon {
+    margin-inline: 0 12px !important;
+  }
+  /* Paint zoom feedback on the fixed button, not its native inner label. */
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoomReset-button2 {
+    border-radius: 16px !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoomReset-button2 > .toolbarbutton-text {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: inherit !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: center !important;
+  }
+  /* Win over both the native disabled state and the generic menu hover rule. */
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls > #appMenu-zoomReset-button2 {
+    appearance: none !important;
+    border-radius: 999px !important;
+    corner-shape: round !important;
+    overflow: hidden !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    clip-path: inset(0 round 14px) !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls > #appMenu-zoomReset-button2:focus-visible {
+    outline: 2px solid var(--arc-text) !important;
+    outline-offset: -3px !important;
   }
   :root[data-arc-ui] #zenCreateNewPopup {
     appearance: none !important;

@@ -17,6 +17,9 @@ var ArcLibrary = {
       ["foreground", "Foreground text", "--arc-text", "#141414", "#f0edf3"],
       ["accent", "Accent text", "--arc-muted", "#65556f", "#e4d2f5"],
       ["popup", "Menu background", "--arc-popup-surface", "#f6f4f3", "#302c35"],
+      ["folder", "Folder icons", "--arc-folder", "#b86ba6", "#d9a3cb"],
+      ["hover", "Hover background", "--arc-popup-hover", "#e8e3df", "#413b48"],
+      ["pressed", "Pressed background", "--arc-popup-active", "#ded7d2", "#514858"],
     ];
     // Preserve existing custom colors in both palettes on upgrade.
     for (const [key] of appearance) {
@@ -59,12 +62,6 @@ var ArcLibrary = {
     const title = html("h2", "Arc UI settings");
     title.id = "arc-settings-title";
     const description = html("p", "Make this space your own.");
-    const colors = html("button", "Configure colors");
-    colors.type = "button";
-    colors.addEventListener("click", (event) => {
-      settings.close();
-      window.gZenThemePicker.openThemePicker(event);
-    });
     const note = html("p", "Colors are saved to your current Zen workspace.");
     const close = html("button", "Done");
     close.type = "button";
@@ -262,19 +259,20 @@ var ArcLibrary = {
       Services.prefs.clearUserPref(prefBranch + "reduce-motion");
       motion.checked = false;
     });
-    colors.textContent = "Zen workspace colors…";
     note.textContent = "Each palette follows Zen’s light or dark mode across workspaces. Reset restores both palettes and animation defaults.";
-    settings.append(motionRow, colors, note, reset, close);
+    settings.append(motionRow, note, reset, close);
     document.documentElement.append(settings);
-    for (const [label, action] of [
-      ["GitHub", () => {
+    for (const [label, image, action] of [
+      ["GitHub", "github", () => {
         window.openTrustedLinkIn("https://github.com/SpyC0der77/arc-ui-for-zen", "tab");
         void setRail(false).catch(report);
       }],
-      ["Settings", () => settings.showModal()],
+      ["Settings", "settings", () => settings.showModal()],
     ]) {
       const item = document.createXULElement("menuitem");
       item.setAttribute("label", label);
+      item.classList.add("menuitem-iconic");
+      item.setAttribute("image", `chrome://arc-ui/content/menu-icons/${image}.svg`);
       item.addEventListener("command", action);
       projectMenu.append(item);
     }
@@ -296,7 +294,7 @@ var ArcLibrary = {
       github.className = "toolbarbutton-1";
       github.setAttribute(
         "image",
-        "chrome://arc-ui/content/menu-icons/settings.svg",
+        "chrome://arc-ui/content/menu-icons/menu.svg",
       );
       github.setAttribute("tooltiptext", "Arc UI menu");
       github.setAttribute("aria-label", "Arc UI menu");
