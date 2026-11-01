@@ -36,6 +36,37 @@
      Native surfaces must not retain an independent light color scheme. */
   @media (prefers-color-scheme: dark) {
     :root[data-arc-ui] { color-scheme: dark !important; }
+    :root[data-arc-ui] zen-workspace {
+      color: var(--arc-text) !important;
+      --toolbarbutton-icon-fill: var(--arc-text) !important;
+      --lwt-text-color: var(--arc-text) !important;
+    }
+    :root[data-arc-ui] :is(.toolbarbutton-icon, .menu-icon, .menu-iconic-icon) {
+      -moz-context-properties: fill, stroke;
+      fill: currentColor;
+      stroke: currentColor;
+    }
+    /* Native live folders embed the GitHub mark as an SVG image, while
+       menus and other chrome surfaces use img/XUL image assets. Cover the
+       shared assets globally so their location does not affect contrast. */
+    :root[data-arc-ui] :is(
+      [href$="/logo-github.svg"],
+      [src$="/logo-github.svg"],
+      [src$="/github.svg"],
+      [style*="logo-github.svg"]
+    ),
+    :root[data-arc-ui] :is(
+      [image$="/logo-github.svg"],
+      [image$="/github.svg"]
+    ) > .toolbarbutton-icon,
+    :root[data-arc-ui] :is(
+      [image$="/logo-github.svg"],
+      [image$="/github.svg"]
+    ) > .menu-iconic-left > .menu-iconic-icon {
+      filter: brightness(0) invert(1) !important;
+      fill: white !important;
+      -moz-context-properties: fill;
+    }
   }
   :root[data-arc-ui] * { color-scheme: inherit !important; }
   :root[data-arc-ui] #zen-main-app-wrapper,

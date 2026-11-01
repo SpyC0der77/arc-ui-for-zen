@@ -1,4 +1,12 @@
 @-moz-document url("chrome://browser/content/browser.xhtml") {
+  /* Workspace accent tints can be dark even when chrome uses a dark surface.
+     Keep space headings and their controls on the configured foreground. */
+  :root[data-arc-ui] .zen-library-space-header,
+  :root[data-arc-ui] .zen-library-space-header :is(button, toolbarbutton),
+  :root[data-arc-ui] zen-library .tab-group-label-container,
+  :root[data-arc-ui] zen-library .tab-group-label {
+    color: var(--arc-text) !important;
+  }
   /* Separate the space list from the surrounding library canvas. */
   :root[data-arc-ui] .zen-library-space {
     background: var(--arc-popup-group, light-dark(#ece7ef, #35303e)) !important;

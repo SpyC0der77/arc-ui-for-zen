@@ -192,6 +192,9 @@
     }
   }
   :root[data-arc-ui] #zenCreateNewPopup .menu-icon {
+    -moz-context-properties: fill, stroke;
+    fill: currentColor;
+    stroke: currentColor;
     width: 20px !important;
     height: 20px !important;
     margin-inline-end: 12px !important;
