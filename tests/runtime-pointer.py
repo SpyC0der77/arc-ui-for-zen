@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT / 'artifacts/test-python'))
 from marionette_driver.marionette import Marionette, ActionSequence
 
 port, profile = int(sys.argv[1]), Path(sys.argv[2]).resolve()
-if profile.name != 'profile' or not profile.parent.name.startswith('runtime-') or profile.parent.parent != ROOT / 'artifacts':
+if profile.name != 'profile' or not profile.parent.name.startswith('runtime-') or profile.parent.parent != ROOT / 'zen-instances':
     raise RuntimeError('Refusing a non-disposable profile')
 m = Marionette('127.0.0.1', port=port, socket_timeout=15)
 result = {'checks': [], 'errors': []}

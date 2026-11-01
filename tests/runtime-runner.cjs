@@ -58,11 +58,11 @@ async function copyDiagnostics(profile, diagnostics) {
   }
 }
 async function verify(source, {pointer = false, timeoutMs = 120000} = {}) {
-  const artifacts = path.resolve(__dirname, '../artifacts');
+  const artifacts = path.resolve(__dirname, '../zen-instances');
   const sourceApp = await fs.realpath(source);
   const relative = path.relative(sourceApp, artifacts);
   if (relative === '' || (!relative.startsWith('..' + path.sep) && relative !== '..' && !path.isAbsolute(relative)))
-    throw new Error('Source application must not contain the artifacts directory.');
+    throw new Error('Source application must not contain the zen-instances directory.');
   await fs.mkdir(artifacts, {recursive: true});
   const folder = await fs.mkdtemp(path.join(artifacts, 'runtime-'));
   const diagnostics = path.join(folder, 'diagnostics');

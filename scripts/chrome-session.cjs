@@ -19,11 +19,11 @@ const engine = require('../installer/engine.cjs');
     probe.listen(2828, '127.0.0.1', resolve);
   });
   await new Promise(resolve => probe.close(resolve));
-  const artifacts = path.resolve(__dirname, '../artifacts');
+  const artifacts = path.resolve(__dirname, '../zen-instances');
   await fs.mkdir(artifacts, {recursive:true});
   const folder = await fs.mkdtemp(path.join(artifacts, 'chrome-session-'));
   // macOS signing can fail in cloud-managed workspaces. Keep the disposable
-  // bundle local; diagnostics and its fresh profile remain under artifacts.
+  // bundle local; diagnostics and its fresh profile remain under zen-instances.
   const appFolder = process.platform === 'darwin'
     ? await fs.mkdtemp(path.join(await fs.realpath(os.tmpdir()), 'arc-ui-chrome-session-'))
     : folder;
