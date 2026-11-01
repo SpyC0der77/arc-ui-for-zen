@@ -88,6 +88,8 @@ jobs:
       - run: pnpm dist:${{ matrix.target }} --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          # mac.identity is "-": ad-hoc signing needs no certificate or secrets.
+          CSC_FOR_PULL_REQUEST: 'true'
       - run: pnpm verify:package
       - name: Smoke-test packaged Windows installer
         if: matrix.target == 'win'
