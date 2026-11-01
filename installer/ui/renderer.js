@@ -26,6 +26,7 @@ function showStep(step){
  if(step==='review'){
   $('review-installation').textContent=selection().installation;
   $('review-profile').textContent=selection().profile;
+  void refreshVersions();
  }
  const destination='translate3d('+(-index*100)+'%,0,0)';
  track.style.transform=destination;
@@ -33,6 +34,17 @@ function showStep(step){
  const animation=track.animate([{transform:from==='none'?'translate3d(0,0,0)':from},{transform:destination}],{duration:520,easing:'cubic-bezier(.4,0,.2,1)'});
  pageTransition=animation;
  animation.finished.then(()=>{if(pageTransition===animation)finishPageMotion();}).catch(()=>{});
+}
+async function refreshVersions(){
+ const choice=selection();
+ $('review-versions').textContent='Reading installed Arc UI version...';
+ try{
+  const info=unwrap(await api.inspect(choice));
+  if(JSON.stringify(choice)!==JSON.stringify(selection()))return;
+  $('review-versions').textContent=info.installedVersion
+   ? 'Arc UI installed: '+info.installedVersion+'. '+(info.installedVersion===info.targetVersion?'Reinstall version: ':'Install version: ')+info.targetVersion+'.'
+   : 'Arc UI is not installed in this profile. Install version: '+info.targetVersion+'.';
+ }catch(error){if(JSON.stringify(choice)===JSON.stringify(selection()))$('review-versions').textContent='Could not read installed version. '+error.message;}
 }
 function status(text,error=false){errorSelection=error?selection():null;$('status').textContent=text;for(const copy of document.querySelectorAll('.status-copy')){copy.textContent=text;copy.dataset.error=String(error);}}
 function selectionChanged(key){
@@ -84,7 +96,7 @@ $('installer').addEventListener('submit',event=>{
  if(missing){showStep(missing==='installation'?'setup':'profile-step');validFolder(missing);return;}
  void execute(async()=>{status('Installing...');const result=unwrap(await api.apply('install',selection()));status(result.message);showStep('complete');});
 });
-$('remove').addEventListener('click',()=>void execute(async()=>{status('Removing...');status(unwrap(await api.apply('remove',selection())).message);}));
+$('remove').addEventListener('click',()=>void execute(async()=>{status('Removing...');status(unwrap(await api.apply('remove',selection())).message);await refreshVersions();}));
 const openZen=()=>void execute(async()=>{unwrap(await api.launch(selection()));status('Zen opened.');});
 $('launch').addEventListener('click',openZen);
 $('finish').addEventListener('click',openZen);

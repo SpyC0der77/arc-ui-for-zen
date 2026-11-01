@@ -84,6 +84,12 @@ async function writable(folder) {
   try {await fs.access(folder,require('node:fs').constants.W_OK);}
   catch {throw new Error(`This folder is not writable without administrator access: ${folder}. Install Zen in a user-owned folder first.`);}
 }
+async function inspect(installation,profile) {
+  const target=await validate(installation,profile,{requireVersion:false,checkClosed:async()=>{}});
+  const receipt=await fs.readFile(receiptFile(target.profile),'utf8').then(JSON.parse,error=>{if(error.code==='ENOENT')return null;throw error;});
+  if(receipt&&(!eq(receipt.profile,target.profile)||!eq(receipt.resources,target.resources)))throw new Error('The receipt belongs to a different installation or profile.');
+  return {installedVersion:receipt?receipt.version||'Unknown':null,targetVersion:VERSION};
+}
 async function install(installation,profile,{payload=path.join(__dirname,'..','payload'),...options}={}) {
   const target=await validate(installation,profile,options);
   const manifest=receiptFile(target.profile);
@@ -241,4 +247,4 @@ async function discover(options={}) {
   }
   return {platform,version:VERSION,supportedZen:SUPPORTED,apps,profiles,instances};
 }
-module.exports={VERSION,SUPPORTED,SUPPORTED_VERSIONS,BEGIN,END,parseIni,layout,candidates,discover,install,remove,validate,receiptFile,digest};
+module.exports={inspect,VERSION,SUPPORTED,SUPPORTED_VERSIONS,BEGIN,END,parseIni,layout,candidates,discover,install,remove,validate,receiptFile,digest};

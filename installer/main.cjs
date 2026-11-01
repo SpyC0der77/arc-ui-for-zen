@@ -15,6 +15,7 @@ function selected(value) {
 function handle(name,fn) {ipcMain.handle(name,async(event,...args)=>{authorize(event);try{return {ok:true,value:await fn(...args)};}catch(error){return {ok:false,error:error.message};}});}
 async function boot() {
   handle('arc:discover',()=>engine.discover());
+  handle('arc:inspect',value=>{const choice=selected(value);return engine.inspect(choice.installation,choice.profile);});
   handle('arc:folder',async()=>{const result=await dialog.showOpenDialog(window,{properties:['openDirectory'],title:'Choose folder'});return result.canceled?null:result.filePaths[0];});
   handle('arc:apply',async(action,value)=>{
     if(busy)throw new Error('An installation operation is already running.');
