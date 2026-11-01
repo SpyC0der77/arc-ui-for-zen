@@ -13,7 +13,8 @@ var ArcMenus = {
       const top = window.mozInnerScreenY + rect.top;
       const x = Math.max(screen.availLeft + 8,
         Math.min(left, screen.availLeft + screen.availWidth - rect.width - 8));
-      const y = Math.min(top + 8, screen.availTop + screen.availHeight - rect.height - 8);
+      const y = Math.max(screen.availTop + 8,
+        Math.min(top + 8, screen.availTop + screen.availHeight - rect.height - 8));
       appMenu.moveTo(x, y);
     };
     if (appMenu) {

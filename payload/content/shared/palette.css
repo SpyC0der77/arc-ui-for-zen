@@ -73,7 +73,7 @@
     --zen-sidebar-themed-icon-fill: var(--arc-text) !important;
     --zen-accent-button-color: var(--arc-text) !important;
     --zen-accent-button-background: var(--arc-popup-active) !important;
-    --zen-secondary-btn-color: var(--arc-popup-control) !important;
+    --zen-secondary-btn-color: var(--arc-text) !important;
     --zen-urlbar-background: var(--arc-popup-surface) !important;
     --zen-dialog-background: var(--arc-popup-surface) !important;
     --zen-in-content-dialog-background: var(--arc-popup-surface) !important;

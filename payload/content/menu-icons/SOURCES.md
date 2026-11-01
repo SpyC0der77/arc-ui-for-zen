@@ -5,4 +5,4 @@
 
 - settings.svg and menu.svg: Lucide Settings and Ellipsis, https://github.com/lucide-icons/lucide, ISC license. Stroke adapted to Firefox context-fill.
 
-- cloud.svg: Lucide Cloud, ISC license; stroke uses Firefox context-fill.
+- cloud.svg: Lucide Cloud, https://github.com/lucide-icons/lucide, ISC license; stroke uses Firefox context-fill.

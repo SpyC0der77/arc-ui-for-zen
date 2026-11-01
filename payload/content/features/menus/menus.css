@@ -195,8 +195,6 @@
   }
   /* Lavender application menu, sized for the browser rather than the mockup. */
   :root[data-arc-ui] #appMenu-popup {
-    --arc-text: light-dark(#211033, #f5edff);
-    --arc-popup-hover: light-dark(#e9ddfa, #49385f);
     --panel-color: var(--arc-text) !important;
     --arrowpanel-color: var(--arc-text) !important;
     --menu-panel-width-wide: 332px !important;
@@ -398,6 +396,10 @@
     min-height: 28px !important;
     max-height: 28px !important;
     clip-path: inset(0 round 14px) !important;
+  }
+  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls > #appMenu-zoomReset-button2:focus-visible {
+    outline: 2px solid var(--arc-text) !important;
+    outline-offset: -3px !important;
   }
   :root[data-arc-ui] #zenCreateNewPopup {
     appearance: none !important;

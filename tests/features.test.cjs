@@ -198,3 +198,28 @@ test("a failed sidebar measurement does not block the next dock attempt", async 
   assert.equal(updates, 1);
   feature.destroy();
 });
+test('application menu placement respects nonzero screen work-area edges', () => {
+  const listeners = new Map();
+  let position;
+  const popup = {
+    getBoundingClientRect: () => ({left: -30, top: -50, width: 332, height: 700}),
+    addEventListener: (type, fn) => listeners.set(type, fn),
+    removeEventListener: type => listeners.delete(type),
+    moveTo: (x, y) => { position = {x, y}; },
+  };
+  const document = {
+    getElementById: id => id === 'appMenu-popup' ? popup : null,
+    addEventListener() {}, removeEventListener() {},
+  };
+  const feature = load('features/menus/create-menu.js', 'ArcMenus').install({
+    document, mozInnerScreenX: 0, mozInnerScreenY: 0,
+    screen: {availLeft: 40, availTop: 60, availWidth: 1200, availHeight: 900},
+  });
+  listeners.get('popupshown')();
+  assert.deepEqual(position, {x: 48, y: 68});
+  popup.getBoundingClientRect = () => ({left: 1100, top: 800, width: 332, height: 700});
+  listeners.get('popupshown')();
+  assert.deepEqual(position, {x: 900, y: 252});
+  feature.destroy();
+  assert.equal(listeners.size, 0);
+});
