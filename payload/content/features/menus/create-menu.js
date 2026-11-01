@@ -5,6 +5,21 @@ var ArcMenus = {
     const HTML = "http://www.w3.org/1999/xhtml";
     const cleanups = [];
     const styledPopups = new Set();
+    const appMenu = document.getElementById("appMenu-popup");
+    const insetAppMenu = () => {
+      const rect = appMenu.getBoundingClientRect();
+      const screen = window.screen;
+      const left = window.mozInnerScreenX + rect.left;
+      const top = window.mozInnerScreenY + rect.top;
+      const x = Math.max(screen.availLeft + 8,
+        Math.min(left, screen.availLeft + screen.availWidth - rect.width - 8));
+      const y = Math.min(top + 8, screen.availTop + screen.availHeight - rect.height - 8);
+      appMenu.moveTo(x, y);
+    };
+    if (appMenu) {
+      appMenu.addEventListener("popupshown", insetAppMenu);
+      cleanups.push(() => appMenu.removeEventListener("popupshown", insetAppMenu));
+    }
     const createMenu = document.getElementById("zenCreateNewPopup");
     if (createMenu) {
       // Cocoa menus bypass our popup styles. Render this menu in Gecko on all

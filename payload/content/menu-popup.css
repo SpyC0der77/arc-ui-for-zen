@@ -6,7 +6,8 @@
   --arrowpanel-color: light-dark(#141414, #f0edf3) !important;
 }
 /* Panels and menupopups use different shadow-root containers. */
-.panel-arrowcontent {
+.panel-arrowcontent,
+:host(#appMenu-popup) .panel-viewcontainer {
   background: var(--arrowpanel-background) !important;
   color: var(--arrowpanel-color) !important;
   border: 1px solid #44375026 !important;
@@ -33,4 +34,13 @@ arrowscrollbox.menupopup-arrowscrollbox {
   border-radius: 10px !important;
   corner-shape: round !important;
   padding: 6px !important;
+}
+
+/* The application menu uses a panel, but shares the popup frame with menus. */
+:host(#appMenu-popup) .panel-arrowcontent {
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+:host(#appMenu-popup) .panel-arrowbox {
+  display: none !important;
 }

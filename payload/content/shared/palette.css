@@ -5,6 +5,7 @@
     font-family: var(--arc-font) !important;
     font-synthesis: none;
     --arc-surface: light-dark(#cec7d4, #23202a);
+    --arc-folder: light-dark(#b86ba6, #d9a3cb);
     --arc-text: light-dark(#141414, #f0edf3);
     --arc-muted: light-dark(#65556f, #e4d2f5);
     --arc-popup-surface: light-dark(#f6f4f3, #302c35);
@@ -31,6 +32,55 @@
     --zen-big-shadow: 0 1px 6px #44375038 !important;
     --zen-element-separation: 10px !important;
     color-scheme: light !important;
+  }
+  /* Workspace content must follow Arc's palette in light and dark mode. */
+  :root[data-arc-ui] zen-workspace {
+    color: var(--arc-text) !important;
+    --toolbarbutton-icon-fill: var(--arc-text) !important;
+    --lwt-text-color: var(--arc-text) !important;
+    --zen-sidebar-themed-text-color: var(--arc-text) !important;
+  }
+  :root[data-arc-ui] zen-workspace :is(.tab-text, .tab-label, .zen-workspace-name) {
+    color: var(--arc-text) !important;
+  }
+  :root[data-arc-ui] zen-folder {
+    color: var(--arc-text) !important;
+    --sidebar-text-color: var(--arc-text) !important;
+    --toolbox-textcolor: var(--arc-text) !important;
+  }
+  :root[data-arc-ui] zen-folder .tab-group-label {
+    color: var(--arc-text) !important;
+  }
+  /* Arc owns the chrome palette, including per-workspace native overrides. */
+  :root[data-arc-ui],
+  :root[data-arc-ui] :is(zen-workspace, zen-folder) {
+    --zen-primary-color: var(--arc-surface) !important;
+    --zen-colors-primary: var(--arc-surface) !important;
+    --zen-colors-primary-foreground: var(--arc-text) !important;
+    --zen-colors-secondary: color-mix(in srgb, var(--arc-surface), var(--arc-text) 8%) !important;
+    --zen-colors-tertiary: color-mix(in srgb, var(--arc-surface), var(--arc-text) 12%) !important;
+    --zen-colors-input-bg: var(--arc-popup-control) !important;
+    --zen-colors-border: color-mix(in srgb, var(--arc-text) 18%, transparent) !important;
+    --zen-colors-border-contrast: color-mix(in srgb, var(--arc-text) 30%, transparent) !important;
+    --zen-colors-hover-bg: var(--arc-popup-hover) !important;
+    /* Resting toolbar surfaces previously used Zen's 8% / 15% text tint.
+       Derive it from Arc's foreground so workspace colors cannot affect it. */
+    --zen-toolbar-element-bg: light-dark(
+      color-mix(in oklch, var(--arc-text) 8%, transparent),
+      color-mix(in oklch, var(--arc-text) 15%, transparent)
+    ) !important;
+    --zen-toolbar-element-bg-hover: var(--arc-popup-active) !important;
+    --zen-sidebar-themed-icon-fill: var(--arc-text) !important;
+    --zen-accent-button-color: var(--arc-text) !important;
+    --zen-accent-button-background: var(--arc-popup-active) !important;
+    --zen-secondary-btn-color: var(--arc-popup-control) !important;
+    --zen-urlbar-background: var(--arc-popup-surface) !important;
+    --zen-dialog-background: var(--arc-popup-surface) !important;
+    --zen-in-content-dialog-background: var(--arc-popup-surface) !important;
+    --sidebar-text-color: var(--arc-text) !important;
+    --zen-folder-behind-bgcolor: color-mix(in srgb, var(--arc-folder), var(--arc-text) 20%) !important;
+    --zen-folder-front-bgcolor: color-mix(in srgb, var(--arc-folder), var(--arc-popup-surface) 35%) !important;
+    --zen-folder-stroke: color-mix(in srgb, var(--arc-folder), var(--arc-text) 45%) !important;
   }
   /* Zen's chrome media query follows its selected theme, including system mode.
      Native surfaces must not retain an independent light color scheme. */

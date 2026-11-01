@@ -39,4 +39,12 @@
     flex-shrink: 0;
     pointer-events: none;
   }
+  /* Native Zen press feedback must not resize the control or its background.
+     Keep color feedback and leave child icon animations independent. */
+  :root[data-arc-ui]:not([customizing])
+    :is(.toolbarbutton-1, .urlbar-page-action, .identity-box-button,
+        .zen-interactive-button) {
+    transform: none !important;
+    scale: none !important;
+  }
 }

@@ -56,7 +56,9 @@
     margin: 0;
     padding: 0;
     border-radius: 9px 2px 2px 9px;
-    background: var(--swatch);
+    appearance: none !important;
+    background: var(--swatch) !important;
+    border: 0 !important;
     color: white;
     text-shadow: 0 1px 3px #000;
     font: 10px ui-monospace, monospace;
@@ -79,7 +81,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 0;
+    padding: 8px 0;
     border-bottom: 1px solid #8882;
   }
   #arc-settings-dialog input[type="color"] {
