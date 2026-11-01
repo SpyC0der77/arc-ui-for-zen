@@ -11,8 +11,9 @@ var ArcLibrary = {
     const { Services } = window;
     const prefBranch = "arc-ui.appearance.";
     const appearanceInputs = [];
+    let editorWindow = null;
     const appearance = [
-      ["background", "Background", "--arc-surface", "#cec7d4", "#292630"],
+      ["background", "Background", "--arc-surface", "#cec7d4", "#23202a"],
       ["foreground", "Foreground text", "--arc-text", "#141414", "#f0edf3"],
       ["accent", "Accent text", "--arc-muted", "#65556f", "#e4d2f5"],
       ["popup", "Menu background", "--arc-popup-surface", "#f6f4f3", "#302c35"],
@@ -35,6 +36,8 @@ var ArcLibrary = {
           return /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
         });
         document.documentElement.style.setProperty(variable, `light-dark(${values[0]}, ${values[1]})`);
+        if (editorWindow && !editorWindow.closed)
+          editorWindow.document.documentElement.style.setProperty(variable, `light-dark(${values[0]}, ${values[1]})`);
       }
       document.documentElement.toggleAttribute("data-arc-reduced-motion", Services.prefs.getBoolPref(prefBranch + "reduce-motion", false));
     }
@@ -72,7 +75,6 @@ var ArcLibrary = {
     heading.append(html("span", "Colors"), html("span", "☀ Light"), html("span", "☾ Dark"));
     settings.append(heading);
     let activeColor = null;
-    let editorWindow = null;
     function refreshColorInputs() {
       for (const entry of appearanceInputs) {
         const { input, key, mode, fallback } = entry;
@@ -107,6 +109,26 @@ var ArcLibrary = {
     editor.id = "arc-color-editor";
     editor.hidden = true;
     const editorTitle = html("h3", "");
+    editorTitle.title = "Drag to move";
+    let editorDrag = null;
+    editorTitle.addEventListener("pointerdown", event => {
+      if (event.button !== 0) return;
+      const floating = editorTitle.ownerDocument.defaultView;
+      editorDrag = { x: event.screenX, y: event.screenY, left: floating.screenX, top: floating.screenY };
+      editorTitle.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    });
+    editorTitle.addEventListener("pointermove", event => {
+      if (!editorDrag || !editorTitle.hasPointerCapture(event.pointerId)) return;
+      editorTitle.ownerDocument.defaultView.moveTo(
+        editorDrag.left + event.screenX - editorDrag.x,
+        editorDrag.top + event.screenY - editorDrag.y);
+    });
+    editorTitle.addEventListener("lostpointercapture", () => { editorDrag = null; });
+    editorTitle.addEventListener("pointerup", event => {
+      if (editorTitle.hasPointerCapture(event.pointerId)) editorTitle.releasePointerCapture(event.pointerId);
+      editorDrag = null;
+    });
     const pickerHost = html("div", "");
     const pickerRoot = pickerHost.attachShadow({ mode: "open" });
     const pickerStyles = html("link", "");
@@ -144,6 +166,7 @@ var ArcLibrary = {
       dot.style.setProperty("--zen-theme-picker-dot-color", hex.value);
     }
     function saveColor(value) {
+      value = "#" + value.trim().replace(/^#/, "");
       if (!activeColor || !/^#[0-9a-f]{6}$/i.test(value)) return;
       Services.prefs.setStringPref(prefBranch + activeColor.mode + "." + activeColor.key, value);
       hex.value = value;
@@ -184,16 +207,19 @@ var ArcLibrary = {
         window.screen.availTop + window.screen.availHeight - 440));
       editorWindow = Services.ww.openWindow(window,
         "chrome://arc-ui/content/features/library/color-editor.xhtml", null,
-        `chrome,alwaysontop,dependent,dialog=yes,resizable=no,minimizable=no,width=184,height=350,left=${Math.round(left)},top=${Math.round(top)}`, null);
+        `chrome,titlebar=no,alwaysontop,dependent,dialog=yes,resizable=no,minimizable=no,width=216,height=350,left=${Math.round(left)},top=${Math.round(top)}`, null);
       const floating = editorWindow;
       floating.addEventListener("load", () => {
         floating.document.title = editorTitle.textContent;
-        floating.document.body.append(editor);
+        floating.document.querySelector("body").append(editor);
+        applyAppearance();
+        floating.sizeToContent();
         floating.focus();
-      }, { once: true });
-      floating.addEventListener("unload", () => {
-        if (activeColor) activeColor.input.setAttribute("aria-expanded", "false");
-        if (editorWindow === floating) editorWindow = null;
+        // Register after navigation: the initial about:blank unload is not a close.
+        floating.addEventListener("unload", () => {
+          if (activeColor) activeColor.input.setAttribute("aria-expanded", "false");
+          if (editorWindow === floating) editorWindow = null;
+        }, { once: true });
       }, { once: true });
     }
     function pick(event) {
@@ -211,10 +237,10 @@ var ArcLibrary = {
     });
     field.addEventListener("pointermove", event => { if (field.hasPointerCapture(event.pointerId)) pick(event); });
     brightness.addEventListener("input", saveWheelColor);
-    hex.addEventListener("input", () => { if (/^#[0-9a-f]{6}$/i.test(hex.value)) { saveColor(hex.value); loadColor(hex.value); } });
+    hex.addEventListener("input", () => { if (/^#?[0-9a-f]{6}$/i.test(hex.value.trim())) { saveColor(hex.value); loadColor(hex.value); } });
     const pickerDone = html("button", "Done");
     pickerDone.type = "button";
-    pickerDone.addEventListener("click", () => editorWindow?.close());
+    pickerDone.addEventListener("click", () => pickerDone.ownerDocument.defaultView.close());
     editor.append(editorTitle, pickerHost, brightnessLabel, hexLabel, pickerDone);
     settings.addEventListener("close", () => editorWindow?.close());
     const motionRow = html("label", "");

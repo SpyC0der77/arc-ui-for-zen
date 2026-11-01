@@ -4,7 +4,7 @@
     --arc-font: -apple-system, BlinkMacSystemFont, Geist, sans-serif;
     font-family: var(--arc-font) !important;
     font-synthesis: none;
-    --arc-surface: light-dark(#cec7d4, #292630);
+    --arc-surface: light-dark(#cec7d4, #23202a);
     --arc-text: light-dark(#141414, #f0edf3);
     --arc-muted: light-dark(#65556f, #e4d2f5);
     --arc-popup-surface: light-dark(#f6f4f3, #302c35);
@@ -108,7 +108,10 @@
       background: transparent !important;
     }
     :root[data-arc-ui] #zen-browser-background {
-      background: light-dark(rgba(206, 199, 212, 0.7), rgba(35, 32, 42, 0.88)) !important;
+      background: light-dark(
+        color-mix(in srgb, var(--arc-surface) 70%, transparent),
+        color-mix(in srgb, var(--arc-surface) 88%, transparent)
+      ) !important;
     }
     /* The selector is more opaque than the library content, which shares the
        translucent window background. Other secondary sidebars stay opaque. */
