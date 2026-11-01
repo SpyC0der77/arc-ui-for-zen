@@ -116,7 +116,7 @@
     check(nativeLibrary?typeof nativeLibrary.constructor.animateProgress==='function':!!document.getElementById('arc-legacy-library'),'functional library or native fallback menu available');
     check(['zen-library-button','library-button','downloads-button'].every(id=>!document.getElementById(id)||getComputedStyle(document.getElementById(id)).display==='none'),'duplicate native library and downloads buttons hidden');
     const translucentFrame=matchMedia('(-moz-platform: macos), (-moz-platform: windows)').matches;
-    const expectedFrameColor=id=>translucentFrame?(id==='zen-browser-background'?'rgba(206, 199, 212, 0.7)':'rgba(0, 0, 0, 0)'):'rgb(206, 199, 212)';
+    const expectedFrameColor=id=>translucentFrame?(id==='zen-browser-background'?'color(srgb 0.807843 0.780392 0.831373 / 0.7)':'rgba(0, 0, 0, 0)'):'rgb(206, 199, 212)';
     check(getComputedStyle(document.getElementById('navigator-toolbox')).backgroundColor===expectedFrameColor('navigator-toolbox'),'lavender palette');
     const frameNodes=['zen-browser-background','zen-toolbar-background','zen-appcontent-wrapper','zen-tabbox-wrapper'];
     const savedTheme=document.documentElement.getAttribute('style');
