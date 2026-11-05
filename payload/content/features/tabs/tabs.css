@@ -38,12 +38,12 @@
     visibility: visible !important;
   }
   :root[data-arc-ui] .tab-background[selected] {
-    background: light-dark(white, #39333f) !important;
+    background: var(--arc-tab-active) !important;
     box-shadow: 0 1px 3px #44375026 !important;
-    outline: 1px solid #44375026 !important;
+    outline: 1px solid light-dark(#44375026, #f0edf338) !important;
   }
   :root[data-arc-ui] .tabbrowser-tab:not([selected]):hover .tab-background {
-    background: #1414140f !important;
+    background: var(--arc-tab-hover) !important;
   }
   :root[data-arc-ui] .tab-label {
     color: light-dark(#141414, #f0edf3) !important;

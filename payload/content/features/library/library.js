@@ -18,6 +18,8 @@ var ArcLibrary = {
       ["accent", "Accent text", "--arc-muted", "#65556f", "#e4d2f5"],
       ["popup", "Menu background", "--arc-popup-surface", "#f6f4f3", "#302c35"],
       ["folder", "Folder icons", "--arc-folder", "#b86ba6", "#d9a3cb"],
+      ["tab-active", "Active tab", "--arc-tab-active", "#ffffff", "#655c70"],
+      ["tab-hover", "Hover tab", "--arc-tab-hover", "#bcb6c2", "#4c4752"],
       ["hover", "Hover background", "--arc-popup-hover", "#e8e3df", "#413b48"],
       ["pressed", "Pressed background", "--arc-popup-active", "#ded7d2", "#514858"],
     ];

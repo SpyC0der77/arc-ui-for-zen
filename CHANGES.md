@@ -1,3 +1,8 @@
+## v0.1.7
+
+- Increase active tab contrast and make hovered tabs visible on translucent dark windows.
+- Add Active tab and Hover tab colors to Appearance, with separate light and dark palettes, live updates, and reset support.
+
 ## v0.1.4
 
 - Discover running, portable, renamed, and custom Zen installations and their profiles; add an installation picker and Search again action.

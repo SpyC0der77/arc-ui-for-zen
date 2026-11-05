@@ -6,6 +6,8 @@
     font-synthesis: none;
     --arc-surface: light-dark(#cec7d4, #23202a);
     --arc-folder: light-dark(#b86ba6, #d9a3cb);
+    --arc-tab-active: light-dark(#ffffff, #655c70);
+    --arc-tab-hover: light-dark(#bcb6c2, #4c4752);
     --arc-text: light-dark(#141414, #f0edf3);
     --arc-muted: light-dark(#65556f, #e4d2f5);
     --arc-popup-surface: light-dark(#f6f4f3, #302c35);
@@ -25,7 +27,7 @@
     --toolbox-textcolor: var(--arc-text) !important;
     --toolbar-color: light-dark(#141414, #f0edf3) !important;
     --lwt-text-color: light-dark(#141414, #f0edf3) !important;
-    --tab-selected-bgcolor: light-dark(white, #39333f) !important;
+    --tab-selected-bgcolor: var(--arc-tab-active) !important;
     --tab-selected-textcolor: light-dark(#141414, #f0edf3) !important;
     --zen-native-inner-radius: 10px !important;
     --zen-border-radius: 8px !important;
