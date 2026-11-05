@@ -43,7 +43,7 @@
     outline: 1px solid light-dark(#44375026, #f0edf338) !important;
   }
   :root[data-arc-ui] .tabbrowser-tab:not([selected]):hover .tab-background {
-    background: var(--arc-tab-hover) !important;
+    background: color-mix(in srgb, var(--arc-tab-hover) 50%, transparent) !important;
   }
   :root[data-arc-ui] .tab-label {
     color: light-dark(#141414, #f0edf3) !important;
@@ -147,5 +147,16 @@
   }
   :root[data-arc-ui] #tabs-newtab-button {
     color: light-dark(#65556f, #e4d2f5) !important;
+    border-radius: 10px !important;
+    corner-shape: round !important;
+    transition: none !important;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-arc-ui]:not([data-arc-reduced-motion]) #tabs-newtab-button {
+      transition: background-color 120ms ease !important;
+    }
+  }
+  :root[data-arc-ui] #tabs-newtab-button:hover {
+    background: color-mix(in srgb, var(--arc-tab-hover) 50%, transparent) !important;
   }
 }
