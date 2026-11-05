@@ -1,3 +1,8 @@
+## v0.1.8-beta.1
+
+- Match New Tab hover to tab hover and soften both backgrounds to 50% opacity.
+- Respect app and operating system reduced-motion settings for the New Tab hover fade.
+
 ## v0.1.7
 
 - Increase active tab contrast and make hovered tabs visible on translucent dark windows.
