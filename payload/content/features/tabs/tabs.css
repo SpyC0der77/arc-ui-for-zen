@@ -149,6 +149,8 @@
     color: light-dark(#65556f, #e4d2f5) !important;
     border-radius: 10px !important;
     corner-shape: round !important;
+  }
+  :root[data-arc-ui]:not([data-arc-reduced-motion]) #tabs-newtab-button {
     transition: background-color 120ms ease !important;
   }
   :root[data-arc-ui] #tabs-newtab-button:hover {
