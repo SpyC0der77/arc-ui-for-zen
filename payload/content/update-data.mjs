@@ -17,22 +17,16 @@ export function newer(a, b) {
   return false;
 }
 export function assetName(version, os, arch) {
-  const v = version.replace(/^v/, '');
-  if (os === 'WINNT') return `Arc-UI-Zen-${v}-Windows.exe`;
-  const cpu = /aarch64|arm64/.test(arch) ? 'arm64' : 'x64';
-  return os === 'Darwin' ? `Arc-UI-Zen-${v}-macOS-${cpu}.dmg` : `Arc-UI-Zen-${v}-Linux-${cpu === 'x64' ? 'x86_64' : cpu}.AppImage`;
+  return `Arc-UI-Zen-${version.replace(/^v/, '')}-Update.json`;
 }
+
 export function releaseTrack(value, current) {
   return ['stable', 'beta'].includes(value) ? value : current.includes('-') ? 'beta' : 'stable';
 }
 export function selectRelease(releases, current, os, arch, track = releaseTrack('', current)) {
-  const name = version => assetName(version, os, arch);
-  // Published Linux assets use x86_64; some electron-builder versions use x64.
-  const matches = (asset, version) => asset.name === name(version) ||
-    (os === 'Linux' && /x86_64/.test(arch) && asset.name === name(version).replace('-x86_64.AppImage', '-x64.AppImage'));
   return releases.filter(r => !r.draft && (track === 'beta' || (!r.prerelease && !r.tag_name?.includes('-'))) && newer(r.tag_name, current))
     .sort((a, b) => newer(a.tag_name, b.tag_name) ? -1 : newer(b.tag_name, a.tag_name) ? 1 : 0)
-    .map(r => ({ ...r, asset: r.assets?.find(a => matches(a, r.tag_name)), checksum: r.assets?.find(a => a.name === 'SHA256SUMS.txt') }))
+    .map(r => ({ ...r, asset: r.assets?.find(a => a.name === assetName(r.tag_name)), checksum: r.assets?.find(a => a.name === 'SHA256SUMS.txt') }))
     .find(r => r.asset && r.checksum);
 }
 export function trustedAsset(url) {

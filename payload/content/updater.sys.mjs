@@ -1,3 +1,4 @@
+import { applyThemeUpdate, recoverThemeUpdate } from './update-apply.mjs';
 import { Downloads } from 'resource://gre/modules/Downloads.sys.mjs';
 import { REPO, selectRelease, trustedAsset, releaseTrack } from './update-data.mjs';
 import { setTimeout, clearTimeout } from 'resource://gre/modules/Timer.sys.mjs';
@@ -10,6 +11,36 @@ async function request(url, format) {
     if (!response.ok) throw new Error(`GitHub returned ${response.status}`);
     return await response[format]();
   } finally { clearTimeout(timer); }
+}
+
+
+export function updateContext() {
+  return {
+    io: {
+      exists: path => IOUtils.exists(path),
+      readJSON: path => IOUtils.readJSON(path),
+      read: path => IOUtils.read(path),
+      remove: path => IOUtils.remove(path, {ignoreAbsent:true}),
+      write: async (path, bytes) => {
+        await IOUtils.makeDirectory(PathUtils.parent(path), {ignoreExisting:true, createAncestors:true});
+        await IOUtils.write(path, bytes, {tmpPath:path + '.arc-update-writing'});
+      },
+      assertPath: async path => {
+        const file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsIFile);
+        file.initWithPath(path); file.normalize();
+        if (file.path !== path) throw new Error('Noncanonical update path: ' + path);
+        for (let current = file; current; current = current.parent)
+          if (current.exists() && current.isSymlink()) throw new Error('Update path contains a symbolic link: ' + current.path);
+      },
+    },
+    paths: {
+      profile:PathUtils.profileDir,
+      resources:Services.dirsvc.get('GreD',Ci.nsIFile).path,
+      join:PathUtils.join,
+      separator:Services.appinfo.OS === 'WINNT' ? '\\' : '/',
+    },
+    encode:text => new TextEncoder().encode(text),
+  };
 }
 
 // One coordinator per browser process, including when several windows are open.
@@ -25,25 +56,23 @@ export const ArcUpdater = {
   },
   setTrack(track, { check = true } = {}) {
     if (!['stable', 'beta'].includes(track)) throw new Error('Choose Beta or Stable.');
-    if (['downloading', 'opening'].includes(this.state)) throw new Error('Wait for the current update operation to finish.');
+    if (['downloading', 'applying', 'ready', 'restarting'].includes(this.state)) throw new Error('Wait for the current update operation to finish.');
     Services.prefs.setStringPref('arc-ui.updates.track', track);
     this.checkAfterTrackChange = check;
     this.revision++;
     const directory = this.stagedDirectory;
     this.stagedDirectory = null;
-    // A launched installer or mounted disk image may still be using its file.
-    if (directory && !this.installerOpened)
-      void IOUtils.remove(directory, { recursive: true }).catch(error => console.warn('[Arc UI updates]', error));
-    this.installerOpened = false;
+    if (directory) void IOUtils.remove(directory, { recursive: true }).catch(error => console.warn('[Arc UI updates]', error));
     this.release = null; this.target = null; this.state = 'idle'; this.error = ''; this.progress = null;
     this.emit();
     if (check) void this.check({ force: true });
   },
   async check({ force = false } = {}) {
-    if (this.checking || ['downloading', 'ready', 'opening'].includes(this.state)) return;
+    if (this.checking || ['downloading', 'applying', 'ready', 'restarting'].includes(this.state)) return;
     this.checking = true;
     const revision = this.revision;
     try {
+      await recoverThemeUpdate(updateContext());
       const receipt = await IOUtils.readJSON(PathUtils.join(PathUtils.profileDir, 'chrome', 'arc-ui.install.json'));
       const track = releaseTrack(Services.prefs.getStringPref('arc-ui.updates.track', ''), receipt.version);
       const key = 'arc-ui.updates.last-check.' + track;
@@ -53,7 +82,7 @@ export const ArcUpdater = {
       const releases = await request(`https://api.github.com/repos/${REPO}/releases?per_page=30`, 'json');
       if (!Array.isArray(releases)) throw new Error('Invalid release list');
       if (revision !== this.revision) return;
-      if (['downloading', 'ready', 'opening'].includes(this.state)) return;
+      if (['downloading', 'applying', 'ready', 'restarting'].includes(this.state)) return;
       const release = selectRelease(releases, receipt.version, Services.appinfo.OS, Services.appinfo.XPCOMABI, track);
       this.release = release || null; this.state = release ? 'available' : 'idle'; this.error = ''; this.emit();
     } catch (error) { console.warn('[Arc UI updates]', error); }
@@ -71,7 +100,7 @@ export const ArcUpdater = {
       if (!trustedAsset(asset.browser_download_url) || !trustedAsset(checksum.browser_download_url)) throw new Error('Unexpected release download address.');
       const sums = await request(checksum.browser_download_url, 'text');
       const expected = sums.split(/\r?\n/).map(line => /^([a-f0-9]{64})\s+\*?(.+)$/.exec(line)).find(line => line?.[2] === asset.name)?.[1];
-      if (!expected) throw new Error('The release has no checksum for this installer.');
+      if (!expected) throw new Error('The release has no checksum for this update.');
       directory = await IOUtils.createUniqueDirectory(PathUtils.tempDir, 'arc-ui-update');
       const target = PathUtils.join(directory, asset.name);
       const download = await Downloads.createDownload({ source: { url: asset.browser_download_url }, target });
@@ -84,31 +113,39 @@ export const ArcUpdater = {
       let actual;
       try { hash.init(hash.SHA256); hash.updateFromStream(stream, 0xffffffff); actual = Array.from(hash.finish(false), c => c.charCodeAt(0).toString(16).padStart(2, '0')).join(''); }
       finally { stream.close(); }
-      if (actual !== expected) throw new Error('Installer checksum did not match. Download again.');
-      this.target = target; this.stagedDirectory = directory; this.installerOpened = false;
+      if (actual !== expected) throw new Error('Update checksum did not match. Download again.');
+      if ((await IOUtils.stat(target)).size > 32 * 1024 * 1024) throw new Error('Update bundle exceeds the size limit.');
+      const bundle = await IOUtils.readJSON(target);
+      this.state = 'applying'; this.emit();
+      const hashBytes = async bytes => {
+        const value = Cc['@mozilla.org/security/hash;1'].createInstance(Ci.nsICryptoHash);
+        value.init(value.SHA256); value.update(bytes, bytes.length);
+        return Array.from(value.finish(false), c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+      };
+      await applyThemeUpdate(bundle, {
+        ...updateContext(),
+        hash:hashBytes, decode: text => Uint8Array.from(atob(text), c => c.charCodeAt(0)), encode:text => new TextEncoder().encode(text),
+        browserVersion:Services.appinfo.version, platform:Services.appinfo.OS, version:this.release.tag_name.replace(/^v/,'')
+      });
       this.state = 'ready'; this.progress = 100;
+      await IOUtils.remove(directory, {recursive:true}).catch(() => {});
     } catch (error) {
       if (directory) await IOUtils.remove(directory, { recursive: true }).catch(() => {});
       this.state = 'error'; this.error = error.message;
     }
     this.emit();
   },
-  async install() {
+  async restart() {
     if (this.state !== 'ready') return;
-    this.state = 'opening'; this.emit();
+    this.state = 'restarting'; this.emit();
     try {
-      const receipt = await IOUtils.readJSON(PathUtils.join(PathUtils.profileDir, 'chrome', 'arc-ui.install.json'));
-      const file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsIFile); file.initWithPath(this.target);
-      if (Services.appinfo.OS === 'Darwin') file.launch();
-      else {
-        if (Services.appinfo.OS !== 'WINNT') await IOUtils.setPermissions(this.target, 0o700);
-        const process = Cc['@mozilla.org/process/util;1'].createInstance(Ci.nsIProcess); process.init(file);
-        const args = ['--arc-update', '--installation', receipt.resources, '--profile', receipt.profile];
-        process.runwAsync(args, args.length);
+      const cancel = Cc['@mozilla.org/supports-PRBool;1'].createInstance(Ci.nsISupportsPRBool);
+      Services.obs.notifyObservers(cancel, 'quit-application-requested', 'restart');
+      if (!cancel.data) {
+        Services.appinfo.invalidateCachesOnRestart();
+        Services.startup.quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
       }
-      this.installerOpened = true;
-      this.error = Services.appinfo.OS === 'Darwin' ? 'Open the installer in the disk image, then close Zen to update.' : 'Installer opened. Close Zen, then install the update there.';
-    } catch (error) { this.error = `Could not open installer: ${error.message}`; }
+    } catch (error) { this.error = `Could not restart Zen: ${error.message}`; }
     this.state = 'ready'; this.emit();
   },
 };

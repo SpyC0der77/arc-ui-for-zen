@@ -8,7 +8,7 @@ var ArcUpdates = {
     const popup = el('div', { id: 'arc-update-popup', popover: 'auto', role: 'dialog', 'aria-label': 'Arc UI release notes' });
     const title = el('p', { class: 'arc-update-title' });
     const message = el('p', { role: 'status' });
-    const progress = el('progress', { max: 100, 'aria-label': 'Installer download progress' });
+    const progress = el('progress', { max: 100, 'aria-label': 'Theme download progress' });
     const notes = el('div', { class: 'arc-update-notes' });
     const action = el('button', { type: 'button' });
     const link = el('a', { href: '#', class: 'arc-update-link' }, 'View release on GitHub');
@@ -42,7 +42,7 @@ var ArcUpdates = {
     }
     popup.addEventListener('toggle', () => button.setAttribute('aria-expanded', String(popup.matches(':popover-open'))));
     function activate() {
-      if (updater.state === 'ready') void updater.install();
+      if (updater.state === 'ready') void updater.restart();
       else if (['available', 'error'].includes(updater.state)) void updater.download();
       show();
     }
@@ -56,13 +56,13 @@ var ArcUpdates = {
       button.hidden = !updater.release;
       if (!updater.release) { hide(); return; }
       const state = updater.state;
-      const label = state === 'downloading' ? `Downloading${updater.progress === null ? '…' : ` ${updater.progress}%`}` : state === 'opening' ? 'Opening installer…' : state === 'ready' ? 'Install update' : state === 'error' ? 'Retry download' : 'Download update';
+      const label = state === 'downloading' ? `Downloading${updater.progress === null ? '…' : ` ${updater.progress}%`}` : state === 'applying' ? 'Applying update...' : state === 'restarting' ? 'Restarting...' : state === 'ready' ? 'Restart to apply' : state === 'error' ? 'Retry download' : 'Download update';
       button.setAttribute('aria-label', `Arc UI ${updater.release.tag_name}: ${label}`);
       title.textContent = `Arc UI ${updater.release.tag_name}`;
-      message.textContent = updater.error || (state === 'ready' ? 'Download verified. Open the installer to update this Zen installation.' : state === 'downloading' ? label : 'A new version is available.');
+      message.textContent = updater.error || (state === 'ready' ? 'Theme updated in place. Restart Zen to apply it.' : state === 'downloading' ? label : 'A new version is available.');
       progress.hidden = state !== 'downloading';
       if (updater.progress === null) progress.removeAttribute('value'); else progress.value = updater.progress;
-      action.textContent = label; action.disabled = ['downloading', 'opening'].includes(state);
+      action.textContent = label; action.disabled = ['downloading', 'applying', 'restarting'].includes(state);
       if (shownRelease !== updater.release) {
         shownRelease = updater.release;
         notes.replaceChildren();

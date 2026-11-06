@@ -19,6 +19,20 @@ function prepare(directory = 'release', notesFile = 'release-notes.md') {
       throw new Error(`Missing release asset for ${platform}`);
     }
   }
+  const payload = path.join(__dirname, '..', 'payload');
+  const files = {};
+  function collect(folder, prefix = '') {
+    for (const entry of fs.readdirSync(folder, {withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name))) {
+      if (entry.isSymbolicLink()) throw new Error('Update payload contains a symbolic link.');
+      const relative = prefix + entry.name;
+      if (entry.isDirectory()) collect(path.join(folder, entry.name), relative + '/');
+      else files[relative] = fs.readFileSync(path.join(folder, entry.name)).toString('base64');
+    }
+  }
+  collect(payload);
+  const updateName = `Arc-UI-Zen-${version}-Update.json`;
+  fs.writeFileSync(path.join(directory, updateName), JSON.stringify({format:1, version, supported:require('../installer/engine.cjs').SUPPORTED_VERSIONS, files}));
+  names.push(updateName); names.sort();
   const checksums = names.map(name => `${crypto.createHash('sha256').update(fs.readFileSync(path.join(directory, name))).digest('hex')}  ${name}\n`).join('');
   fs.writeFileSync(path.join(directory, 'SHA256SUMS.txt'), checksums);
   fs.writeFileSync(notesFile, `## Supported versions
@@ -34,7 +48,9 @@ function prepare(directory = 'release', notesFile = 'release-notes.md') {
 
 Download the file for your operating system. Zen must already be installed in a user-writable application folder. Immutable Flatpak/Snap/AppImage browser installations are not supported directly.
 
-Close Zen before installing. To update an existing theme, install this version into the same application and profile; the installer removes the previous version and installs the new one automatically. Use **Open Zen** in the installer afterward to refresh startup caches. Keep your profile and browser data.
+Existing themes with the in-place updater can download the Update.json bundle from the sidebar and restart Zen to apply it, without opening an installer.
+
+Close Zen before using an installer. To update an older theme, install this version into the same application and profile; the installer removes the previous version and installs the new one automatically. Use **Open Zen** in the installer afterward to refresh startup caches. Keep your profile and browser data.
 
 ## Checksums
 

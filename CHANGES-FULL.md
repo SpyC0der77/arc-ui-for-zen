@@ -1,3 +1,10 @@
+## v0.1.8-beta.8
+
+- Download and apply theme updates in place without launching an installer.
+- Add checksum-verified update bundles and a restart action that clears startup caches.
+- Preserve ownership and edited-file checks, roll back failed writes, and recover interrupted updates.
+- Reject incompatible startup-loader or managed-preference changes without changing the installation.
+
 ## v0.1.8-beta.7
 
 - Show a circular update button beside the gift icon without a text label.

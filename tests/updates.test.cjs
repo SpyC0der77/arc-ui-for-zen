@@ -67,11 +67,11 @@ test('release selection respects channel, architecture and required checksums', 
   assert.equal(selectRelease(releases, '0.1.8-beta.4', 'WINNT', 'x86_64').tag_name, 'v0.2.0-beta.1');
   releases[0].draft = true;
   assert.equal(selectRelease(releases, '0.1.8-beta.4', 'WINNT', 'x86_64').tag_name, 'v0.1.9');
-  assert.equal(selectRelease(releases, '0.1.8', 'Darwin', 'aarch64'), undefined);
-  assert.equal(assetName('v1.0.0', 'Darwin', 'aarch64-gcc3'), 'Arc-UI-Zen-1.0.0-macOS-arm64.dmg');
-  assert.equal(assetName('v1.0.0', 'Linux', 'x86_64-gcc3'), 'Arc-UI-Zen-1.0.0-Linux-x86_64.AppImage');
+  assert.equal(selectRelease(releases, '0.1.8', 'Darwin', 'aarch64').tag_name, 'v0.1.9');
+  assert.equal(assetName('v1.0.0', 'Darwin', 'aarch64-gcc3'), 'Arc-UI-Zen-1.0.0-Update.json');
+  assert.equal(assetName('v1.0.0', 'Linux', 'x86_64-gcc3'), 'Arc-UI-Zen-1.0.0-Update.json');
   const linux = [{tag_name: 'v1.0.0', assets: [{name:'Arc-UI-Zen-1.0.0-Linux-x64.AppImage'}, {name:'SHA256SUMS.txt'}]}];
-  assert.equal(selectRelease(linux, '0.1.8', 'Linux', 'x86_64-gcc3').asset.name, 'Arc-UI-Zen-1.0.0-Linux-x64.AppImage');
+  assert.equal(selectRelease(linux, '0.1.8', 'Linux', 'x86_64-gcc3'), undefined);
   assert.equal(trustedAsset('https://github.com/SpyC0der77/arc-ui-for-zen/releases/download/v1/a.exe'), true);
   assert.equal(trustedAsset('https://evil.example/a.exe'), false);
 });
@@ -94,12 +94,12 @@ test('track change invalidates staged updates and ignores an in-flight response 
   const release = tag => ({tag_name:tag,prerelease:tag.includes('-'),assets:[{name:helpers.assetName(tag,'WINNT','x86_64')},{name:'SHA256SUMS.txt'}]});
   const releases = [release('v0.2.0-beta.1'),release('v0.1.9')];
   const scope = {
-    ...helpers, setTimeout, clearTimeout, AbortController, console,
-    Services:{prefs:{getStringPref:(key,fallback)=>prefs.get(key)??fallback,setStringPref:(key,value)=>prefs.set(key,value)},appinfo:{OS:'WINNT',XPCOMABI:'x86_64'}},
+    ...helpers, Ci:{nsIFile:{}}, recoverThemeUpdate:async()=>{}, setTimeout, clearTimeout, AbortController, console,
+    Services:{dirsvc:{get:()=>({path:'/app'})},prefs:{getStringPref:(key,fallback)=>prefs.get(key)??fallback,setStringPref:(key,value)=>prefs.set(key,value)},appinfo:{OS:'WINNT',XPCOMABI:'x86_64'}},
     IOUtils:{readJSON:async()=>({version:'0.1.8-beta.4'}),remove:async path=>removed.push(path)},PathUtils:{profileDir:'/profile',join:(...parts)=>parts.join('/')},
     fetch:async()=>{ calls++; if(calls===1) await new Promise(resolve=>{completeOld=resolve;}); return {ok:true,json:async()=>releases}; },
   };
-  vm.runInNewContext(fs.readFileSync(require.resolve('../payload/content/updater.sys.mjs'),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export const ArcUpdater =','globalThis.updater ='),scope);
+  vm.runInNewContext(fs.readFileSync(require.resolve('../payload/content/updater.sys.mjs'),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export function updateContext','function updateContext').replace('export const ArcUpdater =','globalThis.updater ='),scope);
   const u = scope.updater;
   const first = u.check({force:true});
   await new Promise(setImmediate);
@@ -121,7 +121,7 @@ test('track change invalidates staged updates and ignores an in-flight response 
   u.setTrack('stable',{check:false});readDone({version:'0.1.8-beta.4'});
   assert.equal(await reading,'stable','Pending inference must use the latest saved track');
   u.stagedDirectory='/tmp/installer-in-use';u.installerOpened=true;
-  u.setTrack('beta',{check:false});assert.deepEqual(removed,['/tmp/staged-beta']);
+  u.setTrack('beta',{check:false});assert.deepEqual(removed,['/tmp/staged-beta','/tmp/installer-in-use']);
   scope.IOUtils.readJSON=async()=>({version:'0.1.8-beta.4'});
   let finishSilent;
   scope.fetch=async()=>{calls++;await new Promise(resolve=>{finishSilent=resolve;});return {ok:true,json:async()=>releases};};
@@ -129,4 +129,45 @@ test('track change invalidates staged updates and ignores an in-flight response 
   u.setTrack('stable',{check:false});finishSilent();await normalCheck;await new Promise(setImmediate);
   assert.equal(calls,3,'A private track change must not force a retry of an in-flight normal check');
   assert.equal(u.release,null);
+});
+
+test('in-place update preserves preferences, records hashes, rolls back and rejects unsafe changes', async t => {
+  const fs = require('node:fs/promises'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
+  const {applyThemeUpdate,recoverThemeUpdate} = await import('../payload/content/update-apply.mjs');
+  const engine = require('../installer/engine.cjs');
+  const folder = await fs.mkdtemp(path.join(os.tmpdir(),'arc-inplace-'));
+  t.after(()=>fs.rm(folder,{recursive:true,force:true}));
+  const app=path.join(folder,'Zen'), profile=path.join(folder,'profile');
+  await fs.mkdir(path.join(app,'defaults','pref'),{recursive:true});await fs.mkdir(profile);
+  await fs.writeFile(path.join(app,process.platform==='win32'?'zen.exe':'zen'),'');
+  await fs.writeFile(path.join(app,'application.ini'),'[App]\nVersion=1.24b\n');
+  await fs.writeFile(path.join(profile,'prefs.js'),'// personal prefs\n');
+  await fs.writeFile(path.join(profile,'user.js'),'// personal settings\n');
+  await engine.install(app,profile,{checkClosed:async()=>{}});
+  const files={};
+  async function collect(dir,prefix=''){for(const item of await fs.readdir(dir,{withFileTypes:true})){if(item.isDirectory())await collect(path.join(dir,item.name),prefix+item.name+'/');else files[prefix+item.name]=(await fs.readFile(path.join(dir,item.name))).toString('base64');}}
+  await collect(path.join(__dirname,'../payload'));
+  const bundle={format:1,version:'9.0.0',supported:['1.24b'],files};
+  const context={paths:{profile,resources:app,join:path.join,separator:path.sep},version:'9.0.0',browserVersion:'1.24b',platform:process.platform==='win32'?'WINNT':'Linux',decode:s=>Buffer.from(s,'base64'),encode:s=>Buffer.from(s),hash:async b=>crypto.createHash('sha256').update(b).digest('hex'),io:{exists:p=>fs.access(p).then(()=>true,()=>false),readJSON:async p=>JSON.parse(await fs.readFile(p,'utf8')),read:p=>fs.readFile(p),write:async(p,b)=>{await fs.mkdir(path.dirname(p),{recursive:true});await fs.writeFile(p,b);},remove:p=>fs.rm(p,{force:true}),assertPath:async p=>{assert.equal(path.resolve(p),p);}}};
+  const managed=path.join(profile,'chrome','arc-ui','arc.uc.js'), original=await fs.readFile(managed);
+  const receiptPath=engine.receiptFile(profile), receiptBefore=await fs.readFile(receiptPath);
+  const userBefore=await fs.readFile(path.join(profile,'user.js'));
+  files['arc.uc.js']=Buffer.from('// updated\n'+original).toString('base64');
+  const write=context.io.write;let fail=true;
+  context.io.write=async(p,b)=>{if(p===managed&&fail){fail=false;throw Error('disk write failed');}return write(p,b);};
+  await assert.rejects(applyThemeUpdate(bundle,context),/rolled back/);
+  assert.deepEqual(await fs.readFile(managed),original);assert.deepEqual(await fs.readFile(receiptPath),receiptBefore);
+  context.io.write=write;
+  files['../outside']='eA==';await assert.rejects(applyThemeUpdate(bundle,context),/payload path/);delete files['../outside'];
+  await fs.appendFile(managed,'edited');await assert.rejects(applyThemeUpdate(bundle,context),/edited/);await fs.writeFile(managed,original);
+  await applyThemeUpdate(bundle,context);
+  assert.equal((await context.io.readJSON(receiptPath)).version,'9.0.0');
+  assert.deepEqual(await fs.readFile(path.join(profile,'user.js')),userBefore);
+  const journal=path.join(profile,'chrome','arc-ui-update-journal.json');
+  await fs.writeFile(journal,JSON.stringify({files:[{path:managed,bytes:Array.from(original)}]}));
+  await recoverThemeUpdate(context);assert.deepEqual(await fs.readFile(managed),original);
+  // Restore the committed update before verifying normal installer removal.
+  await fs.writeFile(managed,Buffer.from(files['arc.uc.js'],'base64'));
+  await engine.remove(app,profile,{checkClosed:async()=>{}});
+  assert.equal(await fs.readFile(path.join(profile,'user.js'),'utf8'),'// personal settings\n');
 });

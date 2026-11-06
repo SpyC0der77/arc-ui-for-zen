@@ -20,6 +20,12 @@ test('release fails without every distribution and hashes actual file contents',
  for(const name of names)fs.writeFileSync(path.join(dir,name),'example installer');
  prepare(dir,notes);
  const hash=crypto.createHash('sha256').update('example installer').digest('hex');
- assert.equal(fs.readFileSync(path.join(dir,'SHA256SUMS.txt'),'utf8'),names.sort().map(n=>`${hash}  ${n}\n`).join(''));
+ const updateName = `Arc-UI-Zen-${version}-Update.json`;
+ const update = fs.readFileSync(path.join(dir, updateName));
+ const bundle = JSON.parse(update);
+ assert.equal(bundle.version, version);
+ assert.equal(Buffer.from(bundle.files['arc.uc.js'],'base64').toString(), fs.readFileSync(path.join(__dirname,'../payload/arc.uc.js'),'utf8'));
+ const expected = [...names,updateName].sort().map(n=>`${n===updateName ? crypto.createHash('sha256').update(update).digest('hex') : hash}  ${n}\n`).join('');
+ assert.equal(fs.readFileSync(path.join(dir,'SHA256SUMS.txt'),'utf8'),expected);
  assert.match(fs.readFileSync(notes,'utf8'),new RegExp(require('../installer/engine.cjs').SUPPORTED.replaceAll('.','\\.')));
 });
