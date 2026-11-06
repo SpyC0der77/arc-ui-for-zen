@@ -135,7 +135,7 @@ test('in-place update preserves preferences, records hashes, rolls back and reje
   const fs = require('node:fs/promises'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
   const {applyThemeUpdate,recoverThemeUpdate} = await import('../payload/content/update-apply.mjs');
   const engine = require('../installer/engine.cjs');
-  const folder = await fs.mkdtemp(path.join(os.tmpdir(),'arc-inplace-'));
+  const folder = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'arc-inplace-')));
   t.after(()=>fs.rm(folder,{recursive:true,force:true}));
   const app=path.join(folder,'Zen'), profile=path.join(folder,'profile');
   await fs.mkdir(path.join(app,'defaults','pref'),{recursive:true});await fs.mkdir(profile);

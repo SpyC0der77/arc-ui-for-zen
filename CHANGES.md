@@ -1,4 +1,4 @@
-## v0.1.8-beta.8
+## v0.1.8-beta.9
 
 - Download and apply theme updates in place without launching an installer.
 - Add checksum-verified update bundles and a restart action that clears startup caches.
