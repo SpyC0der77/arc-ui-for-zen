@@ -1,3 +1,9 @@
+## v0.1.8-beta.3
+
+- Wait for the downloads dismissal animation before opening a file or showing it in its folder.
+- Restore the default light-window opacity on Zen versions using the legacy Library fallback.
+- Include the settings redesign and visual preset gallery prepared for beta.2, whose publication was blocked by runtime checks.
+
 - Change the browser frame to an Arc-style lavender appearance.
 - Apply the same background across the sidebar, title bar, toolbar and page surround.
 - Override workspace background colors in the browser frame while the theme is active.

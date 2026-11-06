@@ -217,15 +217,19 @@
     await IOUtils.write(PathUtils.join(PathUtils.profileDir,'download-popup.png'),popupShot);
     const originalReveal=download.showContainingDirectory,originalLaunch=download.launch;
     let revealClosed=false,launchClosed=false;
+    let revealed,launched;
+    const revealDone=new Promise(resolve=>revealed=resolve),launchDone=new Promise(resolve=>launched=resolve);
     try {
-      download.showContainingDirectory=async()=>{revealClosed=!ZenArc.diagnostics().popup;};
+      download.showContainingDirectory=async()=>{revealClosed=!ZenArc.diagnostics().popup;revealed();};
       document.querySelector('[aria-label="Show download-result.txt in folder"]').click();
+      await Promise.race([revealDone,wait(2000)]);
       check(revealClosed,'show in folder dismisses recent files before invoking the native action');
       window.dispatchEvent(new FocusEvent('focus'));await wait(200);
       check(!ZenArc.diagnostics().popup,'recent files stay closed when focus returns after reveal');
-      download.launch=async()=>{launchClosed=!ZenArc.diagnostics().popup;};
+      download.launch=async()=>{launchClosed=!ZenArc.diagnostics().popup;launched();};
       ZenArc.openDownloads();
       document.querySelector('[aria-label="Open download-result.txt"]').click();
+      await Promise.race([launchDone,wait(2000)]);
       check(launchClosed,'opening a file dismisses recent files before invoking its native action');
     } finally {
       download.showContainingDirectory=originalReveal;download.launch=originalLaunch;

@@ -1,3 +1,9 @@
+## v0.1.8-beta.3
+
+- Wait for the downloads dismissal animation before opening a file or showing it in its folder.
+- Restore the default light-window opacity on Zen versions using the legacy Library fallback.
+- Include the settings redesign and visual preset gallery prepared for beta.2, whose publication was blocked by runtime checks.
+
 ## v0.1.8-beta.2
 
 - Reshape the Arc UI settings window around a side navigation rail with a scrolling content pane, like Arc's settings.

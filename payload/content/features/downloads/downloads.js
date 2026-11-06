@@ -170,7 +170,7 @@ var ArcDownloads = {
         for (const animation of node.getAnimations()) animation.cancel();
       if (soft && !popup.hidden && !reduced()) {
         popupClosing = true;
-        void animate(
+        return animate(
           popup,
           [
             { opacity: 1, transform: "none" },
@@ -211,7 +211,7 @@ var ArcDownloads = {
     document.addEventListener("pointerdown", dismissDownloads, true);
     async function runDownloadAction(download, action) {
       try {
-        if (action === "open" || action === "show") hideDownloads(true);
+        if (action === "open" || action === "show") await hideDownloads(true);
         if (action === "open") await download.launch();
         else if (action === "show") await download.showContainingDirectory();
         else if (action === "pause") await download.cancel();
