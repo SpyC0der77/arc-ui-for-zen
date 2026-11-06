@@ -1,6 +1,6 @@
 # Arc UI for Zen
 
-An Arc-style interface for Zen **1.22.3b, 1.23.3b, 1.23.4b and 1.24b**, with a lavender sidebar, centered address bar, library, auto-archive and animated downloads. It brings Arc's visual design to Zen's native tabs and browser features through local CSS and JavaScript patches, installed with an Electron app. It does not replace the browser engine or fork Zen.
+An Arc-style interface for Zen **1.22.3b, 1.23.3b, 1.23.4b, 1.24b and 1.24.1b**, with a lavender sidebar, centered address bar, library, auto-archive and animated downloads. It brings Arc's visual design to Zen's native tabs and browser features through local CSS and JavaScript patches, installed with an Electron app. It does not replace the browser engine or fork Zen.
 
 On 1.22.3b, which predates Zen's native library, the gift button opens a native menu with Downloads, Bookmarks, History and restorable recently closed tabs. Downloads uses the browser's native downloads view, including its private-window behavior. Auto-archive and Debug Mode require the newer native library and are unavailable on 1.22.3b. Idle tabs stay open on that version, and sidebar transitions use the older browser's native behavior. Other versions retain the existing library interface. These versions have Windows runtime coverage; macOS/Linux runtime validation remains pending.
 

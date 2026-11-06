@@ -313,11 +313,11 @@ var ArcLibrary = {
     previewRail.className = "arc-preview-rail";
     const previewToolbar = html("div", "");
     previewToolbar.className = "arc-preview-toolbar";
-    for (const name of ["panel", "back", "forward", "reload"]) previewToolbar.append(icon(name));
-    const previewAddress = html("div", "Search");
+    for (const name of ["panel"]) previewToolbar.append(icon(name));
+    const previewAddress = html("div", "Search...");
     previewAddress.className = "arc-preview-address";
     previewRail.append(previewToolbar, previewAddress);
-    for (const [image, title, active] of [["folder", "Workspace", false], ["file", "New tab", true], ["file", "Settings", false]]) {
+    for (const [image, title, active] of [["folder", "Space", false], ["folder", "Pull Requests", false], ["folder", "Issues", false], ["file", "New Tab", false], ["file", "New Tab", true]]) {
       const tab = html("div", "");
       tab.className = "arc-preview-tab";
       if (active) tab.classList.add("arc-preview-active");
@@ -327,11 +327,10 @@ var ArcLibrary = {
     }
     const previewPage = html("div", "");
     previewPage.className = "arc-preview-page";
-    const pageTitle = html("span", "New tab");
-    pageTitle.className = "arc-preview-page-title";
-    const pageSearch = html("span", "Search the web");
-    pageSearch.className = "arc-preview-page-search";
-    previewPage.append(pageTitle, pageSearch);
+    const previewFooter = html("div", "");
+    previewFooter.className = "arc-preview-footer";
+    previewFooter.append(icon("gift"), html("span", "+"));
+    previewRail.append(previewFooter);
     preview.append(previewRail, previewPage);
     function paintPreview(target, values) {
       const mode = values.mode === "system" ? (systemScheme.matches ? "dark" : "light") : values.mode;
@@ -827,6 +826,56 @@ var ArcLibrary = {
     settings.replaceChildren(header, navigation, body, footer);
     selectSection(tabs[0]);
     document.documentElement.append(settings);
+    for (const select of settings.querySelectorAll("select")) {
+      const trigger = html("button", "");
+      trigger.type = "button";
+      trigger.className = "arc-select-trigger";
+      trigger.setAttribute("aria-haspopup", "menu");
+      trigger.setAttribute("aria-label", select.closest("label")?.querySelector("span")?.textContent || "Choose option");
+      const menu = html("div", "");
+      menu.className = "arc-select-menu";
+      menu.setAttribute("popover", "auto");
+      menu.setAttribute("role", "menu");
+      const sync = () => {
+        trigger.textContent = (select.selectedOptions[0]?.textContent || "Choose") + " ?";
+        trigger.disabled = select.disabled;
+        for (const item of menu.children) item.setAttribute("aria-checked", String(item.dataset.value === select.value));
+      };
+      for (const option of select.options) {
+        const item = html("button", option.textContent);
+        item.type = "button";
+        item.dataset.value = option.value;
+        item.setAttribute("role", "menuitemradio");
+        item.addEventListener("click", () => {
+          select.value = option.value;
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+          sync(); menu.hidePopover(); trigger.focus();
+        });
+        menu.append(item);
+      }
+      trigger.addEventListener("click", () => {
+        if (menu.matches(":popover-open")) { menu.hidePopover(); return; }
+        sync(); menu.showPopover();
+        const r = trigger.getBoundingClientRect();
+        menu.style.left = Math.min(r.left, innerWidth - menu.offsetWidth - 8) + "px";
+        menu.style.top = Math.min(r.bottom + 4, innerHeight - menu.offsetHeight - 8) + "px";
+        (menu.querySelector('[aria-checked="true"]') || menu.firstElementChild)?.focus();
+      });
+      menu.addEventListener("keydown", event => {
+        const items = [...menu.children], index = items.indexOf(document.activeElement);
+        if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+          event.preventDefault();
+          items[event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : (index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus();
+        }
+        if (event.key === "Escape") trigger.focus();
+      });
+      menu.addEventListener("toggle", () => trigger.setAttribute("aria-expanded", String(menu.matches(":popover-open"))));
+      select.hidden = true;
+      select.after(trigger, menu);
+      select.addEventListener("change", sync);
+      new MutationObserver(sync).observe(select, { attributes: true, subtree: true });
+      sync();
+    }
     for (const [label, image, action] of [
       ["GitHub", "github", () => {
         window.openTrustedLinkIn("https://github.com/SpyC0der77/arc-ui-for-zen", "tab");

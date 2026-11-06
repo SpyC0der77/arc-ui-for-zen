@@ -1,6 +1,6 @@
 {
   "name": "arc-ui-zen-installer",
-  "version": "0.1.8-beta.5",
+  "version": "0.1.8-beta.6",
   "private": true,
   "description": "Cross-platform installer for the Arc UI theme and behavior patches for Zen Browser",
   "license": "UNLICENSED",
