@@ -79,6 +79,7 @@ app.whenReady().then(async()=>{
  // The browser updater must hand off the exact application/profile even when
  // discovery has no matches. Exercise real preload IPC and review navigation.
  process.argv.push('--installation',zen,'--profile',profile);
+ engine.discover=async()=>{throw new Error('Unrelated discovery fixture failure');};
  await window.webContents.reload();
  for(let i=0;i<100;i++){
   if(!window.webContents.isLoading()&&await window.webContents.executeJavaScript('document.getElementById("review")?.getAttribute("aria-hidden")==="false"'))break;
@@ -86,6 +87,26 @@ app.whenReady().then(async()=>{
  }
  assert.equal(await window.webContents.executeJavaScript('document.getElementById("review-installation").textContent'),zen,'Updater preselects the supplied application');
  assert.equal(await window.webContents.executeJavaScript('document.getElementById("review-profile").textContent'),profile,'Updater preselects the supplied profile');
+ app.emit('second-instance',{},['installer','--installation',other,'--profile',otherProfile]);
+ for(let i=0;i<100;i++){
+  if(!window.webContents.isLoading()&&await window.webContents.executeJavaScript(`document.getElementById("review-profile")?.textContent===${JSON.stringify(otherProfile)}`))break;
+  await delay(50);
+ }
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("review-installation").textContent'),other,'Existing installer accepts the new application');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("review-profile").textContent'),otherProfile,'Existing installer accepts the new profile');
+ let finishInstall;
+ engine.install=()=>new Promise(resolve=>{finishInstall=resolve;});
+ await window.webContents.executeJavaScript('document.getElementById("install").click()');
+ for(let i=0;i<100&&!finishInstall;i++)await delay(20);
+ assert.ok(finishInstall,'Fixture installation is in progress');
+ app.emit('second-instance',{},['installer','--installation',zen,'--profile',profile]);
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("review-profile").textContent'),otherProfile,'A handoff cannot replace an active operation');
+ finishInstall({message:'Fixture installation complete.'});
+ for(let i=0;i<100;i++){
+  if(!window.webContents.isLoading()&&await window.webContents.executeJavaScript(`document.getElementById("review-profile")?.textContent===${JSON.stringify(profile)}`))break;
+  await delay(50);
+ }
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("review-profile").textContent'),profile,'Queued handoff is applied after the operation');
  await delay(250);
  const artifacts=path.join(__dirname,'..','artifacts');await fs.mkdir(artifacts,{recursive:true});await fs.writeFile(path.join(artifacts,'installer.png'),(await window.webContents.capturePage()).toPNG());
  assert.deepEqual(errors,[]);

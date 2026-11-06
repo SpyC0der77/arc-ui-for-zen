@@ -52,7 +52,7 @@ var ArcUpdates = {
     });
     function render() {
       button.hidden = !updater.release;
-      if (!updater.release) return;
+      if (!updater.release) { hide(); return; }
       const state = updater.state;
       const label = state === 'downloading' ? `Downloading${updater.progress === null ? '…' : ` ${updater.progress}%`}` : state === 'opening' ? 'Opening installer…' : state === 'ready' ? 'Install update' : state === 'error' ? 'Retry download' : 'Download update';
       button.querySelector('span').textContent = label;

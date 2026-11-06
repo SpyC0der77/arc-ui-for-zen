@@ -8,7 +8,7 @@ test('release polling repeats six hours after the first check and stops on teard
     if(Date.now()-last<sixHours)return;
     last=Date.now();requests.push(last);
   }};
-  const node = () => ({append() {},addEventListener() {},remove() {}});
+  const node = () => ({append() {},addEventListener() {},remove() {},hidePopover() {},setAttribute() {}});
   const footer=node(),toolbox=node();
   const document={body:node(),getElementById:id=>id==='navigator-toolbox'?toolbox:footer};
   const window={document,ChromeUtils:{importESModule:()=>({ArcUpdater:updater})},MutationObserver:class {observe() {} disconnect() {}},setTimeout,clearTimeout,setInterval,clearInterval};
@@ -23,6 +23,14 @@ test('release polling repeats six hours after the first check and stops on teard
   assert.deepEqual(requests,[30000,30000+sixHours]);
   feature.destroy();t.mock.timers.tick(sixHours);await new Promise(setImmediate);
   assert.equal(requests.length,2);
+  let finish;
+  updater.check = () => { requests.push(Date.now()); return new Promise(resolve=>{finish=resolve;}); };
+  const pending = scope.ArcUpdates.install(window,{el:node,icon:node,PrivateBrowsingUtils:{isWindowPrivate:()=>false}});
+  t.mock.timers.tick(30000);assert.equal(requests.length,3);
+  pending.destroy();finish();await new Promise(setImmediate);
+  t.mock.timers.tick(sixHours);await new Promise(setImmediate);assert.equal(requests.length,3);
+  const privateFeature=scope.ArcUpdates.install({}, {PrivateBrowsingUtils:{isWindowPrivate:()=>true},el:()=>assert.fail('Private controls must not be created')});
+  privateFeature.destroy();
 });
 test('installer isolates its instance lock by version for manual and updater launches', () => {
   const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
@@ -81,28 +89,37 @@ test('explicit track overrides the installed channel without downgrading', async
 test('track change invalidates staged updates and ignores an in-flight response for the old track', async () => {
   const helpers = await import('../payload/content/update-data.mjs');
   const fs = require('node:fs'), vm = require('node:vm');
-  const prefs = new Map();
+  const prefs = new Map(), removed = [];
   let completeOld, calls = 0;
   const release = tag => ({tag_name:tag,prerelease:tag.includes('-'),assets:[{name:helpers.assetName(tag,'WINNT','x86_64')},{name:'SHA256SUMS.txt'}]});
   const releases = [release('v0.2.0-beta.1'),release('v0.1.9')];
   const scope = {
     ...helpers, setTimeout, clearTimeout, AbortController, console,
     Services:{prefs:{getStringPref:(key,fallback)=>prefs.get(key)??fallback,setStringPref:(key,value)=>prefs.set(key,value)},appinfo:{OS:'WINNT',XPCOMABI:'x86_64'}},
-    IOUtils:{readJSON:async()=>({version:'0.1.8-beta.4'})},PathUtils:{profileDir:'/profile',join:(...parts)=>parts.join('/')},
+    IOUtils:{readJSON:async()=>({version:'0.1.8-beta.4'}),remove:async path=>removed.push(path)},PathUtils:{profileDir:'/profile',join:(...parts)=>parts.join('/')},
     fetch:async()=>{ calls++; if(calls===1) await new Promise(resolve=>{completeOld=resolve;}); return {ok:true,json:async()=>releases}; },
   };
   vm.runInNewContext(fs.readFileSync(require.resolve('../payload/content/updater.sys.mjs'),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export const ArcUpdater =','globalThis.updater ='),scope);
   const u = scope.updater;
   const first = u.check({force:true});
   await new Promise(setImmediate);
-  u.release = releases[0]; u.target = '/tmp/beta-installer';
+  u.release = releases[0]; u.target = '/tmp/beta-installer';u.stagedDirectory='/tmp/staged-beta';
   u.setTrack('stable');
   assert.equal(prefs.get('arc-ui.updates.track'),'stable');
   assert.equal(u.release,null); assert.equal(u.target,null);
+  assert.deepEqual(removed,['/tmp/staged-beta']);
   const refreshed = new Promise(resolve=>u.listeners.add(()=>{if(u.release)resolve();}));
   completeOld(); await first; await refreshed;
   assert.equal(u.release.tag_name,'v0.1.9'); assert.equal(calls,2);
   u.state='downloading'; assert.throws(()=>u.setTrack('beta'),/Wait/);
   u.state='idle';u.setTrack('beta',{check:false});
   await new Promise(setImmediate);assert.equal(calls,2);
+  prefs.delete('arc-ui.updates.track');
+  let readDone;
+  scope.IOUtils.readJSON=()=>new Promise(resolve=>{readDone=resolve;});
+  const reading=u.getTrack();
+  u.setTrack('stable',{check:false});readDone({version:'0.1.8-beta.4'});
+  assert.equal(await reading,'stable','Pending inference must use the latest saved track');
+  u.stagedDirectory='/tmp/installer-in-use';u.installerOpened=true;
+  u.setTrack('beta',{check:false});assert.deepEqual(removed,['/tmp/staged-beta']);
 });

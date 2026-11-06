@@ -5,6 +5,13 @@ const { launch } = require('./launch.cjs');
 const engine = require('./engine.cjs');
 const page = path.join(__dirname,'ui','index.html');
 let window, busy=false;
+let launchArgs=process.argv,pendingArgs;
+function acceptUpdate(args) {
+  if(!args.includes('--installation')||!args.includes('--profile'))return;
+  if(busy){pendingArgs=args;return;}
+  launchArgs=args;
+  window?.webContents.reload();
+}
 function authorize(event) {
   if(!window||event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame||event.senderFrame.url!==pathToFileURL(page).href)throw new Error('Untrusted installer request.');
 }
@@ -15,7 +22,7 @@ function selected(value) {
 function handle(name,fn) {ipcMain.handle(name,async(event,...args)=>{authorize(event);try{return {ok:true,value:await fn(...args)};}catch(error){return {ok:false,error:error.message};}});}
 async function boot() {
   handle('arc:update-selection', () => {
-    const args = process.argv;
+    const args = launchArgs;
     const installation = args.indexOf('--installation'), profile = args.indexOf('--profile');
     return installation > 0 && profile > 0 ? selected({installation: args[installation + 1], profile: args[profile + 1]}) : null;
   });
@@ -26,7 +33,8 @@ async function boot() {
     if(busy)throw new Error('An installation operation is already running.');
     if(!['install','remove'].includes(action))throw new Error('Unknown operation.');
     const choice=selected(value);busy=true;
-    try{return await engine[action](choice.installation,choice.profile);}finally{busy=false;}
+    try{return await engine[action](choice.installation,choice.profile);}
+    finally{busy=false;if(pendingArgs){const args=pendingArgs;pendingArgs=null;acceptUpdate(args);}}
   });
   handle('arc:launch',async value=>{
     const choice=selected(value);
@@ -45,4 +53,4 @@ const versionData = path.join(app.getPath('userData'), 'versions', app.getVersio
 require('node:fs').mkdirSync(versionData, {recursive:true});
 app.setPath('userData', versionData);
 if(!app.requestSingleInstanceLock())app.quit();
-else {app.on('second-instance',()=>{if(window){if(window.isMinimized())window.restore();window.show();window.focus();}});app.whenReady().then(boot).catch(error=>{dialog.showErrorBox('Installer could not start',error.message);app.quit();});app.on('window-all-closed',()=>app.quit());}
+else {app.on('second-instance',(_event,args)=>{acceptUpdate(args);if(window){if(window.isMinimized())window.restore();window.show();window.focus();}});app.whenReady().then(boot).catch(error=>{dialog.showErrorBox('Installer could not start',error.message);app.quit();});app.on('window-all-closed',()=>app.quit());}

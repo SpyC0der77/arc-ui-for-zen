@@ -21,13 +21,19 @@ export const ArcUpdater = {
     const value = Services.prefs.getStringPref('arc-ui.updates.track', '');
     if (['stable', 'beta'].includes(value)) return value;
     const receipt = await IOUtils.readJSON(PathUtils.join(PathUtils.profileDir, 'chrome', 'arc-ui.install.json'));
-    return releaseTrack(value, receipt.version);
+    return releaseTrack(Services.prefs.getStringPref('arc-ui.updates.track', ''), receipt.version);
   },
   setTrack(track, { check = true } = {}) {
     if (!['stable', 'beta'].includes(track)) throw new Error('Choose Beta or Stable.');
     if (['downloading', 'opening'].includes(this.state)) throw new Error('Wait for the current update operation to finish.');
     Services.prefs.setStringPref('arc-ui.updates.track', track);
     this.revision++;
+    const directory = this.stagedDirectory;
+    this.stagedDirectory = null;
+    // A launched installer or mounted disk image may still be using its file.
+    if (directory && !this.installerOpened)
+      void IOUtils.remove(directory, { recursive: true }).catch(error => console.warn('[Arc UI updates]', error));
+    this.installerOpened = false;
     this.release = null; this.target = null; this.state = 'idle'; this.error = ''; this.progress = null;
     this.emit();
     if (check) void this.check({ force: true });
@@ -78,7 +84,8 @@ export const ArcUpdater = {
       try { hash.init(hash.SHA256); hash.updateFromStream(stream, 0xffffffff); actual = Array.from(hash.finish(false), c => c.charCodeAt(0).toString(16).padStart(2, '0')).join(''); }
       finally { stream.close(); }
       if (actual !== expected) throw new Error('Installer checksum did not match. Download again.');
-      this.target = target; this.state = 'ready'; this.progress = 100;
+      this.target = target; this.stagedDirectory = directory; this.installerOpened = false;
+      this.state = 'ready'; this.progress = 100;
     } catch (error) {
       if (directory) await IOUtils.remove(directory, { recursive: true }).catch(() => {});
       this.state = 'error'; this.error = error.message;
@@ -98,6 +105,7 @@ export const ArcUpdater = {
         const args = ['--arc-update', '--installation', receipt.resources, '--profile', receipt.profile];
         process.runwAsync(args, args.length);
       }
+      this.installerOpened = true;
       this.error = Services.appinfo.OS === 'Darwin' ? 'Open the installer in the disk image, then close Zen to update.' : 'Installer opened. Close Zen, then install the update there.';
     } catch (error) { this.error = `Could not open installer: ${error.message}`; }
     this.state = 'ready'; this.emit();
