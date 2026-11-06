@@ -27,6 +27,7 @@ export const ArcUpdater = {
     if (!['stable', 'beta'].includes(track)) throw new Error('Choose Beta or Stable.');
     if (['downloading', 'opening'].includes(this.state)) throw new Error('Wait for the current update operation to finish.');
     Services.prefs.setStringPref('arc-ui.updates.track', track);
+    this.checkAfterTrackChange = check;
     this.revision++;
     const directory = this.stagedDirectory;
     this.stagedDirectory = null;
@@ -58,7 +59,7 @@ export const ArcUpdater = {
     } catch (error) { console.warn('[Arc UI updates]', error); }
     finally {
       this.checking = false;
-      if (revision !== this.revision) void this.check({ force: true });
+      if (revision !== this.revision && this.checkAfterTrackChange) void this.check({ force: true });
     }
   },
   async download() {

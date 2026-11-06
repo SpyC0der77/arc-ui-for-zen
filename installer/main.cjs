@@ -7,6 +7,7 @@ const page = path.join(__dirname,'ui','index.html');
 let window, busy=false;
 let launchArgs=process.argv,pendingArgs;
 function acceptUpdate(args) {
+  if(!Array.isArray(args)||!args.every(arg=>typeof arg==='string'))return;
   if(!args.includes('--installation')||!args.includes('--profile'))return;
   if(busy){pendingArgs=args;return;}
   launchArgs=args;
@@ -52,5 +53,5 @@ async function boot() {
 const versionData = path.join(app.getPath('userData'), 'versions', app.getVersion());
 require('node:fs').mkdirSync(versionData, {recursive:true});
 app.setPath('userData', versionData);
-if(!app.requestSingleInstanceLock())app.quit();
-else {app.on('second-instance',(_event,args)=>{acceptUpdate(args);if(window){if(window.isMinimized())window.restore();window.show();window.focus();}});app.whenReady().then(boot).catch(error=>{dialog.showErrorBox('Installer could not start',error.message);app.quit();});app.on('window-all-closed',()=>app.quit());}
+if(!app.requestSingleInstanceLock({launchArgs:process.argv}))app.quit();
+else {app.on('second-instance',(_event,_args,_cwd,data)=>{acceptUpdate(data?.launchArgs);if(window){if(window.isMinimized())window.restore();window.show();window.focus();}});app.whenReady().then(boot).catch(error=>{dialog.showErrorBox('Installer could not start',error.message);app.quit();});app.on('window-all-closed',()=>app.quit());}

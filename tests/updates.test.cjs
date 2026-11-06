@@ -41,14 +41,14 @@ test('installer isolates its instance lock by version for manual and updater lau
     const app = {
       getPath: () => path.resolve('test-installer-data'), getVersion: () => '1.2.3',
       setPath: (key, value) => calls.push({key, value}),
-      requestSingleInstanceLock: () => { calls.push('lock'); return true; },
+      requestSingleInstanceLock: data => { calls.push({lock:data.launchArgs}); return true; },
       on() {}, whenReady: () => ({then: () => ({catch() {}})}),
     };
     vm.runInNewContext(fs.readFileSync(entry, 'utf8'), {
       require: name => name === 'electron' ? {app} : name === 'node:fs' ? {mkdirSync() {}} : realRequire(name),
       __dirname: path.dirname(entry), process: {argv},
     });
-    assert.deepEqual(calls, [{key:'userData', value:path.resolve('test-installer-data', 'versions', '1.2.3')}, 'lock']);
+    assert.deepEqual(calls, [{key:'userData', value:path.resolve('test-installer-data', 'versions', '1.2.3')}, {lock:argv}]);
   }
 });
 test('semantic release ordering includes numeric prereleases and stable promotion', async () => {
@@ -122,4 +122,11 @@ test('track change invalidates staged updates and ignores an in-flight response 
   assert.equal(await reading,'stable','Pending inference must use the latest saved track');
   u.stagedDirectory='/tmp/installer-in-use';u.installerOpened=true;
   u.setTrack('beta',{check:false});assert.deepEqual(removed,['/tmp/staged-beta']);
+  scope.IOUtils.readJSON=async()=>({version:'0.1.8-beta.4'});
+  let finishSilent;
+  scope.fetch=async()=>{calls++;await new Promise(resolve=>{finishSilent=resolve;});return {ok:true,json:async()=>releases};};
+  const normalCheck=u.check({force:true});await new Promise(setImmediate);
+  u.setTrack('stable',{check:false});finishSilent();await normalCheck;await new Promise(setImmediate);
+  assert.equal(calls,3,'A private track change must not force a retry of an in-flight normal check');
+  assert.equal(u.release,null);
 });
