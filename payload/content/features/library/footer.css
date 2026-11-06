@@ -71,6 +71,9 @@
   }
   #arc-settings-dialog button:disabled { opacity: .4; cursor: default; }
   #arc-settings-dialog :is(input, select):focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  #arc-update-track { padding: 7px 10px; border: 1px solid #8885; border-radius: 8px; background: light-dark(#fff, #23202a); color: inherit; font: inherit; }
+  #arc-update-track-description { margin: 12px 0 0; line-height: 1.5; }
+  #arc-settings-dialog #arc-settings-done { margin-inline-start: auto; }
   #arc-settings-dialog button:not(:disabled):is(:hover, :focus-visible) { background-color: light-dark(#e1d7e8, #51435e); }
   #arc-settings-dialog button:active:not(:disabled) { opacity: .75; }
   #arc-settings-dialog .arc-settings-tabs {

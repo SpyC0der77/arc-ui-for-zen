@@ -710,13 +710,14 @@ var ArcLibrary = {
         panels.get(item.dataset.section).hidden = !selected;
       }
       settings.dataset.section = tab.dataset.section;
+      reset.hidden = tab.dataset.section === 'updates';
       body.scrollTop = 0;
       // A hidden panel reports zero sizes; re-measure when it shows again.
       syncModeThumb();
       editorWindow?.close();
       if (focus) tab.focus();
     }
-    for (const [key, label] of [["appearance", "Appearance"], ["colors", "Colors"], ["presets", "Presets"]]) {
+    for (const [key, label] of [["appearance", "Appearance"], ["colors", "Colors"], ["presets", "Presets"], ["updates", "Updates"]]) {
       const tab = html("button", label);
       tab.type = "button";
       tab.id = "arc-settings-tab-" + key;
@@ -789,6 +790,35 @@ var ArcLibrary = {
     }
     colorsPanel.append(group(...colorRows));
     panels.get("presets").append(presetDetails);
+    const { ArcUpdater: updater } = window.ChromeUtils.importESModule('chrome://arc-ui/content/updater.sys.mjs');
+    const trackRow = html('label', '');
+    trackRow.className = 'arc-settings-row';
+    trackRow.append(html('span', 'Release track'));
+    const track = html('select', '');
+    track.id = 'arc-update-track';
+    track.disabled = true;
+    for (const [value, label] of [['stable', 'Stable'], ['beta', 'Beta']]) {
+      const option = html('option', label); option.value = value; track.append(option);
+    }
+    trackRow.append(track);
+    const trackDescription = html('p', 'Stable receives stable releases only. Beta also receives prereleases.');
+    trackDescription.id = 'arc-update-track-description';
+    track.setAttribute('aria-describedby', trackDescription.id);
+    panels.get('updates').append(group(trackRow), trackDescription);
+    const syncTrack = () => {
+      void updater.getTrack().then(value => {
+        track.value = value;
+        track.disabled = ['downloading', 'opening'].includes(updater.state);
+      }).catch(report);
+    };
+    track.addEventListener('change', () => {
+      try {
+        const { PrivateBrowsingUtils } = window.ChromeUtils.importESModule('resource://gre/modules/PrivateBrowsingUtils.sys.mjs');
+        updater.setTrack(track.value, { check: !PrivateBrowsingUtils.isWindowPrivate(window) });
+      } catch (error) { report(error); syncTrack(); }
+    });
+    updater.listeners.add(syncTrack);
+    syncTrack();
     const footer = html("footer", "");
     footer.className = "arc-settings-footer";
     reset.id = "arc-settings-reset";
@@ -940,6 +970,7 @@ var ArcLibrary = {
         document.documentElement.removeAttribute("data-arc-reduced-motion");
         projectMenu.remove();
         settings.remove();
+        updater.listeners.delete(syncTrack);
         gift.remove();
         for (const button of footerButtons) button.remove();
         for (const [donate, image] of donateImages) {
