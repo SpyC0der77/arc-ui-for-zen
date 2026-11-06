@@ -206,12 +206,12 @@ var ArcDownloads = {
         !popup.contains(event.target) &&
         !gift.contains(event.target)
       )
-        hideDownloads();
+        hideDownloads(true);
     }
     document.addEventListener("pointerdown", dismissDownloads, true);
     async function runDownloadAction(download, action) {
       try {
-        if (action === "open" || action === "show") hideDownloads();
+        if (action === "open" || action === "show") hideDownloads(true);
         if (action === "open") await download.launch();
         else if (action === "show") await download.showContainingDirectory();
         else if (action === "pause") await download.cancel();

@@ -1,103 +1,254 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
+  /* Arc-like settings window: a side navigation rail beside the scrolling
+     content, shared with the floating address bar's entrance easing. */
   #arc-settings-dialog {
-    width: 420px;
+    width: 640px;
+    height: min(640px, 85vh);
+    max-width: calc(100vw - 32px);
     max-height: 85vh;
-    overflow: auto;
-    padding: 30px;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 0;
     border: 1px solid light-dark(#ddd6e4, #514657);
-    border-radius: 22px;
+    border-radius: 18px;
+    corner-shape: round;
     background: light-dark(#faf8fc, #29252e);
     color: light-dark(#29232f, #f9f6fc);
-    box-shadow: 0 20px 80px #0006;
-    font: 14px system-ui;
+    box-shadow: 0 4px 16px #21172b26, 0 24px 64px #21172b3d;
+    font: 14px Geist, sans-serif;
   }
-  #arc-settings-dialog::backdrop { background: #17102066; }
-  #arc-settings-dialog h2 { margin: 0; font-size: 23px; letter-spacing: -.04em; font-weight: 600; }
-  #arc-settings-dialog p { opacity: .7; line-height: 1.5; }
+  #arc-settings-dialog[open] {
+    display: grid;
+    grid-template-columns: 184px minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
+    animation: arc-settings-open 180ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  }
+  #arc-settings-dialog::backdrop { background: light-dark(#17102066, #100b1688); }
+  @keyframes arc-settings-open {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: none; }
+  }
+  /* Exit runs while the attribute is present; the JS fallback close guards
+     against a missing animationend (for example reduced motion). */
+  #arc-settings-dialog[data-arc-closing] {
+    animation: arc-settings-close 140ms ease both;
+  }
+  #arc-settings-dialog[data-arc-closing]::backdrop { animation: arc-veil-out 140ms ease both; }
+  @keyframes arc-settings-close {
+    to { opacity: 0; transform: scale(0.97); }
+  }
+  @keyframes arc-veil-out {
+    to { opacity: 0; }
+  }
+  #arc-settings-dialog .arc-settings-header {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 20px 16px 14px 20px;
+    border-bottom: 1px solid #8884;
+    border-inline-end: 1px solid #8884;
+    background: light-dark(#f4eef8, #262130);
+  }
+  #arc-settings-dialog h2 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: normal; }
+  /* Theme-mode flips re-resolve light-dark() colors; fade the surfaces through. */
+  #arc-settings-dialog,
+  #arc-settings-dialog * {
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+  }
   #arc-settings-dialog button {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    margin-top: 18px;
+    appearance: none !important;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 7px 12px;
     border: 0;
-    border-radius: 12px;
-    background: light-dark(#e8dff0, #493b56);
+    border-radius: 8px;
+    outline: none !important;
+    background: light-dark(#eee8f1, #3c3543);
     color: inherit;
     font: inherit;
     cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease, opacity 120ms ease, filter 120ms ease;
   }
-  #arc-settings-dialog button:focus-visible { outline: 2px solid currentColor; }
-  #arc-settings-dialog .arc-palette-heading {
-    display: grid;
-    grid-template-columns: 1fr 96px 96px;
-    margin-top: 28px;
-    padding-bottom: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    opacity: .65;
-  }
-  #arc-settings-dialog .arc-palette-heading span:not(:first-child) { text-align: center; }
-  #arc-settings-dialog .arc-color-pair {
+  #arc-settings-dialog button:disabled { opacity: .4; cursor: default; }
+  #arc-settings-dialog :is(input, select):focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  #arc-settings-dialog button:not(:disabled):is(:hover, :focus-visible) { background-color: light-dark(#e1d7e8, #51435e); }
+  #arc-settings-dialog button:active:not(:disabled) { opacity: .75; }
+  #arc-settings-dialog .arc-settings-tabs {
+    grid-column: 1;
+    grid-row: 2 / span 2;
     display: flex;
-    width: 192px;
-    border: 1px solid #8885;
-    border-radius: 13px;
-    padding: 3px;
-    box-sizing: border-box;
-    gap: 2px;
-    background: #8881;
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+    padding: 10px 12px 16px;
+    border-inline-end: 1px solid #8884;
+    background: light-dark(#f4eef8, #262130);
   }
-  #arc-settings-dialog .arc-color-swatch {
-    width: 50%;
-    height: 38px;
-    margin: 0;
-    padding: 0;
-    border-radius: 9px 2px 2px 9px;
-    appearance: none !important;
-    background: var(--swatch) !important;
-    border: 0 !important;
-    color: white;
-    text-shadow: 0 1px 3px #000;
-    font: 10px ui-monospace, monospace;
-    box-shadow: inset 0 0 0 1px #8883;
-  }
-  #arc-settings-dialog .arc-color-swatch:last-child { border-radius: 2px 9px 9px 2px; }
-  #arc-settings-dialog .arc-color-swatch:hover { box-shadow: inset 0 0 0 2px #fff9; }
-  #arc-settings-dialog .arc-color-swatch[aria-expanded="true"] { outline: 2px solid light-dark(#65556f,#e4d2f5); outline-offset: 2px; }
-  #arc-color-editor {
-    margin-top: 16px;
-    padding: 18px;
-    background: #8881;
-    border: 1px solid #8883;
-    border-radius: 16px;
-  }
-  #arc-color-editor h3 { margin: 0 0 16px; font-size: 13px; }
-  #arc-color-editor label { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; font-size: 12px; }
-  #arc-color-editor input[type="text"] { width: 90px; padding: 7px; border: 1px solid #8885; border-radius: 7px; background: transparent; color: inherit; }
-  #arc-settings-dialog .arc-settings-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #8882;
-  }
-  #arc-settings-dialog input[type="color"] {
-    width: 44px;
-    height: 30px;
-    padding: 2px;
-    border: 1px solid #8886;
+  #arc-settings-dialog .arc-settings-tabs button {
+    padding: 8px 12px;
+    border: 0;
     border-radius: 8px;
     background: transparent;
-    cursor: pointer;
+    text-align: start;
+    color: light-dark(#65556f, #d1c5da);
+  }
+  #arc-settings-dialog .arc-settings-tabs button:is(:hover, :focus-visible) { background: light-dark(#eae2ef, #3c3543); color: inherit; }
+  #arc-settings-dialog .arc-settings-tabs button[aria-selected="true"] {
+    background: light-dark(#e8dff0, #493b56);
+    color: inherit;
+    font-weight: 600;
+  }
+  #arc-settings-done:not(:disabled):is(:hover, :focus-visible) { filter: brightness(1.15); }
+  #arc-settings-dialog .arc-settings-body {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    overflow: auto;
+    min-height: 0;
+    padding: 20px 24px 24px;
+    scrollbar-width: thin;
+    scrollbar-color: #8884 transparent;
+  }
+  #arc-settings-dialog .arc-settings-panel[hidden] { display: none !important; }
+  #arc-settings-dialog .arc-settings-panel { animation: arc-panel-in 150ms ease both; }
+  @keyframes arc-panel-in {
+    from { opacity: 0; transform: translateY(4px); }
+  }
+  #arc-settings-dialog .arc-settings-panel:focus { outline: none; }
+  #arc-settings-dialog .arc-settings-panel:focus-visible { background-color: light-dark(#f3eef7, #302a36); border-radius: 8px; }
+  #arc-settings-dialog .arc-settings-footer {
+    grid-column: 2;
+    grid-row: 3;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 24px;
+    border-top: 1px solid #8884;
+  }
+  #arc-settings-done { min-width: 76px; background: light-dark(#65556f, #e4d2f5) !important; color: light-dark(#fff, #23202a) !important; border: 0 !important; }
+  /* Spacing groups controls without a rule beneath every row. */
+  #arc-settings-dialog .arc-settings-group { margin: 0; }
+  #arc-settings-dialog .arc-settings-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding: 6px 0; box-sizing: border-box; border-bottom: 0; }
+  #arc-settings-dialog .arc-palette-heading { display: grid; grid-template-columns: 1fr 112px 112px; gap: 8px; margin-top: 20px; padding: 0 0 8px; font-size: 13px; color: light-dark(#65556f, #d1c5da); }
+  #arc-settings-panel-colors .arc-palette-heading { margin-top: 0; }
+  #arc-settings-dialog .arc-palette-heading span:not(:first-child) { text-align: center; }
+  #arc-settings-dialog :is(.arc-color-pair, .arc-gradient-pair) { display: grid; grid-template-columns: 112px 112px; gap: 8px; width: 232px; flex-shrink: 0; align-items: center; justify-items: stretch; }
+  #arc-settings-dialog .arc-color-swatch { width: 112px; height: 28px; padding: 0; border: 0 !important; border-radius: 8px; background: var(--swatch) !important; transition: opacity 120ms ease, box-shadow 120ms ease, background-color 160ms ease; }
+  #arc-settings-dialog .arc-color-swatch:not(:disabled):is(:hover, :focus-visible) { opacity: .75; }
+  #arc-settings-dialog .arc-color-swatch[aria-expanded="true"] { opacity: .75; }
+  #arc-settings-dialog .arc-gradient-pair > input[type="checkbox"] { justify-self: center; }
+  #arc-settings-dialog .arc-angle-control { display: flex; align-items: center; gap: 6px; }
+  #arc-settings-dialog .arc-angle-control input[type="range"] { width: 62px; margin: 0; }
+  #arc-settings-dialog input[type="number"] { appearance: textfield !important; width: 44px; padding: 5px 4px; box-sizing: border-box; border: 1px solid #8885; border-radius: 8px !important; background: transparent; color: inherit; font: inherit; text-align: right; }
+  #arc-settings-dialog input:disabled { opacity: .4; }
+  #arc-settings-dialog .arc-range-control { display: flex; align-items: center; gap: 8px; width: 232px; }
+  #arc-settings-dialog .arc-range-control input { width: 176px; margin: 0; }
+  #arc-settings-dialog .arc-range-control output { width: 48px; text-align: right; font-variant-numeric: tabular-nums; }
+  #arc-settings-dialog .arc-gradient-pair .arc-range-control { width: 112px; gap: 6px; }
+  #arc-settings-dialog .arc-gradient-pair .arc-range-control input { width: 68px; }
+  #arc-settings-dialog .arc-gradient-pair .arc-range-control output { width: 38px; }
+  #arc-settings-dialog input[type="range"] { accent-color: light-dark(#65556f, #e4d2f5); }
+  #arc-preset-preview-label { margin: 0 0 10px; font-weight: 500; overflow-wrap: anywhere; }
+  /* One miniature browser layout; gallery and empty-state previews scale together.
+     Sidebar/frame use the saved shell color. Menu colors do not tint the shell. */
+  #arc-settings-dialog .arc-theme-preview {
+    container-type: inline-size;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: 34% minmax(0, 1fr);
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border: 1px solid #8884;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    background: #f5f5f5;
+    color: var(--preview-foreground);
+  }
+  #arc-settings-dialog .arc-theme-preview[data-mode="dark"] { background: #202020; }
+  #arc-settings-dialog .arc-theme-preview::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--preview-background); opacity: var(--preview-opacity); }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-rail { min-width: 0; padding: 4cqw 2.5cqw; }
+  #arc-settings-dialog .arc-theme-preview svg { width: 4cqw; height: 4cqw; flex: none; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-toolbar { display: flex; justify-content: space-between; gap: 2cqw; margin-bottom: 4cqw; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-address { padding: 2.5cqw 2cqw; margin-bottom: 5cqw; border-radius: 2cqw; background: color-mix(in oklch, var(--preview-foreground) 8%, transparent); font-size: 3.5cqw; white-space: nowrap; overflow: hidden; }
+  #arc-settings-dialog .arc-theme-preview[data-mode="dark"] .arc-preview-address { background: color-mix(in oklch, var(--preview-foreground) 15%, transparent); }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-tab { display: flex; align-items: center; gap: 2cqw; padding: 2.5cqw 2cqw; margin-bottom: 1cqw; font-size: 3.5cqw; line-height: 1.3; border-radius: 1.5cqw; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-tab span { overflow: hidden; white-space: nowrap; text-overflow: clip; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-folder svg { color: var(--preview-folder); }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-active { background: var(--preview-tab-active); }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-page { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4cqw; margin: 2.5cqw 2.5cqw 2.5cqw 0; border-radius: var(--preview-radius); background: #fff; color: #383838; }
+  #arc-settings-dialog .arc-theme-preview[data-mode="dark"] .arc-preview-page { background: #1c1b1e; color: #dedde0; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-page-title { font-size: 5cqw; font-weight: 500; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-page-search { width: 74%; box-sizing: border-box; padding: 2.5cqw; font-size: 3cqw; border: 1px solid color-mix(in srgb, currentColor 18%, transparent); border-radius: 1.5cqw; }
+  #arc-settings-dialog .arc-theme-preview[hidden], #arc-preset-gallery[hidden] { display: none; }
+  #arc-theme-presets fieldset.arc-preset-field { border: 0; padding: 0; margin: 0; min-width: 0; }
+  #arc-theme-presets legend { padding: 0; margin-bottom: 12px; }
+  #arc-preset-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; }
+  #arc-settings-dialog .arc-preset-choice { position: relative; display: grid; min-width: 0; gap: 8px; cursor: pointer; }
+  #arc-settings-dialog .arc-preset-choice > input { position: absolute; width: 1px; height: 1px; opacity: 0; margin: 0; }
+  #arc-settings-dialog .arc-preset-mini { margin: 0; }
+  #arc-settings-dialog .arc-preset-caption { overflow-wrap: anywhere; font-size: 13px; padding-inline: 2px; }
+  #arc-settings-dialog .arc-preset-choice:has(input:checked) .arc-preset-mini { outline: 2px solid light-dark(#65556f, #e4d2f5); outline-offset: 2px; }
+  #arc-settings-dialog .arc-preset-choice:has(input:checked) .arc-preset-caption { font-weight: 600; }
+  #arc-settings-dialog .arc-preset-choice:has(input:focus-visible) { outline: 2px solid currentColor; outline-offset: 5px; border-radius: 4px; }
+  #arc-settings-dialog .arc-preset-choice:hover .arc-preset-mini { border-color: currentColor; }
+  #arc-settings-dialog button:focus-visible { outline: 2px solid currentColor !important; outline-offset: 2px; }
+  #arc-preset-empty { margin: 0; line-height: 1.5; }
+  #arc-theme-presets .arc-preset-field { display: grid; gap: 8px; margin: 8px 0 0; }
+  #arc-theme-presets :is(input, select) { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #8885; border-radius: 8px !important; background: light-dark(#fff, #23202a); color: inherit; font: inherit; }
+  #arc-theme-presets input[type="text"] { appearance: none !important; }
+  #arc-theme-presets .arc-preset-actions { display: flex; gap: 8px; margin: 12px 0 24px; }
+  #arc-preset-save { margin-top: 12px !important; }
+  #arc-preset-status { margin: 12px 0 0; line-height: 1.5; }
+  #arc-preset-status:empty { display: none; }
+  #arc-appearance-mode { position: relative; display: flex; border: 0; border-radius: 10px; overflow: hidden; background: light-dark(#eee8f1, #3c3543); }
+  /* One highlight slides between the segments; spans paint above it. */
+  #arc-appearance-mode .arc-segment-thumb {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    /* A static highlight reads as Arc's purple segment in both modes; a
+       light-dark() thumb cannot interpolate Gecko's scheme flips and would
+       flash underneath the slide. */
+    border-radius: 8px;
+    background: #65556f;
+    box-shadow: 0 1px 3px #21172b45;
+    transition: transform 160ms cubic-bezier(0.2, 0.7, 0.3, 1), width 160ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  #arc-appearance-mode label { position: relative; cursor: pointer; }
+  #arc-appearance-mode label + label { border-inline-start: 0; }
+  #arc-appearance-mode input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  #arc-appearance-mode span { display: flex; align-items: center; gap: 6px; padding: 7px 10px; position: relative; z-index: 1; transition: background-color 160ms ease, color 160ms ease; }
+  #arc-appearance-mode svg { width: 16px; height: 16px; flex: none; }
+  #arc-appearance-mode label:hover input:not(:checked) + span { background: light-dark(#e8e3df, #413b48); }
+  #arc-appearance-mode input:checked + span { color: #fff; }
+  #arc-appearance-mode input:focus-visible + span { outline: 2px solid light-dark(#65556f, #e4d2f5); outline-offset: -1px; border-radius: 7px; }
+  @media (max-width: 600px) {
+    #arc-settings-dialog .arc-settings-row { gap: 8px; }
+    #arc-settings-dialog .arc-settings-body { padding-inline: 16px; }
+    #arc-settings-dialog .arc-settings-row > span:first-child { min-width: 0; }
   }
   :root[data-arc-reduced-motion] *,
   :root[data-arc-reduced-motion] *::before,
   :root[data-arc-reduced-motion] *::after {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #arc-settings-dialog,
+    #arc-settings-dialog * {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+    #arc-settings-dialog[open],
+    #arc-settings-dialog .arc-settings-panel,
+    #arc-settings-dialog[data-arc-closing],
+    #arc-settings-dialog[data-arc-closing]::backdrop,
+    #arc-appearance-mode .arc-segment-thumb {
+      animation: none !important;
+    }
+    #arc-appearance-mode .arc-segment-thumb { transition: none !important; }
   }
   /* Raise the navigation rail above the translucent library content so its
      right-hand shadow remains visible. */

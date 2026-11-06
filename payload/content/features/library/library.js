@@ -1,5 +1,83 @@
 /* Library trigger, native opening position, and footer links. Downloads only supply a hide callback. */
 var ArcLibrary = {
+  colors: [
+    ["background", "Background", "--arc-surface", "#cec7d4", "#23202a"],
+    ["gradient-end", "Gradient end", "--arc-gradient-end", "#e8dff0", "#493b56"],
+    ["foreground", "Foreground text", "--arc-text", "#141414", "#f0edf3"],
+    ["accent", "Accent text", "--arc-muted", "#65556f", "#e4d2f5"],
+    ["popup", "Menu background", "--arc-popup-surface", "#f6f4f3", "#302c35"],
+    ["folder", "Folder icons", "--arc-folder", "#b86ba6", "#d9a3cb"],
+    ["tab-active", "Active tab", "--arc-tab-active", "#ffffff", "#655c70"],
+    ["tab-hover", "Hover tab", "--arc-tab-hover", "#bcb6c2", "#4c4752"],
+    ["hover", "Hover background", "--arc-popup-hover", "#e8e3df", "#413b48"],
+    ["pressed", "Pressed background", "--arc-popup-active", "#ded7d2", "#514858"],
+  ],
+  schema() {
+    const fields = [
+      { key: "mode", type: "string", fallback: "system", choices: ["light", "dark", "system"] },
+      { key: "reduce-motion", type: "boolean", fallback: false },
+      { key: "content-radius", type: "number", fallback: 10, min: 0, max: 16 },
+    ];
+    for (const mode of ["light", "dark"]) {
+      for (const [key, , , light, dark] of this.colors)
+        fields.push({ key: mode + "." + key, type: "string", color: true, fallback: mode === "dark" ? dark : light });
+      fields.push(
+        { key: mode + ".gradient", type: "boolean", fallback: false },
+        { key: mode + ".gradient-angle", type: "number", fallback: 135, min: 0, max: 360 },
+        { key: mode + ".opacity", type: "number", fallback: mode === "dark" ? 88 : 70, min: 0, max: 100 },
+      );
+    }
+    return fields;
+  },
+  validSetting(field, value) {
+    return typeof value === field.type &&
+      (!field.color || /^#[0-9a-f]{6}$/i.test(value)) &&
+      (!field.choices || field.choices.includes(value)) &&
+      (field.type !== "number" || (Number.isInteger(value) && value >= field.min && value <= field.max));
+  },
+  snapshot(prefs) {
+    const values = {};
+    for (const field of this.schema()) {
+      const read = { string: "getStringPref", boolean: "getBoolPref", number: "getIntPref" }[field.type];
+      const value = prefs[read]("arc-ui.appearance." + field.key, field.fallback);
+      values[field.key] = this.validSetting(field, value) ? value : field.fallback;
+    }
+    return values;
+  },
+  presets(prefs) {
+    try {
+      const saved = JSON.parse(prefs.getStringPref("arc-ui.appearance.presets", "[]"));
+      if (!Array.isArray(saved)) return [];
+      const seen = new Set();
+      return saved.filter(preset => {
+        if (!preset || typeof preset.name !== "string" || !preset.name.trim() || preset.name.length > 60 ||
+            !preset.values || typeof preset.values !== "object" || Array.isArray(preset.values)) return false;
+        const name = preset.name.trim().toLowerCase();
+        if (seen.has(name)) return false;
+        seen.add(name);
+        return true;
+      }).slice(0, 20).map(preset => ({ name: preset.name.trim(), values: Object.fromEntries(this.schema().map(field =>
+        [field.key, this.validSetting(field, preset.values[field.key]) ? preset.values[field.key] : field.fallback])) }));
+    } catch { return []; }
+  },
+  applyPreset(prefs, values) {
+    for (const field of this.schema()) {
+      const write = { string: "setStringPref", boolean: "setBoolPref", number: "setIntPref" }[field.type];
+      prefs[write]("arc-ui.appearance." + field.key,
+        this.validSetting(field, values[field.key]) ? values[field.key] : field.fallback);
+    }
+  },
+  background(prefs, mode) {
+    const branch = "arc-ui.appearance." + mode + ".";
+    const readColor = (key, fallback) => {
+      const value = prefs.getStringPref(branch + key, fallback);
+      return /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
+    };
+    const start = readColor("background", mode === "dark" ? "#23202a" : "#cec7d4");
+    const end = readColor("gradient-end", mode === "dark" ? "#493b56" : "#e8dff0");
+    const angle = Math.max(0, Math.min(360, prefs.getIntPref(branch + "gradient-angle", 135)));
+    return { start, end, angle, enabled: prefs.getBoolPref(branch + "gradient", false) };
+  },
   install(window, dependencies = {}) {
     const { document, MutationObserver } = window;
     const { icon, nudge, hideDownloads, report } = dependencies;
@@ -12,17 +90,15 @@ var ArcLibrary = {
     const prefBranch = "arc-ui.appearance.";
     const appearanceInputs = [];
     let editorWindow = null;
-    const appearance = [
-      ["background", "Background", "--arc-surface", "#cec7d4", "#23202a"],
-      ["foreground", "Foreground text", "--arc-text", "#141414", "#f0edf3"],
-      ["accent", "Accent text", "--arc-muted", "#65556f", "#e4d2f5"],
-      ["popup", "Menu background", "--arc-popup-surface", "#f6f4f3", "#302c35"],
-      ["folder", "Folder icons", "--arc-folder", "#b86ba6", "#d9a3cb"],
-      ["tab-active", "Active tab", "--arc-tab-active", "#ffffff", "#655c70"],
-      ["tab-hover", "Hover tab", "--arc-tab-hover", "#bcb6c2", "#4c4752"],
-      ["hover", "Hover background", "--arc-popup-hover", "#e8e3df", "#413b48"],
-      ["pressed", "Pressed background", "--arc-popup-active", "#ded7d2", "#514858"],
-    ];
+    const modeInputs = [];
+    const gradientInputs = [];
+    const rangeInputs = [];
+    let refreshPresets = () => {};
+    let updateColorReset = () => {};
+    let syncModeThumb = () => {};
+    let motionInput = null;
+    const systemScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    const appearance = ArcLibrary.colors;
     // Preserve existing custom colors in both palettes on upgrade.
     for (const [key] of appearance) {
       if (!Services.prefs.prefHasUserValue(prefBranch + key)) continue;
@@ -34,6 +110,39 @@ var ArcLibrary = {
       Services.prefs.clearUserPref(prefBranch + key);
     }
     function applyAppearance() {
+      const savedMode = Services.prefs.getStringPref(prefBranch + "mode", "system");
+      const mode = ["light", "dark"].includes(savedMode) ? savedMode : "system";
+      const resolved = mode === "system" ? (systemScheme.matches ? "dark" : "light") : mode;
+      document.documentElement.setAttribute("data-arc-color-mode", resolved);
+      const background = ArcLibrary.background(Services.prefs, resolved);
+      document.documentElement.toggleAttribute("data-arc-gradient", background.enabled);
+      const { start, end, angle } = background;
+      const values = ArcLibrary.snapshot(Services.prefs);
+      const opacity = values[resolved + ".opacity"] + "%";
+      document.documentElement.style.setProperty("--arc-window-opacity", opacity);
+      document.documentElement.style.setProperty("--arc-content-radius", values["content-radius"] + "px");
+      for (const { key, input, output, suffix } of rangeInputs) {
+        input.value = values[key];
+        output.value = values[key] + suffix;
+      }
+      document.documentElement.style.setProperty("--arc-shell-gradient", `linear-gradient(${angle}deg, ${start}, ${end})`);
+      document.documentElement.style.setProperty("--arc-shell-gradient-tint", `linear-gradient(${angle}deg, color-mix(in srgb, ${start} ${opacity}, transparent), color-mix(in srgb, ${end} ${opacity}, transparent))`);
+      for (const entry of gradientInputs) {
+        const config = ArcLibrary.background(Services.prefs, entry.mode);
+        if (entry.key === "gradient") entry.input.checked = config.enabled;
+        else {
+          entry.input.value = config.angle;
+          entry.input.disabled = !config.enabled;
+        }
+      }
+      for (const entry of appearanceInputs) {
+        if (entry.key === "gradient-end")
+          entry.input.disabled = !ArcLibrary.background(Services.prefs, entry.mode).enabled;
+      }
+      for (const input of modeInputs) input.checked = input.value === mode;
+      syncModeThumb();
+      if (editorWindow && !editorWindow.closed)
+        editorWindow.document.documentElement.style.setProperty("color-scheme", resolved, "important");
       for (const [key, , variable, lightDefault, darkDefault] of appearance) {
         const values = ["light", "dark"].map((mode, index) => {
           const fallback = index ? darkDefault : lightDefault;
@@ -44,10 +153,16 @@ var ArcLibrary = {
         if (editorWindow && !editorWindow.closed)
           editorWindow.document.documentElement.style.setProperty(variable, `light-dark(${values[0]}, ${values[1]})`);
       }
-      document.documentElement.toggleAttribute("data-arc-reduced-motion", Services.prefs.getBoolPref(prefBranch + "reduce-motion", false));
+      const reduceMotion = Services.prefs.getBoolPref(prefBranch + "reduce-motion", false);
+      document.documentElement.toggleAttribute("data-arc-reduced-motion", reduceMotion);
+      if (motionInput) motionInput.checked = reduceMotion;
+      refreshColorInputs();
+      refreshPresets();
+      updateColorReset();
     }
     const appearanceObserver = { observe: applyAppearance };
     Services.prefs.addObserver(prefBranch, appearanceObserver);
+    systemScheme.addEventListener("change", applyAppearance);
     applyAppearance();
     const projectMenu = document.createXULElement("menupopup");
     projectMenu.id = "arc-project-menu";
@@ -63,29 +178,321 @@ var ArcLibrary = {
     }
     const title = html("h2", "Arc UI settings");
     title.id = "arc-settings-title";
-    const description = html("p", "Make this space your own.");
-    const note = html("p", "Colors are saved to your current Zen workspace.");
     const close = html("button", "Done");
     close.type = "button";
-    close.addEventListener("click", () => settings.close());
-    settings.append(title, description);
+    close.addEventListener("click", () => closeSettings());
+    // Fade the window out before the real close, matching the entrance.
+    function closeSettings() {
+      if (!settings.open || settings.dataset.arcClosing) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        settings.close();
+        return;
+      }
+      settings.dataset.arcClosing = "close";
+      const finish = () => {
+        settings.removeEventListener("animationend", exit);
+        clearTimeout(guard);
+        delete settings.dataset.arcClosing;
+        settings.close();
+      };
+      // Child animations also bubble here; only the dialog's own exit counts.
+      const exit = event => {
+        if (event.animationName === "arc-settings-close") finish();
+      };
+      settings.addEventListener("animationend", exit);
+      const guard = setTimeout(finish, 280);
+    }
+    settings.addEventListener("cancel", event => {
+      event.preventDefault();
+      closeSettings();
+    });
+    settings.append(title);
+    const modeRow = html("div", "");
+    modeRow.className = "arc-settings-row";
+    const modeLabel = html("span", "Theme mode");
+    modeLabel.id = "arc-appearance-label";
+    const modeGroup = html("div", "");
+    modeGroup.id = "arc-appearance-mode";
+    modeGroup.setAttribute("role", "radiogroup");
+    modeGroup.setAttribute("aria-labelledby", modeLabel.id);
+    const modeThumb = html("div", "");
+    modeThumb.className = "arc-segment-thumb";
+    modeGroup.append(modeThumb);
+    for (const [value, label] of [["light", "Light"], ["dark", "Dark"], ["system", "System"]]) {
+      const segment = html("label", "");
+      const input = html("input", "");
+      input.type = "radio";
+      input.name = "arc-appearance-mode";
+      input.value = value;
+      input.id = "arc-appearance-" + value;
+      input.addEventListener("change", () => {
+        if (input.checked) Services.prefs.setStringPref(prefBranch + "mode", value);
+      });
+      modeInputs.push(input);
+      const content = html("span", label);
+      content.prepend(icon({ light: "sun", dark: "moon", system: "automatic" }[value]));
+      segment.append(input, content);
+      modeGroup.append(segment);
+    }
+    // Measure the selected segment when the dialog is open; hidden dialogs
+    // report zero sizes, so opening re-syncs through the Settings action.
+    syncModeThumb = () => {
+      if (!settings.open) return;
+      const label = modeGroup.querySelector("input:checked")?.closest("label");
+      if (!label?.offsetWidth) return;
+      modeThumb.style.width = `${label.offsetWidth}px`;
+      modeThumb.style.transform = `translateX(${label.offsetLeft}px)`;
+    };
+    syncModeThumb();
+    modeRow.append(modeLabel, modeGroup);
+    settings.append(modeRow);
+    applyAppearance();
+    function rangeControl(key, label, min, max, suffix) {
+      const row = html("label", "");
+      row.className = "arc-settings-row";
+      row.dataset.appearanceKey = key;
+      row.append(html("span", label));
+      const controls = html("div", "");
+      controls.className = "arc-range-control";
+      const input = html("input", "");
+      input.type = "range";
+      input.id = "arc-" + key.replaceAll(".", "-");
+      input.min = String(min);
+      input.max = String(max);
+      input.step = "1";
+      const output = html("output", "");
+      output.setAttribute("for", input.id);
+      input.addEventListener("input", () => Services.prefs.setIntPref(prefBranch + key, Number(input.value)));
+      rangeInputs.push({ key, input, output, suffix });
+      controls.append(input, output);
+      row.append(controls);
+      return row;
+    }
+    settings.append(rangeControl("content-radius", "Content corners", 0, 16, " px"));
+    const presetDetails = html("section", "");
+    presetDetails.id = "arc-theme-presets";
+    const presetLabel = html("fieldset", "");
+    presetLabel.className = "arc-preset-field";
+    const presetLegend = html("legend", "Saved presets");
+    const presetGallery = html("div", "");
+    presetGallery.id = "arc-preset-gallery";
+    const presetEmpty = html("p", "Save your current appearance to create a preset.");
+    presetEmpty.id = "arc-preset-empty";
+    presetLabel.append(presetLegend, presetGallery, presetEmpty);
+    let selectedPresetName = "";
+    let renderedPresets = "";
+    const presetActions = html("div", "");
+    presetActions.className = "arc-preset-actions";
+    const apply = html("button", "Apply");
+    apply.type = "button";
+    apply.id = "arc-preset-apply";
+    const remove = html("button", "Delete");
+    remove.type = "button";
+    remove.id = "arc-preset-delete";
+    presetActions.append(apply, remove);
+    const nameLabel = html("label", "Preset name");
+    nameLabel.className = "arc-preset-field";
+    const presetName = html("input", "");
+    presetName.id = "arc-preset-name";
+    presetName.type = "text";
+    presetName.maxLength = 60;
+    nameLabel.append(presetName);
+    const save = html("button", "Save current appearance");
+    save.type = "button";
+    save.id = "arc-preset-save";
+    const presetStatus = html("p", "");
+    presetStatus.id = "arc-preset-status";
+    presetStatus.setAttribute("role", "status");
+    const previewLabel = html("p", "Current theme");
+    previewLabel.id = "arc-preset-preview-label";
+    const preview = html("div", "");
+    preview.id = "arc-preset-preview";
+    preview.className = "arc-theme-preview";
+    preview.setAttribute("role", "img");
+    const previewRail = html("div", "");
+    previewRail.className = "arc-preview-rail";
+    const previewToolbar = html("div", "");
+    previewToolbar.className = "arc-preview-toolbar";
+    for (const name of ["panel", "back", "forward", "reload"]) previewToolbar.append(icon(name));
+    const previewAddress = html("div", "Search");
+    previewAddress.className = "arc-preview-address";
+    previewRail.append(previewToolbar, previewAddress);
+    for (const [image, title, active] of [["folder", "Workspace", false], ["file", "New tab", true], ["file", "Settings", false]]) {
+      const tab = html("div", "");
+      tab.className = "arc-preview-tab";
+      if (active) tab.classList.add("arc-preview-active");
+      if (image === "folder") tab.classList.add("arc-preview-folder");
+      tab.append(icon(image), html("span", title));
+      previewRail.append(tab);
+    }
+    const previewPage = html("div", "");
+    previewPage.className = "arc-preview-page";
+    const pageTitle = html("span", "New tab");
+    pageTitle.className = "arc-preview-page-title";
+    const pageSearch = html("span", "Search the web");
+    pageSearch.className = "arc-preview-page-search";
+    previewPage.append(pageTitle, pageSearch);
+    preview.append(previewRail, previewPage);
+    function paintPreview(target, values) {
+      const mode = values.mode === "system" ? (systemScheme.matches ? "dark" : "light") : values.mode;
+      const color = key => values[mode + "." + key];
+      target.style.setProperty("--preview-background", values[mode + ".gradient"]
+        ? `linear-gradient(${values[mode + ".gradient-angle"]}deg, ${color("background")}, ${color("gradient-end")})` : color("background"));
+      for (const key of ["foreground", "accent", "folder", "tab-active"])
+        target.style.setProperty("--preview-" + key, color(key));
+      target.style.setProperty("--preview-radius", (values["content-radius"] / 10.4) + "cqw");
+      target.dataset.mode = mode;
+      target.style.setProperty("--preview-opacity", values[mode + ".opacity"] + "%");
+
+      return mode;
+    }
+    function selectionChanged() {
+      apply.disabled = remove.disabled = !selectedPresetName;
+    }
+    refreshPresets = () => {
+      const presets = ArcLibrary.presets(Services.prefs);
+      if (!presets.some(item => item.name === selectedPresetName)) selectedPresetName = "";
+      const signature = JSON.stringify([presets, systemScheme.matches]);
+      if (signature !== renderedPresets) {
+        const focusedName = presetGallery.contains(document.activeElement) ? document.activeElement.value : null;
+        presetGallery.replaceChildren();
+        for (const preset of presets) {
+          const choice = html("label", "");
+          choice.className = "arc-preset-choice";
+          const radio = html("input", "");
+          radio.type = "radio";
+          radio.name = "arc-saved-preset";
+          radio.value = preset.name;
+          radio.checked = preset.name === selectedPresetName;
+          const thumbnail = preview.cloneNode(true);
+          thumbnail.removeAttribute("id");
+          thumbnail.removeAttribute("role");
+          thumbnail.removeAttribute("aria-label");
+          thumbnail.hidden = false;
+          thumbnail.classList.add("arc-preset-mini");
+          thumbnail.setAttribute("aria-hidden", "true");
+          paintPreview(thumbnail, preset.values);
+          const caption = html("span", preset.name);
+          caption.className = "arc-preset-caption";
+          radio.addEventListener("change", () => {
+            selectedPresetName = radio.value;
+            selectionChanged();
+          });
+          choice.append(radio, thumbnail, caption);
+          presetGallery.append(choice);
+          if (focusedName === preset.name) radio.focus({ preventScroll: true });
+        }
+        renderedPresets = signature;
+      }
+      for (const radio of presetGallery.querySelectorAll("input")) radio.checked = radio.value === selectedPresetName;
+      preview.hidden = previewLabel.hidden = presets.length > 0;
+      presetEmpty.hidden = presets.length > 0;
+      presetGallery.hidden = !presets.length;
+      const mode = paintPreview(preview, ArcLibrary.snapshot(Services.prefs));
+      preview.setAttribute("aria-label", `Current theme, ${mode} appearance. Sample browser sidebar and content.`);
+      selectionChanged();
+    };
+    refreshPresets();
+    save.addEventListener("click", () => {
+      const name = presetName.value.trim();
+      const presets = ArcLibrary.presets(Services.prefs);
+      if (!name) { presetStatus.textContent = "Enter a name for this preset."; presetName.focus(); return; }
+      if (presets.some(preset => preset.name.toLowerCase() === name.toLowerCase())) {
+        presetStatus.textContent = "That name is already saved. Choose another name."; return;
+      }
+      if (presets.length >= 20) { presetStatus.textContent = "You can save up to 20 presets. Delete one to make room."; return; }
+      presets.push({ name, values: ArcLibrary.snapshot(Services.prefs) });
+      Services.prefs.setStringPref(prefBranch + "presets", JSON.stringify(presets));
+      selectedPresetName = name;
+      refreshPresets();
+      selectionChanged();
+      presetName.value = "";
+      presetStatus.textContent = `Saved ${name}.`;
+    });
+    apply.addEventListener("click", () => {
+      const preset = ArcLibrary.presets(Services.prefs).find(preset => preset.name === selectedPresetName);
+      if (!preset) return;
+      ArcLibrary.applyPreset(Services.prefs, preset.values);
+      presetStatus.textContent = `Applied ${preset.name}.`;
+    });
+    remove.addEventListener("click", () => {
+      const name = selectedPresetName;
+      if (!name) return;
+      const presets = ArcLibrary.presets(Services.prefs).filter(preset => preset.name !== name);
+      Services.prefs.setStringPref(prefBranch + "presets", JSON.stringify(presets));
+      presetStatus.textContent = `Deleted ${name}.`;
+    });
+    presetDetails.append(previewLabel, preview, presetLabel, presetActions, nameLabel, save, presetStatus);
+    settings.append(presetDetails);
     const heading = html("div", "");
     heading.className = "arc-palette-heading";
-    heading.append(html("span", "Colors"), html("span", "☀ Light"), html("span", "☾ Dark"));
+    heading.append(html("span", "Color"), html("span", "Light"), html("span", "Dark"));
     settings.append(heading);
     let activeColor = null;
     function refreshColorInputs() {
       for (const entry of appearanceInputs) {
         const { input, key, mode, fallback } = entry;
         entry.value = Services.prefs.getStringPref(prefBranch + mode + "." + key, fallback);
-        input.style.setProperty("--swatch", entry.value);
+        const background = ArcLibrary.background(Services.prefs, mode);
+        const preview = key === "background" && background.enabled
+          ? `linear-gradient(${background.angle}deg, ${background.start}, ${background.end})` : entry.value;
+        input.style.setProperty("--swatch", preview);
         input.title = `${entry.label} · ${mode} · ${entry.value}`;
         input.textContent = "";
       }
     }
+    function appendGradientRow(key, label) {
+      const row = html("div", "");
+      row.className = "arc-settings-row";
+      row.dataset.appearanceKey = key;
+      row.append(html("span", label));
+      const pair = html("div", "");
+      pair.className = "arc-gradient-pair";
+      for (const mode of ["light", "dark"]) {
+        const input = html("input", "");
+        input.type = key === "gradient" ? "checkbox" : "number";
+        input.id = "arc-" + key + "-" + mode;
+        input.setAttribute("aria-label", `${label}, ${mode} mode`);
+        if (key !== "gradient") {
+          input.min = "0";
+          input.max = "360";
+          input.step = "1";
+          input.title = "Gradient angle in degrees";
+        }
+        input.addEventListener("change", () => {
+          if (key === "gradient") Services.prefs.setBoolPref(prefBranch + mode + "." + key, input.checked);
+          else {
+            const angle = input.valueAsNumber;
+            if (Number.isInteger(angle) && angle >= 0 && angle <= 360)
+              Services.prefs.setIntPref(prefBranch + mode + "." + key, angle);
+            else input.value = ArcLibrary.background(Services.prefs, mode).angle;
+          }
+        });
+        gradientInputs.push({ input, mode, key });
+        if (key === "gradient") pair.append(input);
+        else {
+          const cell = html("div", "");
+          cell.className = "arc-angle-control";
+          const slider = html("input", "");
+          slider.type = "range";
+          slider.id = "arc-gradient-slider-" + mode;
+          slider.min = "0";
+          slider.max = "360";
+          slider.step = "1";
+          slider.setAttribute("aria-label", `Gradient angle slider, ${mode} mode`);
+          slider.addEventListener("input", () => Services.prefs.setIntPref(prefBranch + mode + ".gradient-angle", Number(slider.value)));
+          gradientInputs.push({ input: slider, mode, key });
+          cell.append(slider, input);
+          pair.append(cell);
+        }
+      }
+      row.append(pair);
+      settings.append(row);
+    }
     for (const [key, label, , fallback, darkDefault] of appearance) {
       const row = html("div", "");
       row.className = "arc-settings-row arc-color-row";
+      row.dataset.appearanceKey = key;
       row.append(html("span", label));
       const pair = html("div", "");
       pair.className = "arc-color-pair";
@@ -102,7 +509,13 @@ var ArcLibrary = {
       }
       row.append(pair);
       settings.append(row);
+      if (key === "background") appendGradientRow("gradient", "Use gradient");
+      if (key === "gradient-end") appendGradientRow("gradient-angle", "Gradient angle (°)");
     }
+    applyAppearance();
+    settings.append(rangeControl("light.opacity", "Light window opacity", 0, 100, "%"));
+    settings.append(rangeControl("dark.opacity", "Dark window opacity", 0, 100, "%"));
+    applyAppearance();
     refreshColorInputs();
     const editor = html("section", "");
     editor.id = "arc-color-editor";
@@ -188,12 +601,14 @@ var ArcLibrary = {
     function openColorEditor(entry) {
       if (activeColor) activeColor.input.setAttribute("aria-expanded", "false");
       activeColor = entry;
+      updateColorReset();
       entry.input.setAttribute("aria-expanded", "true");
       editorTitle.textContent = `${entry.label} · ${entry.mode === "light" ? "Light" : "Dark"} mode`;
       editor.hidden = false;
       loadColor(entry.value);
       if (editorWindow && !editorWindow.closed) {
         editorWindow.document.title = editorTitle.textContent;
+        applyAppearance();
         editorWindow.focus();
         return;
       }
@@ -240,12 +655,29 @@ var ArcLibrary = {
     const pickerDone = html("button", "Done");
     pickerDone.type = "button";
     pickerDone.addEventListener("click", () => pickerDone.ownerDocument.defaultView.close());
-    editor.append(editorTitle, pickerHost, brightnessLabel, hexLabel, pickerDone);
+    const colorReset = html("button", "Reset color");
+    colorReset.id = "arc-reset-color";
+    colorReset.type = "button";
+    updateColorReset = () => {
+      colorReset.disabled = !activeColor || !Services.prefs.prefHasUserValue(prefBranch + activeColor.mode + "." + activeColor.key);
+    };
+    colorReset.addEventListener("click", () => {
+      if (!activeColor) return;
+      Services.prefs.clearUserPref(prefBranch + activeColor.mode + "." + activeColor.key);
+      refreshColorInputs();
+      loadColor(activeColor.value);
+      updateColorReset();
+    });
+    const pickerActions = html("div", "");
+    pickerActions.className = "arc-picker-actions";
+    pickerActions.append(colorReset, pickerDone);
+    editor.append(editorTitle, pickerHost, brightnessLabel, hexLabel, pickerActions);
     settings.addEventListener("close", () => editorWindow?.close());
     const motionRow = html("label", "");
     motionRow.className = "arc-settings-row";
     motionRow.append(html("span", "Reduce animations"));
     const motion = html("input", "");
+    motionInput = motion;
     motion.type = "checkbox";
     motion.checked = Services.prefs.getBoolPref(prefBranch + "reduce-motion", false);
     motion.addEventListener("change", () => Services.prefs.setBoolPref(prefBranch + "reduce-motion", motion.checked));
@@ -253,23 +685,128 @@ var ArcLibrary = {
     const reset = html("button", "Reset appearance");
     reset.type = "button";
     reset.addEventListener("click", () => {
-      for (const { key, mode } of appearanceInputs) {
-        Services.prefs.clearUserPref(prefBranch + mode + "." + key);
-      }
+      for (const { key } of ArcLibrary.schema()) Services.prefs.clearUserPref(prefBranch + key);
       refreshColorInputs();
       if (activeColor) loadColor(activeColor.value);
       Services.prefs.clearUserPref(prefBranch + "reduce-motion");
       motion.checked = false;
     });
-    note.textContent = "Each palette follows Zen’s light or dark mode across workspaces. Reset restores both palettes and animation defaults.";
-    settings.append(motionRow, note, reset, close);
+    const header = html("header", "");
+    header.className = "arc-settings-header";
+    header.append(title);
+    const navigation = html("div", "");
+    navigation.className = "arc-settings-tabs";
+    navigation.setAttribute("role", "tablist");
+    navigation.setAttribute("aria-label", "Settings sections");
+    const body = html("div", "");
+    body.className = "arc-settings-body";
+    const panels = new Map();
+    const tabs = [];
+    function selectSection(tab, focus = false) {
+      for (const item of tabs) {
+        const selected = item === tab;
+        item.setAttribute("aria-selected", String(selected));
+        item.tabIndex = selected ? 0 : -1;
+        panels.get(item.dataset.section).hidden = !selected;
+      }
+      settings.dataset.section = tab.dataset.section;
+      body.scrollTop = 0;
+      // A hidden panel reports zero sizes; re-measure when it shows again.
+      syncModeThumb();
+      editorWindow?.close();
+      if (focus) tab.focus();
+    }
+    for (const [key, label] of [["appearance", "Appearance"], ["colors", "Colors"], ["presets", "Presets"]]) {
+      const tab = html("button", label);
+      tab.type = "button";
+      tab.id = "arc-settings-tab-" + key;
+      tab.dataset.section = key;
+      tab.setAttribute("role", "tab");
+      tab.setAttribute("aria-controls", "arc-settings-panel-" + key);
+      tab.addEventListener("click", () => selectSection(tab));
+      tab.addEventListener("keydown", event => {
+        let index = tabs.indexOf(tab);
+        if (event.key === "ArrowRight") index = (index + 1) % tabs.length;
+        else if (event.key === "ArrowLeft") index = (index + tabs.length - 1) % tabs.length;
+        else if (event.key === "Home") index = 0;
+        else if (event.key === "End") index = tabs.length - 1;
+        else return;
+        event.preventDefault();
+        selectSection(tabs[index], true);
+      });
+      const panel = html("section", "");
+      panel.id = "arc-settings-panel-" + key;
+      panel.className = "arc-settings-panel";
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", tab.id);
+      panel.tabIndex = 0;
+      panels.set(key, panel);
+      tabs.push(tab);
+      navigation.append(tab);
+      body.append(panel);
+    }
+    // Arc groups related rows into rounded inset cards; headings stay outside.
+    function group(...rows) {
+      const card = html("div", "");
+      card.className = "arc-settings-group";
+      card.append(...rows);
+      return card;
+    }
+    const appearancePanel = panels.get("appearance");
+    const generalGroup = group(
+      modeRow,
+      settings.querySelector('[data-appearance-key="content-radius"]'),
+      motionRow,
+    );
+    const backgroundHeading = heading.cloneNode(true);
+    backgroundHeading.firstChild.textContent = "Background";
+    const backgroundRows = [];
+    for (const key of ["background", "gradient", "gradient-end", "gradient-angle"]) {
+      const row = settings.querySelector(`[data-appearance-key="${key}"]`);
+      if (key === "background") row.firstChild.textContent = "Start color";
+      if (key === "gradient-end") row.firstChild.textContent = "End color";
+      backgroundRows.push(row);
+    }
+    const opacityRow = html("div", "");
+    opacityRow.className = "arc-settings-row";
+    opacityRow.append(html("span", "Window opacity"));
+    const opacityPair = html("div", "");
+    opacityPair.className = "arc-gradient-pair";
+    for (const mode of ["light", "dark"]) {
+      const controls = settings.querySelector(`[data-appearance-key="${mode}.opacity"] .arc-range-control`);
+      controls.querySelector("input").setAttribute("aria-label", `Window opacity, ${mode} mode`);
+      opacityPair.append(controls);
+    }
+    opacityRow.append(opacityPair);
+    const backgroundGroup = group(...backgroundRows, opacityRow);
+    appearancePanel.append(generalGroup, backgroundHeading, backgroundGroup);
+    const colorsPanel = panels.get("colors");
+    colorsPanel.append(heading);
+    const colorRows = [];
+    for (const [key] of appearance) {
+      if (key !== "background" && key !== "gradient-end")
+        colorRows.push(settings.querySelector(`[data-appearance-key="${key}"]`));
+    }
+    colorsPanel.append(group(...colorRows));
+    panels.get("presets").append(presetDetails);
+    const footer = html("footer", "");
+    footer.className = "arc-settings-footer";
+    reset.id = "arc-settings-reset";
+    close.id = "arc-settings-done";
+    footer.append(reset, close);
+    settings.replaceChildren(header, navigation, body, footer);
+    selectSection(tabs[0]);
     document.documentElement.append(settings);
     for (const [label, image, action] of [
       ["GitHub", "github", () => {
         window.openTrustedLinkIn("https://github.com/SpyC0der77/arc-ui-for-zen", "tab");
         void setRail(false).catch(report);
       }],
-      ["Settings", "settings", () => settings.showModal()],
+      ["Settings", "settings", () => {
+        settings.showModal();
+        syncModeThumb();
+        requestAnimationFrame(syncModeThumb);
+      }],
     ]) {
       const item = document.createXULElement("menuitem");
       item.setAttribute("label", label);
@@ -392,6 +929,13 @@ var ArcLibrary = {
         footerObserver.disconnect();
         editorWindow?.close();
         Services.prefs.removeObserver(prefBranch, appearanceObserver);
+        systemScheme.removeEventListener("change", applyAppearance);
+        document.documentElement.removeAttribute("data-arc-color-mode");
+        document.documentElement.removeAttribute("data-arc-gradient");
+        document.documentElement.style.removeProperty("--arc-shell-gradient");
+        document.documentElement.style.removeProperty("--arc-shell-gradient-tint");
+        document.documentElement.style.removeProperty("--arc-window-opacity");
+        document.documentElement.style.removeProperty("--arc-content-radius");
         for (const [, , variable] of appearance) document.documentElement.style.removeProperty(variable);
         document.documentElement.removeAttribute("data-arc-reduced-motion");
         projectMenu.remove();

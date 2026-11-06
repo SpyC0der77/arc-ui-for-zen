@@ -223,3 +223,78 @@ test('application menu placement respects nonzero screen work-area edges', () =>
   feature.destroy();
   assert.equal(listeners.size, 0);
 });
+
+test("background gradients keep separate light and dark colors and validate saved values", () => {
+  const library = load("features/library/library.js", "ArcLibrary");
+  const values = new Map([
+    ["arc-ui.appearance.light.background", "#aabbcc"],
+    ["arc-ui.appearance.light.gradient-end", "#ccbbaa"],
+    ["arc-ui.appearance.light.gradient", true],
+    ["arc-ui.appearance.light.gradient-angle", 90],
+    ["arc-ui.appearance.dark.background", "url(unsafe)"],
+    ["arc-ui.appearance.dark.gradient-end", "invalid"],
+    ["arc-ui.appearance.dark.gradient-angle", 999],
+  ]);
+  const prefs = Object.fromEntries(["getStringPref", "getIntPref", "getBoolPref"].map(name =>
+    [name, (key, fallback) => values.has(key) ? values.get(key) : fallback]));
+  const light = library.background(prefs, "light");
+  assert.equal(light.start, "#aabbcc");
+  assert.equal(light.end, "#ccbbaa");
+  assert.equal(light.angle, 90);
+  assert.equal(light.enabled, true);
+  const dark = library.background(prefs, "dark");
+  assert.equal(dark.start, "#23202a");
+  assert.equal(dark.end, "#493b56");
+  assert.equal(dark.angle, 360);
+  assert.equal(dark.enabled, false);
+  values.set("arc-ui.appearance.dark.gradient-angle", -20);
+  assert.equal(library.background(prefs, "dark").angle, 0);
+  values.clear();
+  assert.equal(library.background(prefs, "light").angle, 135);
+  assert.equal(library.background(prefs, "light").enabled, false);
+});
+
+test("theme presets validate saved settings and ignore unrelated preference keys", () => {
+  const library = load("features/library/library.js", "ArcLibrary");
+  const stored = new Map([
+    ["arc-ui.appearance.mode", "dark"],
+    ["arc-ui.appearance.content-radius", 0],
+    ["arc-ui.appearance.dark.opacity", 52],
+    ["arc-ui.appearance.dark.gradient", true],
+    ["arc-ui.appearance.dark.gradient-angle", 240],
+  ]);
+  const prefs = {};
+  for (const [get, set] of [["getStringPref", "setStringPref"], ["getIntPref", "setIntPref"], ["getBoolPref", "setBoolPref"]]) {
+    prefs[get] = (key, fallback) => stored.has(key) ? stored.get(key) : fallback;
+    prefs[set] = (key, value) => stored.set(key, value);
+  }
+  const snapshot = library.snapshot(prefs);
+  assert.equal(snapshot["dark.opacity"], 52);
+  assert.equal(snapshot["content-radius"], 0);
+  assert.equal(snapshot["dark.gradient-angle"], 240);
+  stored.clear();
+  library.applyPreset(prefs, { ...snapshot, "dark.background": "url(unsafe)", "light.opacity": 101, "content-radius": -2, "browser.startup.homepage": "unsafe" });
+  assert.equal(stored.get("arc-ui.appearance.dark.opacity"), 52);
+  assert.equal(stored.get("arc-ui.appearance.dark.background"), "#23202a");
+  assert.equal(stored.get("arc-ui.appearance.light.opacity"), 70);
+  assert.equal(stored.get("arc-ui.appearance.content-radius"), 10);
+  assert.equal(stored.has("arc-ui.appearance.browser.startup.homepage"), false);
+  assert.equal(stored.get("arc-ui.appearance.mode"), "dark");
+});
+
+test("saved theme presets recover from malformed data and normalize duplicate names", () => {
+  const library = load("features/library/library.js", "ArcLibrary");
+  let raw = "not json";
+  const prefs = { getStringPref: () => raw };
+  assert.equal(library.presets(prefs).length, 0);
+  raw = '{"name":"not a list"}';
+  assert.equal(library.presets(prefs).length, 0);
+  raw = JSON.stringify([null, {name:" ", values:{}}, {name:"Example", values:{"mode":"invalid","dark.opacity":30}}, {name:" example ", values:{}}, {name:"bad values", values:[]}]);
+  const presets = library.presets(prefs);
+  assert.equal(presets.length, 1);
+  assert.equal(presets[0].name, "Example");
+  assert.equal(presets[0].values.mode, "system");
+  assert.equal(presets[0].values["dark.opacity"], 30);
+  raw = JSON.stringify(Array.from({length:25}, (_, i) => ({ name: String(i), values:{} })));
+  assert.equal(library.presets(prefs).length, 20);
+});

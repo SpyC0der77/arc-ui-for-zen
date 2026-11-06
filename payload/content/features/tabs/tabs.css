@@ -1,13 +1,11 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
-  @media (prefers-color-scheme: dark) {
     /* Match Library folder contrast instead of inheriting workspace tints. */
-    :root[data-arc-ui] #navigator-toolbox .tab-group-label-container,
-    :root[data-arc-ui] #navigator-toolbox .tab-group-label,
-    :root[data-arc-ui] #navigator-toolbox .zen-current-workspace-indicator,
-    :root[data-arc-ui] #navigator-toolbox .zen-current-workspace-indicator-name {
-      color: var(--arc-text) !important;
-    }
+  :root[data-arc-ui][data-arc-color-mode="dark"] #navigator-toolbox .tab-group-label-container,
+  :root[data-arc-ui][data-arc-color-mode="dark"] #navigator-toolbox .tab-group-label,
+  :root[data-arc-ui][data-arc-color-mode="dark"] #navigator-toolbox .zen-current-workspace-indicator,
+  :root[data-arc-ui][data-arc-color-mode="dark"] #navigator-toolbox .zen-current-workspace-indicator-name {
+    color: var(--arc-text) !important;
   }
   /* Size the native tab contents without preventing folder animations from
      shrinking inactive rows to zero height when a selected tab stays visible. */

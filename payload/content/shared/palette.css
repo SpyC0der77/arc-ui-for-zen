@@ -29,7 +29,7 @@
     --lwt-text-color: light-dark(#141414, #f0edf3) !important;
     --tab-selected-bgcolor: var(--arc-tab-active) !important;
     --tab-selected-textcolor: light-dark(#141414, #f0edf3) !important;
-    --zen-native-inner-radius: 10px !important;
+    --zen-native-inner-radius: var(--arc-content-radius, 10px) !important;
     --zen-border-radius: 8px !important;
     --zen-big-shadow: 0 1px 6px #44375038 !important;
     --zen-element-separation: 10px !important;
@@ -86,39 +86,37 @@
   }
   /* Zen's chrome media query follows its selected theme, including system mode.
      Native surfaces must not retain an independent light color scheme. */
-  @media (prefers-color-scheme: dark) {
-    :root[data-arc-ui] { color-scheme: dark !important; }
-    :root[data-arc-ui] zen-workspace {
-      color: var(--arc-text) !important;
-      --toolbarbutton-icon-fill: var(--arc-text) !important;
-      --lwt-text-color: var(--arc-text) !important;
-    }
-    :root[data-arc-ui] :is(.toolbarbutton-icon, .menu-icon, .menu-iconic-icon) {
-      -moz-context-properties: fill, stroke;
-      fill: currentColor;
-      stroke: currentColor;
-    }
-    /* Native live folders embed the GitHub mark as an SVG image, while
-       menus and other chrome surfaces use img/XUL image assets. Cover the
-       shared assets globally so their location does not affect contrast. */
-    :root[data-arc-ui] :is(
-      [href$="/logo-github.svg"],
-      [src$="/logo-github.svg"],
-      [src$="/github.svg"],
-      [style*="logo-github.svg"]
-    ),
-    :root[data-arc-ui] :is(
-      [image$="/logo-github.svg"],
-      [image$="/github.svg"]
-    ) > .toolbarbutton-icon,
-    :root[data-arc-ui] :is(
-      [image$="/logo-github.svg"],
-      [image$="/github.svg"]
-    ) > .menu-iconic-left > .menu-iconic-icon {
-      filter: brightness(0) invert(1) !important;
-      fill: white !important;
-      -moz-context-properties: fill;
-    }
+  :root[data-arc-ui][data-arc-color-mode="dark"] { color-scheme: dark !important; }
+  :root[data-arc-ui][data-arc-color-mode="dark"] zen-workspace {
+    color: var(--arc-text) !important;
+    --toolbarbutton-icon-fill: var(--arc-text) !important;
+    --lwt-text-color: var(--arc-text) !important;
+  }
+  :root[data-arc-ui][data-arc-color-mode="dark"] :is(.toolbarbutton-icon, .menu-icon, .menu-iconic-icon) {
+    -moz-context-properties: fill, stroke;
+    fill: currentColor;
+    stroke: currentColor;
+  }
+  /* Native live folders embed the GitHub mark as an SVG image, while
+     menus and other chrome surfaces use img/XUL image assets. Cover the
+     shared assets globally so their location does not affect contrast. */
+  :root[data-arc-ui][data-arc-color-mode="dark"] :is(
+    [href$="/logo-github.svg"],
+    [src$="/logo-github.svg"],
+    [src$="/github.svg"],
+    [style*="logo-github.svg"]
+  ),
+  :root[data-arc-ui][data-arc-color-mode="dark"] :is(
+    [image$="/logo-github.svg"],
+    [image$="/github.svg"]
+  ) > .toolbarbutton-icon,
+  :root[data-arc-ui][data-arc-color-mode="dark"] :is(
+    [image$="/logo-github.svg"],
+    [image$="/github.svg"]
+  ) > .menu-iconic-left > .menu-iconic-icon {
+    filter: brightness(0) invert(1) !important;
+    fill: white !important;
+    -moz-context-properties: fill;
   }
   :root[data-arc-ui] * { color-scheme: inherit !important; }
   :root[data-arc-ui] #zen-main-app-wrapper,
@@ -160,10 +158,7 @@
       background: transparent !important;
     }
     :root[data-arc-ui] #zen-browser-background {
-      background: light-dark(
-        color-mix(in srgb, var(--arc-surface) 70%, transparent),
-        color-mix(in srgb, var(--arc-surface) 88%, transparent)
-      ) !important;
+      background: color-mix(in srgb, var(--arc-surface) var(--arc-window-opacity, 88%), transparent) !important;
     }
     /* The selector is more opaque than the library content, which shares the
        translucent window background. Other secondary sidebars stay opaque. */
@@ -183,4 +178,26 @@
       backdrop-filter: none !important;
     }
   }
+  /* One shared gradient spans the sidebar and the frame around web content. */
+  :root[data-arc-ui][data-arc-gradient],
+  :root[data-arc-ui][data-arc-gradient] :is(
+    body, #zen-main-app-wrapper, #browser, #zen-toolbar-background,
+    #zen-appcontent-wrapper, #zen-tabbox-wrapper, #navigator-toolbox,
+    #titlebar, .zen-toolbar-background, #zen-appcontent-navbar-wrapper
+  ) {
+    background: transparent !important;
+  }
+  :root[data-arc-ui][data-arc-gradient] #zen-browser-background {
+    background: var(--arc-shell-gradient) !important;
+  }
+  @media (-moz-platform: macos), (-moz-platform: windows) {
+    :root[data-arc-ui][data-arc-gradient] #zen-browser-background {
+      background: var(--arc-shell-gradient-tint) !important;
+    }
+  }
+  :root[data-arc-ui][data-arc-gradient] #arc-sidebar-surface,
+  :root[data-arc-ui][data-arc-gradient][zen-compact-mode="true"] #zen-toolbar-background {
+    background: var(--arc-shell-gradient) !important;
+  }
+
 }

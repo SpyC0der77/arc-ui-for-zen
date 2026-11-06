@@ -1,7 +1,7 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
   :root[data-arc-ui] .browserSidebarContainer:not(.zen-glance-overlay) {
-    border-radius: 10px !important;
+    border-radius: var(--arc-content-radius, 10px) !important;
     box-shadow: 0 1px 9px #21172b66 !important;
   }
   /* Let the page's existing shadow fall over the docked sidebar edge. In
@@ -23,7 +23,7 @@
   }
   :root[data-arc-ui][zen-compact-mode="true"]
     .browserSidebarContainer:not(.zen-glance-overlay) {
-    border-radius: 10px !important;
+    border-radius: var(--arc-content-radius, 10px) !important;
   }
   /* Undocked: the page keeps its corners across the whole window, and Zen's peek
      panel becomes the only sidebar surface so it floats over the content instead

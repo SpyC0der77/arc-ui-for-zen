@@ -181,3 +181,15 @@
 - Match command prefixes and aliases without treating unrelated phrases or URLs as commands; hide unavailable split actions.
 - Add command-bar Debug Mode and Reset Debug Data with local mock data across the main views, ownership-based cleanup and interrupted-session recovery.
 - Restore the original rail, media opt-in and library view when debug mode is reset or disabled.
+- Reshape the Arc UI settings window around a side navigation rail with a scrolling content pane, like Arc's settings.
+- Smooth the settings window with a shared entrance easing, layered shadow, calmer keyboard focus, 120ms hover transitions, and a thin scrollbar.
+- Group the settings rows into logical sections with spacing and section headings.
+- Keep the settings window a fixed height across sections so switching Appearance, Colors and Presets does not resize it.
+- Slide the settings window's theme-mode highlight between Light, Dark and System, and fade the window out when it closes.
+- Fade the downloads menu out on dismissal and after opening or revealing a file, alongside its hover close.
+
+## v0.1.8-beta.2
+
+- Add Light, Dark, and System appearance modes, per-palette gradients and window opacity, and configurable content corners.
+- Save named appearance presets with validation and a gallery of proportional browser previews using the saved colors.
+- Select presets without applying them, retain saved presets when resetting appearance, and show a current-theme preview when no presets exist.

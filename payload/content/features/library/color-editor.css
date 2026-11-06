@@ -41,13 +41,15 @@ input[type="text"] {
   color: inherit;
   font: inherit;
 }
-input:focus-visible, button:focus-visible { outline: 2px solid #a78abc; outline-offset: 2px; }
+input:focus-visible { outline: 2px solid #a78abc; outline-offset: 2px; }
+button { outline: none; }
+button:focus-visible { filter: brightness(1.15); }
 button {
   justify-self: end;
   min-width: 80px;
   padding: 8px 18px;
-  border: 1px solid light-dark(#cdb9de, #685076);
-  border-radius: 999px;
+  border: 0;
+  border-radius: 8px;
   background: light-dark(#e0d0ef, #493257);
   color: light-dark(#39204f, #f0e3fa);
   font: inherit;
@@ -55,3 +57,7 @@ button {
   cursor: pointer;
 }
 button:hover { background: light-dark(#d5bfe8, #5a3d6c); }
+
+.arc-picker-actions { display: flex; justify-content: space-between; gap: 8px; }
+.arc-picker-actions button { padding: 8px 10px; border-radius: 8px; }
+.arc-picker-actions button:disabled { opacity: .45; cursor: default; }

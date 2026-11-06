@@ -1,3 +1,15 @@
+## v0.1.8-beta.2
+
+- Reshape the Arc UI settings window around a side navigation rail with a scrolling content pane, like Arc's settings.
+- Smooth the settings window with a shared entrance easing, layered shadow, calmer keyboard focus, 120ms hover transitions, and a thin scrollbar.
+- Group the settings rows into logical sections with spacing and section headings.
+- Keep the settings window a fixed height across sections so switching Appearance, Colors and Presets does not resize it.
+- Slide the settings window's theme-mode highlight between Light, Dark and System, and fade the window out when it closes.
+- Fade the downloads menu out on dismissal and after opening or revealing a file, alongside its hover close.
+- Add Light, Dark, and System appearance modes, separate background gradients and opacity controls, and configurable page corners.
+- Save named appearance presets and select them from a gallery of proportional browser previews using each preset's colors.
+- Keep preset selection separate from Apply, and support saving, deleting, and resetting theme settings without losing saved presets.
+
 ## v0.1.8-beta.1
 
 - Match New Tab hover to tab hover and soften both backgrounds to 50% opacity.
