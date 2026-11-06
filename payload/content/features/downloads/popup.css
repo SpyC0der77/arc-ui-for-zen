@@ -199,7 +199,7 @@
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
-    light-dark(white, #39333f)-space: nowrap;
+    white-space: nowrap;
   }
   .arc-download-name {
     font-size: 14px;

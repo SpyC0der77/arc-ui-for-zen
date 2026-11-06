@@ -1,3 +1,10 @@
+## v0.1.8-beta.4
+
+- Fix single-line truncation for sidebar addresses and download names.
+- Add accessible installer step headings and improve secondary text contrast.
+- Prevent installer footer overlap at high zoom and keep product previews fully visible.
+- Show installation errors beside the review controls with a recovery prompt.
+
 ## v0.1.8-beta.3
 
 - Wait for the downloads dismissal animation before opening a file or showing it in its folder.
