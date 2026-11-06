@@ -1,3 +1,9 @@
+## v0.1.8-beta.7
+
+- Show a circular update button beside the gift icon without a text label.
+- Display only the changelog in the update popup.
+- Start downloading directly when the update icon is clicked.
+
 ## v0.1.8-beta.5
 
 - Check GitHub releases every six hours and show a sidebar update button with hover release notes, download progress, checksum verification, and installer handoff.

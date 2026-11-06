@@ -4,7 +4,7 @@ var ArcUpdates = {
     const { ArcUpdater: updater } = window.ChromeUtils.importESModule('chrome://arc-ui/content/updater.sys.mjs');
     const { document } = window;
     const button = el('button', { id: 'arc-update-button', type: 'button', hidden: true, 'aria-haspopup': 'dialog', 'aria-expanded': 'false' });
-    button.append(icon('download'), el('span', { id: 'arc-update-label' }));
+    button.append(icon('download'));
     const popup = el('div', { id: 'arc-update-popup', popover: 'auto', role: 'dialog', 'aria-label': 'Arc UI release notes' });
     const title = el('p', { class: 'arc-update-title' });
     const message = el('p', { role: 'status' });
@@ -16,7 +16,9 @@ var ArcUpdates = {
     document.body.append(popup);
     const place = () => {
       const footer = document.getElementById('zen-sidebar-foot-buttons');
-      if (footer && button.parentNode !== footer) footer.append(button);
+      const gift = document.getElementById('arc-gift-button');
+      if (footer && gift?.parentNode === footer && gift.nextElementSibling !== button) gift.after(button);
+      else if (footer && button.parentNode !== footer) footer.append(button);
     };
     const observer = new window.MutationObserver(place);
     observer.observe(document.getElementById('navigator-toolbox'), { childList: true, subtree: true });
@@ -40,9 +42,9 @@ var ArcUpdates = {
     }
     popup.addEventListener('toggle', () => button.setAttribute('aria-expanded', String(popup.matches(':popover-open'))));
     function activate() {
-      show();
       if (updater.state === 'ready') void updater.install();
       else if (['available', 'error'].includes(updater.state)) void updater.download();
+      show();
     }
     button.addEventListener('click', activate);
     action.addEventListener('click', activate);
@@ -55,7 +57,6 @@ var ArcUpdates = {
       if (!updater.release) { hide(); return; }
       const state = updater.state;
       const label = state === 'downloading' ? `Downloading${updater.progress === null ? '…' : ` ${updater.progress}%`}` : state === 'opening' ? 'Opening installer…' : state === 'ready' ? 'Install update' : state === 'error' ? 'Retry download' : 'Download update';
-      button.querySelector('span').textContent = label;
       button.setAttribute('aria-label', `Arc UI ${updater.release.tag_name}: ${label}`);
       title.textContent = `Arc UI ${updater.release.tag_name}`;
       message.textContent = updater.error || (state === 'ready' ? 'Download verified. Open the installer to update this Zen installation.' : state === 'downloading' ? label : 'A new version is available.');
@@ -65,7 +66,16 @@ var ArcUpdates = {
       if (shownRelease !== updater.release) {
         shownRelease = updater.release;
         notes.replaceChildren();
-        for (const line of (updater.release.body || 'No release notes provided.').slice(0, 40000).split(/\r?\n/)) {
+        const lines = (updater.release.body || '').slice(0, 40000).split(/\r?\n/);
+        const start = lines.findIndex(line => /^#{1,6}\s+(?:changelog|changes(?: since the previous release)?|what.s new)\s*$/i.test(line.trim()));
+        let changes = [];
+        if (start >= 0) {
+          const level = lines[start].match(/^#+/)[0].length;
+          const end = lines.findIndex((line, index) => index > start && new RegExp(`^#{1,${level}}\\s+`).test(line));
+          changes = lines.slice(start + 1, end < 0 ? undefined : end);
+        }
+        if (!changes.some(line => line.trim())) changes = ['No changelog provided.'];
+        for (const line of changes) {
           if (!line.trim()) continue;
           notes.append(el('p', {}, line.replace(/^#{1,6}\s+/, '').replace(/\*\*/g, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')));
         }
@@ -81,3 +91,4 @@ var ArcUpdates = {
     return { destroy() { stopped = true; observer.disconnect(); updater.listeners.delete(render); window.clearTimeout(pollTimer); window.clearTimeout(hideTimer); popup.remove(); button.remove(); } };
   },
 };
+
