@@ -14,6 +14,11 @@ function selected(value) {
 }
 function handle(name,fn) {ipcMain.handle(name,async(event,...args)=>{authorize(event);try{return {ok:true,value:await fn(...args)};}catch(error){return {ok:false,error:error.message};}});}
 async function boot() {
+  handle('arc:update-selection', () => {
+    const args = process.argv;
+    const installation = args.indexOf('--installation'), profile = args.indexOf('--profile');
+    return installation > 0 && profile > 0 ? selected({installation: args[installation + 1], profile: args[profile + 1]}) : null;
+  });
   handle('arc:discover',()=>engine.discover());
   handle('arc:inspect',value=>{const choice=selected(value);return engine.inspect(choice.installation,choice.profile);});
   handle('arc:folder',async()=>{const result=await dialog.showOpenDialog(window,{properties:['openDirectory'],title:'Choose folder'});return result.canceled?null:result.filePaths[0];});
@@ -33,5 +38,11 @@ async function boot() {
   window.on('close',event=>{if(busy)event.preventDefault();});
   await window.loadFile(page);if(!process.env.ARC_INSTALLER_SMOKE)window.show();
 }
+// A previous release's installer can remain open after launching Zen. Keep the
+// downloaded installer's lock separate so that old code cannot intercept it.
+// Apply to manual launches too, including installers opened from a macOS DMG.
+const versionData = path.join(app.getPath('userData'), 'versions', app.getVersion());
+require('node:fs').mkdirSync(versionData, {recursive:true});
+app.setPath('userData', versionData);
 if(!app.requestSingleInstanceLock())app.quit();
 else {app.on('second-instance',()=>{if(window){if(window.isMinimized())window.restore();window.show();window.focus();}});app.whenReady().then(boot).catch(error=>{dialog.showErrorBox('Installer could not start',error.message);app.quit();});app.on('window-all-closed',()=>app.quit());}

@@ -1,13 +1,13 @@
 {
   "name": "arc-ui-zen-installer",
-  "version": "0.1.8-beta.4",
+  "version": "0.1.8-beta.5",
   "private": true,
   "description": "Cross-platform installer for the Arc UI theme and behavior patches for Zen Browser",
   "license": "UNLICENSED",
   "main": "installer/main.cjs",
   "scripts": {
     "start": "node scripts/start.cjs",
-    "test": "node --test tests/engine.test.cjs tests/github.test.cjs tests/archive.test.cjs tests/native-actions.test.cjs tests/commands.test.cjs tests/debug.test.cjs tests/package.test.cjs tests/cli.test.cjs tests/split-actions.test.cjs tests/features.test.cjs tests/release.test.cjs tests/runtime-runner.test.cjs tests/zen-runtime-builds.test.cjs",
+    "test": "node --test tests/engine.test.cjs tests/github.test.cjs tests/archive.test.cjs tests/native-actions.test.cjs tests/commands.test.cjs tests/debug.test.cjs tests/package.test.cjs tests/cli.test.cjs tests/split-actions.test.cjs tests/features.test.cjs tests/release.test.cjs tests/updates.test.cjs tests/runtime-runner.test.cjs tests/zen-runtime-builds.test.cjs",
     "test:runtime": "node tests/runtime.cjs",
     "fetch:zen": "node scripts/fetch-zen-runtime.cjs",
     "pack": "electron-builder --dir",

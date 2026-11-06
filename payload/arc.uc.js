@@ -46,6 +46,7 @@
     load("shared/motion", "ArcMotion").install(browserWindow);
   const ui = install("shared/ui", "ArcUI", { createMotion });
   const { el, icon, nudge, button, downloadButton } = ui;
+  install('features/updates/updates', 'ArcUpdates', { el, icon, PrivateBrowsingUtils });
   const status = el("div", {
     id: "arc-live-status",
     role: "status",

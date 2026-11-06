@@ -1,3 +1,8 @@
+## v0.1.8-beta.5
+
+- Check GitHub releases every six hours and show a sidebar update button with hover release notes, download progress, checksum verification, and installer handoff.
+- Choose Beta or Stable in Settings → Updates; changing tracks refreshes the available update without downgrading the installed version.
+
 ## v0.1.8-beta.4
 
 - Fix single-line truncation for sidebar addresses and download names.

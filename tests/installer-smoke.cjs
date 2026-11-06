@@ -76,6 +76,16 @@ app.whenReady().then(async()=>{
  assert.equal(await window.webContents.executeJavaScript('document.getElementById("installation").value'),zen,'An empty rescan preserves a manually chosen path');
  assert.equal(await fs.readFile(path.join(profile,'prefs.js'),'utf8'),'user_pref("untouched", true);\n');
  assert.equal(await window.webContents.executeJavaScript('document.documentElement.scrollWidth<=innerWidth'),true);
+ // The browser updater must hand off the exact application/profile even when
+ // discovery has no matches. Exercise real preload IPC and review navigation.
+ process.argv.push('--installation',zen,'--profile',profile);
+ await window.webContents.reload();
+ for(let i=0;i<100;i++){
+  if(!window.webContents.isLoading()&&await window.webContents.executeJavaScript('document.getElementById("review")?.getAttribute("aria-hidden")==="false"'))break;
+  await delay(50);
+ }
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("review-installation").textContent'),zen,'Updater preselects the supplied application');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("review-profile").textContent'),profile,'Updater preselects the supplied profile');
  await delay(250);
  const artifacts=path.join(__dirname,'..','artifacts');await fs.mkdir(artifacts,{recursive:true});await fs.writeFile(path.join(artifacts,'installer.png'),(await window.webContents.capturePage()).toPNG());
  assert.deepEqual(errors,[]);

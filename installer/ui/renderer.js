@@ -121,4 +121,12 @@ async function searchForZen(){
  $('manual-installation').open=!info.apps.length;
  status(info.apps.length?'Zen found. Review the detected browser and profile during setup.':'No Zen found. Open Zen and search again, or choose its folder manually.');
 }
-void execute(searchForZen);
+void execute(async () => {
+ await searchForZen();
+ const update = unwrap(await api.updateSelection());
+ if(update){
+  $('installation').value=update.installation;
+  $('profile').value=update.profile;
+  showStep('review');
+ }
+});
