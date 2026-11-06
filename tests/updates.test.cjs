@@ -131,24 +131,26 @@ test('track change invalidates staged updates and ignores an in-flight response 
   assert.equal(u.release,null);
 });
 
-test('in-place update preserves preferences, records hashes, rolls back and rejects unsafe changes', async t => {
+for (const platform of ['win32','darwin','linux']) test(`in-place update preserves preferences, records hashes, rolls back and rejects unsafe changes (${platform})`, async t => {
   const fs = require('node:fs/promises'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
   const {applyThemeUpdate,recoverThemeUpdate} = await import('../payload/content/update-apply.mjs');
   const engine = require('../installer/engine.cjs');
   const folder = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'arc-inplace-')));
   t.after(()=>fs.rm(folder,{recursive:true,force:true}));
   const app=path.join(folder,'Zen'), profile=path.join(folder,'profile');
-  await fs.mkdir(path.join(app,'defaults','pref'),{recursive:true});await fs.mkdir(profile);
-  await fs.writeFile(path.join(app,process.platform==='win32'?'zen.exe':'zen'),'');
-  await fs.writeFile(path.join(app,'application.ini'),'[App]\nVersion=1.24b\n');
+  const target=engine.layout(app,platform);
+  await fs.mkdir(path.join(target.resources,'defaults','pref'),{recursive:true});await fs.mkdir(profile);
+  await fs.mkdir(path.dirname(target.exe),{recursive:true});
+  await fs.writeFile(target.exe,'');
+  await fs.writeFile(path.join(target.resources,'application.ini'),'[App]\nVersion=1.24b\n');
   await fs.writeFile(path.join(profile,'prefs.js'),'// personal prefs\n');
   await fs.writeFile(path.join(profile,'user.js'),'// personal settings\n');
-  await engine.install(app,profile,{checkClosed:async()=>{}});
+  await engine.install(app,profile,{platform,checkClosed:async()=>{}});
   const files={};
   async function collect(dir,prefix=''){for(const item of await fs.readdir(dir,{withFileTypes:true})){if(item.isDirectory())await collect(path.join(dir,item.name),prefix+item.name+'/');else files[prefix+item.name]=(await fs.readFile(path.join(dir,item.name))).toString('base64');}}
   await collect(path.join(__dirname,'../payload'));
   const bundle={format:1,version:'9.0.0',supported:['1.24b'],files};
-  const context={paths:{profile,resources:app,join:path.join,separator:path.sep},version:'9.0.0',browserVersion:'1.24b',platform:process.platform==='win32'?'WINNT':'Linux',decode:s=>Buffer.from(s,'base64'),encode:s=>Buffer.from(s),hash:async b=>crypto.createHash('sha256').update(b).digest('hex'),io:{exists:p=>fs.access(p).then(()=>true,()=>false),readJSON:async p=>JSON.parse(await fs.readFile(p,'utf8')),read:p=>fs.readFile(p),write:async(p,b)=>{await fs.mkdir(path.dirname(p),{recursive:true});await fs.writeFile(p,b);},remove:p=>fs.rm(p,{force:true}),assertPath:async p=>{assert.equal(path.resolve(p),p);}}};
+  const context={paths:{profile,resources:target.resources,join:path.join,separator:path.sep},version:'9.0.0',browserVersion:'1.24b',platform:platform==='win32'?'WINNT':platform==='darwin'?'Darwin':'Linux',decode:s=>Buffer.from(s,'base64'),encode:s=>Buffer.from(s),hash:async b=>crypto.createHash('sha256').update(b).digest('hex'),io:{exists:p=>fs.access(p).then(()=>true,()=>false),readJSON:async p=>JSON.parse(await fs.readFile(p,'utf8')),read:p=>fs.readFile(p),write:async(p,b)=>{await fs.mkdir(path.dirname(p),{recursive:true});await fs.writeFile(p,b);},remove:p=>fs.rm(p,{force:true}),assertPath:async p=>{assert.equal(path.resolve(p),p);}}};
   const managed=path.join(profile,'chrome','arc-ui','arc.uc.js'), original=await fs.readFile(managed);
   const receiptPath=engine.receiptFile(profile), receiptBefore=await fs.readFile(receiptPath);
   const userBefore=await fs.readFile(path.join(profile,'user.js'));
@@ -168,6 +170,6 @@ test('in-place update preserves preferences, records hashes, rolls back and reje
   await recoverThemeUpdate(context);assert.deepEqual(await fs.readFile(managed),original);
   // Restore the committed update before verifying normal installer removal.
   await fs.writeFile(managed,Buffer.from(files['arc.uc.js'],'base64'));
-  await engine.remove(app,profile,{checkClosed:async()=>{}});
+  await engine.remove(app,profile,{platform,checkClosed:async()=>{}});
   assert.equal(await fs.readFile(path.join(profile,'user.js'),'utf8'),'// personal settings\n');
 });
