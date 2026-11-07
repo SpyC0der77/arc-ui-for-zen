@@ -2,6 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { execFileSync } = require('node:child_process');
 const { version } = require('../package.json');
 const { VERSION, SUPPORTED } = require('../installer/engine.cjs');
 
@@ -12,7 +13,30 @@ function validate(env = process.env) {
   if (VERSION !== version) throw new Error('installer/engine.cjs VERSION must match package.json.');
 }
 
-function prepare(directory = 'release', notesFile = 'release-notes.md') {
+function releaseChanges(repo, tag, request = args => JSON.parse(execFileSync('gh', args, {encoding:'utf8'}))) {
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo || '')) throw new Error('Expected GH_REPO as owner/repository.');
+  const generated = request(['api', `repos/${repo}/releases/generate-notes`, '-f', `tag_name=${tag}`]);
+  const body = generated.body || '';
+  const comparison = body.match(/\/compare\/([^\s]+)\.\.\.([^\s]+)/);
+  const endpoint = comparison
+    ? `repos/${repo}/compare/${comparison[1]}...${encodeURIComponent(tag)}`
+    : `repos/${repo}/commits?sha=${encodeURIComponent(tag)}`;
+  const commits = [];
+  for (let page = 1; ; page++) {
+    const data = request(['api', `${endpoint}${endpoint.includes('?') ? '&' : '?'}per_page=100&page=${page}`]);
+    const batch = comparison ? data.commits : data;
+    if (!Array.isArray(batch)) throw new Error('GitHub returned no commit list.');
+    commits.push(...batch);
+    if (batch.length < 100) break;
+  }
+  const bullets = commits.map(commit => {
+    const subject = commit.commit.message.split(/\r?\n/, 1)[0].replace(/[\\`*_[\]<>]/g, '\\$&');
+    return `- ${subject} ([${commit.sha.slice(0, 7)}](https://github.com/${repo}/commit/${commit.sha}))`;
+  });
+  return `### Commits\n\n${bullets.join('\n') || 'No new commits.'}\n\n${body}`;
+}
+
+function prepare(directory = 'release', notesFile = 'release-notes.md', changes = '') {
   const names = fs.readdirSync(directory).filter(name => /\.(exe|dmg|zip|AppImage)$/.test(name)).sort();
   for (const platform of ['Windows.exe', 'macOS-.*\\.dmg', 'macOS-.*\\.zip', 'Linux-.*\\.AppImage']) {
     if (!names.some(name => new RegExp(`^Arc-UI-Zen-${version.replaceAll('.', '\\.')}\-${platform}$`).test(name))) {
@@ -58,14 +82,15 @@ SHA256SUMS.txt contains SHA-256 hashes for all attached installers and archives.
 
 ## Changes since the previous release
 
+${changes}
 `);
 }
 
 if (require.main === module) {
   try {
     validate();
-    if (process.argv[2] === 'prepare') prepare();
+    if (process.argv[2] === 'prepare') prepare('release', 'release-notes.md', releaseChanges(process.env.GH_REPO, process.env.GITHUB_REF_NAME));
     else if (process.argv[2] !== 'validate') throw new Error('Usage: node scripts/release.cjs <validate|prepare>');
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
-module.exports = { validate, prepare };
+module.exports = { validate, prepare, releaseChanges };

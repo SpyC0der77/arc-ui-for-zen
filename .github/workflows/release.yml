@@ -46,6 +46,9 @@ jobs:
           path: release
           merge-multiple: true
       - name: Prepare compatibility notes and checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: node scripts/release.cjs prepare
       - name: Publish release with all installers
         env:
@@ -54,7 +57,7 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         shell: bash
         run: |
-          args=(--verify-tag --title "Arc UI for Zen ${RELEASE_TAG}" --notes-file release-notes.md --generate-notes)
+          args=(--verify-tag --title "Arc UI for Zen ${RELEASE_TAG}" --notes-file release-notes.md)
           if [[ "$RELEASE_TAG" == *-* ]]; then
             args+=(--prerelease --latest=false)
           fi

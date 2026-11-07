@@ -6,6 +6,30 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 const {validate,prepare}=require('../scripts/release.cjs');
 const {version}=require('../package.json');
+const {releaseChanges}=require('../scripts/release.cjs');
+
+test('release notes include direct commits and PR notes across all comparison pages',()=>{
+ const calls=[];
+ const commit={sha:'abcdef123456',commit:{message:'Fix sidebar\n\nDetails'}};
+ const notes=releaseChanges('owner/repo','v2',args=>{
+  calls.push(args);
+  if(args.includes('tag_name=v2'))return {body:'## What\'s Changed\n* A merged PR\n\n**Full Changelog**: https://github.com/owner/repo/compare/v1...v2'};
+  return {commits:args[1].endsWith('&page=1')?Array(100).fill(commit):[{...commit,commit:{message:'Direct fix *with markup*'}}]};
+ });
+ assert.equal(calls.length,3);
+ assert.match(calls[1][1],/compare\/v1\.\.\.v2\?per_page=100&page=1/);
+ assert.match(notes,/Fix sidebar/);
+ assert.match(notes,/Direct fix \\\*with markup\\\*/);
+ assert.match(notes,/A merged PR/);
+ assert.match(notes,/commit\/abcdef123456/);
+ assert.doesNotMatch(notes,/Details/);
+});
+
+test('first release lists commits and API failures stop publication',()=>{
+ const notes=releaseChanges('owner/repo','v1',args=>args.includes('tag_name=v1')?{body:''}:[{sha:'123456789',commit:{message:'Initial release'}}]);
+ assert.match(notes,/Initial release/);
+ assert.throws(()=>releaseChanges('owner/repo','v1',()=>{throw new Error('API unavailable');}),/API unavailable/);
+});
 test('release requires an existing matching tag',()=>{
  validate({GITHUB_REF_TYPE:'tag',GITHUB_REF_NAME:`v${version}`});
  assert.throws(()=>validate({GITHUB_REF_TYPE:'branch',GITHUB_REF_NAME:'main'}),/existing version tag/);
@@ -29,3 +53,4 @@ test('release fails without every distribution and hashes actual file contents',
  assert.equal(fs.readFileSync(path.join(dir,'SHA256SUMS.txt'),'utf8'),expected);
  assert.match(fs.readFileSync(notes,'utf8'),new RegExp(require('../installer/engine.cjs').SUPPORTED.replaceAll('.','\\.')));
 });
+
