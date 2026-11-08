@@ -199,7 +199,8 @@
   #arc-theme-presets .arc-preset-field { display: grid; gap: 8px; margin: 8px 0 0; }
   #arc-theme-presets :is(input, select) { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #8885; border-radius: 8px !important; background: light-dark(#fff, #23202a); color: inherit; font: inherit; }
   #arc-theme-presets input[type="text"] { appearance: none !important; }
-  #arc-theme-presets .arc-preset-actions { display: flex; gap: 8px; margin: 12px 0 24px; }
+  #arc-theme-presets .arc-preset-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 24px; }
+  #arc-preset-import { margin-inline-start: auto !important; }
   #arc-preset-save { margin-top: 12px !important; }
   #arc-preset-status { margin: 12px 0 0; line-height: 1.5; }
   #arc-preset-status:empty { display: none; }

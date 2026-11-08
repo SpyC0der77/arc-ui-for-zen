@@ -298,3 +298,49 @@ test("saved theme presets recover from malformed data and normalize duplicate na
   raw = JSON.stringify(Array.from({length:25}, (_, i) => ({ name: String(i), values:{} })));
   assert.equal(library.presets(prefs).length, 20);
 });
+
+test("shared presets round-trip all appearance values without applying them or overwriting names", () => {
+  const library = load("features/library/library.js", "ArcLibrary");
+  const stored = new Map();
+  const prefs = { getStringPref: (key, fallback) => stored.get(key) ?? fallback,
+    setStringPref: (key, value) => stored.set(key, value) };
+  const values = Object.fromEntries(library.schema().map(field => [field.key, field.fallback]));
+  values.mode = "dark";
+  values["dark.background"] = "#123456";
+  values["light.opacity"] = 0;
+  const name = "A".repeat(60);
+  const text = library.exportPreset({ name, values });
+  assert.deepEqual(JSON.parse(JSON.stringify(library.parsePreset(text))), {name, values});
+  assert.equal(library.importPreset(prefs, text).name, name);
+  const duplicate = library.importPreset(prefs, text);
+  assert.equal(duplicate.name.length, 60);
+  assert.equal(duplicate.name, "A".repeat(56) + " (2)");
+  assert.equal(library.importPreset(prefs, text).name, "A".repeat(56) + " (3)");
+  assert.equal(stored.size, 1, "imports only write the saved preset list");
+  assert.equal(library.presets(prefs)[0].values["dark.background"], "#123456");
+  const caseVariant = library.exportPreset({name: name.toLowerCase(), values});
+  assert.equal(library.importPreset(prefs, caseVariant).name, "a".repeat(56) + " (4)");
+});
+
+test("invalid shared presets and full galleries leave saved data untouched", () => {
+  const library = load("features/library/library.js", "ArcLibrary");
+  let raw = "[]", writes = 0;
+  const prefs = {getStringPref: () => raw, setStringPref: () => writes++};
+  const values = Object.fromEntries(library.schema().map(field => [field.key, field.fallback]));
+  const valid = {format: "arc-ui-preset", version: 1, name: "Sample", values};
+  const invalid = ["broken", "x".repeat(65537), "null", "[]", ...[
+    {...valid, version: 2}, {...valid, format: "other"}, {...valid, name: " "},
+    {...valid, name: "x".repeat(61)}, {...valid, name: "bad\nname"},
+    {...valid, values: []}, {...valid, values: {}},
+    {...valid, values: {...values, mode: "invalid"}},
+    {...valid, values: {...values, "dark.opacity": 101}},
+    {...valid, values: {...values, "content-radius": 1.5}},
+    {...valid, values: {...values, "reduce-motion": "false"}},
+    {...valid, values: {...values, "dark.background": "url(unsafe)"}},
+    {...valid, values: {...values, "browser.startup.homepage": "unsafe"}},
+  ].map(value => JSON.stringify(value))];
+  for (const text of invalid) assert.throws(() => library.importPreset(prefs, text));
+  raw = JSON.stringify(Array.from({length: 20}, (_, i) => ({name: String(i), values})));
+  assert.throws(() => library.importPreset(prefs, JSON.stringify(valid)), /20 presets/);
+  assert.equal(writes, 0);
+});

@@ -67,6 +67,44 @@ var ArcLibrary = {
         this.validSetting(field, values[field.key]) ? values[field.key] : field.fallback);
     }
   },
+  parsePreset(text) {
+    if (typeof text !== "string" || text.length > 65536)
+      throw new Error("Choose a preset JSON file smaller than 64 KB.");
+    let data;
+    try { data = JSON.parse(text); }
+    catch { throw new Error("This file is not valid JSON. Choose an exported Arc UI preset."); }
+    if (!data || data.format !== "arc-ui-preset" || data.version !== 1)
+      throw new Error("Unsupported preset format or version. Choose a version 1 Arc UI preset.");
+    if (typeof data.name !== "string" || !data.name.trim() || data.name.length > 60 || /[\u0000-\u001f\u007f]/.test(data.name))
+      throw new Error("The preset needs a name of 1 to 60 characters without control characters.");
+    const fields = this.schema();
+    if (!data.values || typeof data.values !== "object" || Array.isArray(data.values) ||
+        Object.keys(data.values).some(key => !fields.some(field => field.key === key)))
+      throw new Error("The preset contains unsupported appearance settings.");
+    for (const field of fields) {
+      if (!Object.hasOwn(data.values, field.key) || !this.validSetting(field, data.values[field.key]))
+        throw new Error(`The preset has a missing or invalid setting: ${field.key}.`);
+    }
+    return { name: data.name.trim(), values: Object.fromEntries(fields.map(field => [field.key, data.values[field.key]])) };
+  },
+  exportPreset(preset) {
+    const text = JSON.stringify({ format: "arc-ui-preset", version: 1, name: preset.name, values: preset.values }, null, 2) + "\n";
+    this.parsePreset(text);
+    return text;
+  },
+  importPreset(prefs, text) {
+    const preset = this.parsePreset(text);
+    const presets = this.presets(prefs);
+    if (presets.length >= 20) throw new Error("You can save up to 20 presets. Delete one to make room.");
+    const original = preset.name;
+    for (let suffix = 2; presets.some(item => item.name.toLowerCase() === preset.name.toLowerCase()); suffix++) {
+      const ending = ` (${suffix})`;
+      preset.name = original.slice(0, 60 - ending.length).trimEnd() + ending;
+    }
+    presets.push(preset);
+    prefs.setStringPref("arc-ui.appearance.presets", JSON.stringify(presets));
+    return preset;
+  },
   background(prefs, mode) {
     const branch = "arc-ui.appearance." + mode + ".";
     const readColor = (key, fallback) => {
@@ -289,7 +327,13 @@ var ArcLibrary = {
     const remove = html("button", "Delete");
     remove.type = "button";
     remove.id = "arc-preset-delete";
-    presetActions.append(apply, remove);
+    const exportButton = html("button", "Export…");
+    exportButton.type = "button";
+    exportButton.id = "arc-preset-export";
+    const importButton = html("button", "Import…");
+    importButton.type = "button";
+    importButton.id = "arc-preset-import";
+    presetActions.append(apply, remove, exportButton, importButton);
     const nameLabel = html("label", "Preset name");
     nameLabel.className = "arc-preset-field";
     const presetName = html("input", "");
@@ -346,7 +390,7 @@ var ArcLibrary = {
       return mode;
     }
     function selectionChanged() {
-      apply.disabled = remove.disabled = !selectedPresetName;
+      apply.disabled = remove.disabled = exportButton.disabled = !selectedPresetName;
     }
     refreshPresets = () => {
       const presets = ArcLibrary.presets(Services.prefs);
@@ -421,6 +465,47 @@ var ArcLibrary = {
       Services.prefs.setStringPref(prefBranch + "presets", JSON.stringify(presets));
       presetStatus.textContent = `Deleted ${name}.`;
     });
+    let fileBusy = false;
+    async function transferPreset(exporting) {
+      if (fileBusy) return;
+      const preset = ArcLibrary.presets(Services.prefs).find(item => item.name === selectedPresetName);
+      if (exporting && !preset) return;
+      fileBusy = true;
+      importButton.disabled = exportButton.disabled = true;
+      presetStatus.textContent = "";
+      try {
+        const { Cc, Ci, IOUtils } = window;
+        const picker = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
+        picker.init(window.browsingContext, exporting ? "Export preset" : "Import preset",
+          exporting ? Ci.nsIFilePicker.modeSave : Ci.nsIFilePicker.modeOpen);
+        picker.appendFilter("Arc UI preset (*.json)", "*.json");
+        picker.defaultExtension = "json";
+        if (exporting) picker.defaultString = (preset.name.replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "arc-ui-preset") + ".json";
+        const result = await new Promise(resolve => picker.open(resolve));
+        if (result === Ci.nsIFilePicker.returnCancel || !picker.file) return;
+        if (exporting) {
+          await IOUtils.writeUTF8(picker.file.path, ArcLibrary.exportPreset(preset));
+          presetStatus.textContent = `Exported ${preset.name}.`;
+        } else {
+          if ((await IOUtils.stat(picker.file.path)).size > 65536)
+            throw new Error("Choose a preset JSON file smaller than 64 KB.");
+          const imported = ArcLibrary.importPreset(Services.prefs, await IOUtils.readUTF8(picker.file.path));
+          selectedPresetName = imported.name;
+          refreshPresets();
+          presetStatus.textContent = `Imported ${imported.name}. Preview it above, then choose Apply to use it.`;
+          presetGallery.querySelector("input:checked")?.focus({ preventScroll: true });
+          presetActions.scrollIntoView({ block: "nearest" });
+        }
+      } catch (error) {
+        presetStatus.textContent = `${exporting ? "Export" : "Import"} failed. ${error.message}`;
+      } finally {
+        fileBusy = false;
+        importButton.disabled = false;
+        selectionChanged();
+      }
+    }
+    exportButton.addEventListener("click", () => void transferPreset(true));
+    importButton.addEventListener("click", () => void transferPreset(false));
     presetDetails.append(previewLabel, preview, presetLabel, presetActions, nameLabel, save, presetStatus);
     settings.append(presetDetails);
     const heading = html("div", "");

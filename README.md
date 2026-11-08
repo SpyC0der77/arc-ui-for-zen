@@ -41,6 +41,8 @@ The installer starts with a centered welcome page, followed by a split view with
 
 ## Features
 
+In Arc UI settings, open **Presets** to save your current appearance or share it. Select a saved preset and choose **Export…** to write a JSON file. Choose **Import…** to add an exported preset to the gallery, preview it, and then choose **Apply**. Importing does not change your current appearance. Duplicate names receive a numbered suffix; existing presets stay intact. Files use the version 1 `arc-ui-preset` format, contain appearance settings only, and are limited to 64 KB. The gallery holds up to 20 presets.
+
 "Theme" means added styling, controls or animations. "Patch" means changes to Zen's existing UI behavior or settings. Some features use both. All patches load at startup; they do not modify Zen's packaged source files.
 
 | Feature | Behavior in Zen | Implementation |

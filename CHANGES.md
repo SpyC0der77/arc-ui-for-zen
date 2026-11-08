@@ -1,3 +1,8 @@
+## Unreleased
+
+- Import and export named appearance presets as versioned JSON files from Settings → Presets.
+- Validate imported appearance values, preview before applying, and preserve existing presets when names match.
+
 ## v0.1.8-beta.10
 
 - Download and apply theme updates in place without launching an installer.
