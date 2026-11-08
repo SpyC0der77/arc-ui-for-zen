@@ -36,7 +36,8 @@ async function atomicWrite(file,bytes) {
   await assertRealPath(file);await fs.mkdir(path.dirname(file),{recursive:true});
   const temp=file+'.arc-writing-'+crypto.randomUUID();
   try {await fs.writeFile(temp,bytes,{mode:0o600,flag:'wx'});await fs.rename(temp,file);}
-  finally {await fs.rm(temp,{force:true});}
+  catch(error){throw writeError(error,file);}
+  finally {await fs.rm(temp,{force:true}).catch(error=>{if(!['EACCES','EPERM'].includes(error.code))throw error;});}
 }
 function layout(installation,platform=process.platform) {
   const app=path.resolve(installation);
@@ -79,10 +80,24 @@ async function walk(folder,prefix='') {
   return out;
 }
 function prefLine(text,key) {return text.match(new RegExp('^user_pref\\("'+escape(key)+'",.*\\);\\r?$','m'))?.[0].replace(/\r$/,'')||'';}
+function writeError(error,file) {
+  if(!['EACCES','EPERM'].includes(error.code))return error;
+  const result=new Error(`Permission denied while writing to ${path.dirname(file)}. Arc UI must write startup files into the Zen application folder. On Windows, close this installer and use Run as administrator, then select the same Zen installation and your original profile, or use a user-writable Zen installation. If access is still denied, check folder permissions and security software.`,{cause:error});
+  result.code=error.code;
+  return result;
+}
 async function writable(folder) {
-  if(!await exists(folder))return writable(path.dirname(folder));
-  try {await fs.access(folder,require('node:fs').constants.W_OK);}
-  catch {throw new Error(`This folder is not writable without administrator access: ${folder}. Install Zen in a user-owned folder first.`);}
+  // Windows access(W_OK) does not reliably test directory creation permissions.
+  let existing=folder;
+  while(true) {
+    try {await fs.stat(existing);break;}
+    catch(error){if(error.code!=='ENOENT')throw writeError(error,path.join(existing,'probe'));const parent=path.dirname(existing);if(parent===existing)throw error;existing=parent;}
+  }
+  const probe=path.join(existing,'.arc-write-probe-'+crypto.randomUUID());
+  let created=false;
+  try {await fs.writeFile(probe,'',{flag:'wx',mode:0o600});created=true;}
+  catch(error){throw writeError(error,probe);}
+  finally {if(created)await fs.rm(probe);}
 }
 async function inspect(installation,profile) {
   const target=await validate(installation,profile,{requireVersion:false,checkClosed:async()=>{}});
@@ -92,6 +107,8 @@ async function inspect(installation,profile) {
 }
 async function install(installation,profile,{payload=path.join(__dirname,'..','payload'),...options}={}) {
   const target=await validate(installation,profile,options);
+  // Check protected folders before an upgrade removes the existing theme.
+  for(const folder of [target.resources,path.join(target.resources,'defaults','pref'),target.profile])await writable(folder);
   const manifest=receiptFile(target.profile);
   if(await exists(manifest)) {
     // Same installation and profile: treat the install as an upgrade and remove the previous version first.
@@ -138,13 +155,16 @@ async function install(installation,profile,{payload=path.join(__dirname,'..','p
     const failures=[];
     for(const file of changed.reverse())try{await restore(receipt.files.find(f=>f.path===file));}catch(e){failures.push(e.message);}
     if(!failures.length)await fs.rm(manifest,{force:true});
-    throw new Error(error.message+(failures.length?' Rollback needs attention; keep the installation receipt. '+failures.join('; '):' Changes were rolled back.'));
+    const failure=new Error(error.message+(failures.length?' Rollback needs attention; keep the installation receipt. '+failures.join('; '):' Changes were rolled back.'),{cause:error});
+    if(!failures.length)failure.code=error.code;
+    throw failure;
   }
   return {message:'Installed. Open Zen to load Arc UI.',version:VERSION,profile:target.profile};
 }
 async function restore(file) {if(file.before===null)await fs.rm(file.path,{force:true});else await atomicWrite(file.path,Buffer.from(file.before,'base64'));}
 async function remove(installation,profile,options={}) {
   const target=await validate(installation,profile,{...options,requireVersion:false});
+  for(const folder of [target.resources,path.join(target.resources,'defaults','pref'),target.profile])await writable(folder);
   const manifest=receiptFile(target.profile);
   const receipt=JSON.parse(await fs.readFile(manifest,'utf8').catch(e=>{if(e.code==='ENOENT')throw new Error('Arc UI is not installed in this profile.');throw e;}));
   if(receipt.profile!==target.profile||receipt.resources!==target.resources)throw new Error('The receipt belongs to a different installation or profile.');

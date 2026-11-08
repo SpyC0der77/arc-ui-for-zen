@@ -115,7 +115,7 @@ Supported app layouts:
 - macOS: `Zen.app`; startup files go in `Contents/Resources`.
 - Linux: an extracted/install directory containing `zen` and `application.ini`.
 
-A user-writable Zen application folder is required. The installer does not request elevation or work around OS protections. Immutable Flatpak/Snap/AppImage browser installations are not supported directly. macOS bundle changes and code signing still require platform validation before a signed release can be claimed.
+On Windows, the graphical installer requests administrator permission when an install or removal is denied write access. Approve the UAC prompt to continue with the selected Zen installation and profile. The installer stays unelevated and opens Zen normally afterward. If you decline, no elevated retry runs. The CLI and other platforms require a writable Zen application folder. Immutable Flatpak/Snap/AppImage browser installations are not supported directly. macOS bundle changes and code signing still require platform validation before a signed release can be claimed.
 
 The payload checks the exact Zen version again at startup and does not run in Safe Mode. After a Zen upgrade the installer must be updated and the patch retested. It does not pin or disable Zen updates. Removal remains available after an upgrade.
 

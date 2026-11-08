@@ -89,3 +89,26 @@ test('reinstalling over an existing install upgrades in place',async t=>{const f
 test('refuses duplicate installations from another installation',async t=>{const f=await fixture(t);await engine.install(f.app,f.profile,f.options);const other=path.join(f.root,'Zen Copy');const layout=engine.layout(other);await fs.mkdir(layout.resources,{recursive:true});await fs.mkdir(path.dirname(layout.exe),{recursive:true});await fs.writeFile(layout.exe,'fixture');await fs.writeFile(path.join(layout.resources,'application.ini'),'[App]\nVersion=1.23.4b\n');await assert.rejects(engine.install(other,f.profile,f.options),/already installed/);});
 test('cannot overwrite unrelated owned-path files',async t=>{const f=await fixture(t);const file=path.join(f.profile,'chrome','arc-ui','arc.css');await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,'user theme');await assert.rejects(engine.install(f.app,f.profile,f.options),/would be overwritten/);assert.equal(await fs.readFile(file,'utf8'),'user theme');await assert.rejects(fs.access(engine.receiptFile(f.profile)));});
 test('profile discovery respects absolute and relative paths',async t=>{const f=await fixture(t);const home=path.join(f.root,'home'),root=path.join(home,'.zen');await fs.mkdir(root,{recursive:true});await fs.writeFile(path.join(root,'profiles.ini'),`[Profile0]\nName=Personal\nIsRelative=0\nPath=${f.profile}\n`);const result=await engine.discover({platform:'linux',home,env:{}});assert.equal(result.profiles[0].path,f.profile);assert.equal(result.profiles[0].name,'Personal');});
+
+for(const code of ['EPERM','EACCES'])test(`permission probe catches ${code} before installation writes`,async t=>{
+ const f=await fixture(t),original=fs.writeFile;
+ t.mock.method(fs,'writeFile',async function(file,...args){
+  if(String(file).startsWith(f.resources+path.sep)&&path.basename(file).startsWith('.arc-write-probe-'))throw Object.assign(new Error('raw denied'),{code});
+  return original.call(this,file,...args);
+ });
+ await assert.rejects(engine.install(f.app,f.profile,f.options),error=>{
+  assert.equal(error.code,code);assert.match(error.message,/Permission denied/);assert.match(error.message,/Run as administrator/);assert.match(error.message,/original profile/);return true;
+ });
+ await assert.rejects(fs.access(engine.receiptFile(f.profile)));
+ assert.deepEqual((await fs.readdir(f.resources)).sort(),['application.ini',path.basename(engine.layout(f.app).exe)].sort());
+});
+test('late permission failure explains recovery and rolls back receipt',async t=>{
+ const f=await fixture(t),original=fs.writeFile;
+ t.mock.method(fs,'writeFile',async function(file,...args){
+  if(String(file).includes('arc-ui-autoconfig.js.arc-writing-'))throw Object.assign(new Error('raw denied'),{code:'EPERM'});
+  return original.call(this,file,...args);
+ });
+ await assert.rejects(engine.install(f.app,f.profile,f.options),/Permission denied.*Changes were rolled back/);
+ await assert.rejects(fs.access(engine.receiptFile(f.profile)));
+ await assert.rejects(fs.access(path.join(f.resources,'arc-ui-owner.json')));
+});

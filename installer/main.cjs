@@ -34,7 +34,7 @@ async function boot() {
     if(busy)throw new Error('An installation operation is already running.');
     if(!['install','remove'].includes(action))throw new Error('Unknown operation.');
     const choice=selected(value);busy=true;
-    try{return await engine[action](choice.installation,choice.profile);}
+    try{return await require('./elevation.cjs').apply(action,choice.installation,choice.profile,{engine,appPath:app.getAppPath(),packaged:app.isPackaged});}
     finally{busy=false;if(pendingArgs){const args=pendingArgs;pendingArgs=null;acceptUpdate(args);}}
   });
   handle('arc:launch',async value=>{
@@ -50,8 +50,15 @@ async function boot() {
 // A previous release's installer can remain open after launching Zen. Keep the
 // downloaded installer's lock separate so that old code cannot intercept it.
 // Apply to manual launches too, including installers opened from a macOS DMG.
+const elevation = require('./elevation.cjs');
+const workerIndex = process.argv.indexOf(elevation.FLAG);
+if(workerIndex >= 0) {
+  app.whenReady().then(()=>elevation.worker(process.argv.slice(workerIndex+1),engine)).then(code=>app.exit(code)).catch(()=>app.exit(1));
+} else {
 const versionData = path.join(app.getPath('userData'), 'versions', app.getVersion());
 require('node:fs').mkdirSync(versionData, {recursive:true});
 app.setPath('userData', versionData);
 if(!app.requestSingleInstanceLock({launchArgs:process.argv}))app.quit();
 else {app.on('second-instance',(_event,_args,_cwd,data)=>{acceptUpdate(data?.launchArgs);if(window){if(window.isMinimized())window.restore();window.show();window.focus();}});app.whenReady().then(boot).catch(error=>{dialog.showErrorBox('Installer could not start',error.message);app.quit();});app.on('window-all-closed',()=>app.quit());}
+
+}
