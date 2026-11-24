@@ -16,6 +16,8 @@ debug mode, and browser tests. Keep UI implementations out of that file.
 | Recent files, hover, download services, and arrival motion | `features/downloads/downloads.js` | `features/downloads/*.css` |
 | Download row icons, labels, and action buttons | `features/downloads/rows.js` | `features/downloads/popup.css` |
 | Library trigger, opening position, and footer | `features/library/library.js` | `features/library/*.css` |
+| Arc UI settings window (appearance, colors, presets, updates) | `features/library/library.js`, hosted in `features/library/settings.xhtml` | `features/library/settings.css` |
+| Tab hover re-sync after a tab closes under the pointer | `features/tabs/hover-sync.js` | `features/tabs/tabs.css` |
 | Idle-tab archiving and native history integration | `features/archive/auto-archive.js`, `archive.js` | Native library styles |
 | GitHub live-folder setup | `features/github/live-folders.js`, `github.js` | `features/menus/provider-actions.css` |
 | Provider-owned context-menu restrictions | `native-actions.js` | `features/menus/provider-actions.css` |

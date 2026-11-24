@@ -16,6 +16,7 @@ var ArcLibrary = {
     const fields = [
       { key: "mode", type: "string", fallback: "system", choices: ["light", "dark", "system"] },
       { key: "reduce-motion", type: "boolean", fallback: false },
+      { key: "liquid-glass", type: "boolean", fallback: true },
       { key: "content-radius", type: "number", fallback: 10, min: 0, max: 16 },
     ];
     for (const mode of ["light", "dark"]) {
@@ -128,13 +129,17 @@ var ArcLibrary = {
     const prefBranch = "arc-ui.appearance.";
     const appearanceInputs = [];
     let editorWindow = null;
+    let settingsWindow = null;
     const modeInputs = [];
     const gradientInputs = [];
     const rangeInputs = [];
     let refreshPresets = () => {};
     let updateColorReset = () => {};
     let syncModeThumb = () => {};
+    let resetEditMode = () => {};
     let motionInput = null;
+    let glassInput = null;
+    let applyGlass = () => {};
     const systemScheme = window.matchMedia("(prefers-color-scheme: dark)");
     const appearance = ArcLibrary.colors;
     // Preserve existing custom colors in both palettes on upgrade.
@@ -181,6 +186,8 @@ var ArcLibrary = {
       syncModeThumb();
       if (editorWindow && !editorWindow.closed)
         editorWindow.document.documentElement.style.setProperty("color-scheme", resolved, "important");
+      if (settingsWindow && !settingsWindow.closed)
+        settingsWindow.document.documentElement.style.setProperty("color-scheme", resolved, "important");
       for (const [key, , variable, lightDefault, darkDefault] of appearance) {
         const values = ["light", "dark"].map((mode, index) => {
           const fallback = index ? darkDefault : lightDefault;
@@ -194,6 +201,9 @@ var ArcLibrary = {
       const reduceMotion = Services.prefs.getBoolPref(prefBranch + "reduce-motion", false);
       document.documentElement.toggleAttribute("data-arc-reduced-motion", reduceMotion);
       if (motionInput) motionInput.checked = reduceMotion;
+      const glass = Services.prefs.getBoolPref(prefBranch + "liquid-glass", true);
+      if (glassInput) glassInput.checked = glass;
+      applyGlass(glass);
       refreshColorInputs();
       refreshPresets();
       updateColorReset();
@@ -216,29 +226,10 @@ var ArcLibrary = {
     }
     const title = html("h2", "Arc UI settings");
     title.id = "arc-settings-title";
-    const close = html("button", "Done");
-    close.type = "button";
-    close.addEventListener("click", () => closeSettings());
-    // Fade the window out before the real close, matching the entrance.
+    // Settings live in a real OS window (settings.xhtml), so the system draws
+    // the title bar, close button and dragging. Closing means closing it.
     function closeSettings() {
-      if (!settings.open || settings.dataset.arcClosing) return;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        settings.close();
-        return;
-      }
-      settings.dataset.arcClosing = "close";
-      const finish = () => {
-        settings.removeEventListener("animationend", exit);
-        clearTimeout(guard);
-        delete settings.dataset.arcClosing;
-        settings.close();
-      };
-      // Child animations also bubble here; only the dialog's own exit counts.
-      const exit = event => {
-        if (event.animationName === "arc-settings-close") finish();
-      };
-      settings.addEventListener("animationend", exit);
-      const guard = setTimeout(finish, 280);
+      if (settingsWindow && !settingsWindow.closed) settingsWindow.close();
     }
     settings.addEventListener("cancel", event => {
       event.preventDefault();
@@ -397,7 +388,8 @@ var ArcLibrary = {
       if (!presets.some(item => item.name === selectedPresetName)) selectedPresetName = "";
       const signature = JSON.stringify([presets, systemScheme.matches]);
       if (signature !== renderedPresets) {
-        const focusedName = presetGallery.contains(document.activeElement) ? document.activeElement.value : null;
+        const active = settings.ownerDocument.activeElement;
+        const focusedName = presetGallery.contains(active) ? active.value : null;
         presetGallery.replaceChildren();
         for (const preset of presets) {
           const choice = html("label", "");
@@ -476,7 +468,7 @@ var ArcLibrary = {
       try {
         const { Cc, Ci, IOUtils } = window;
         const picker = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
-        picker.init(window.browsingContext, exporting ? "Export preset" : "Import preset",
+        picker.init(settings.ownerDocument.defaultView.browsingContext, exporting ? "Export preset" : "Import preset",
           exporting ? Ci.nsIFilePicker.modeSave : Ci.nsIFilePicker.modeOpen);
         picker.appendFilter("Arc UI preset (*.json)", "*.json");
         picker.defaultExtension = "json";
@@ -696,14 +688,15 @@ var ArcLibrary = {
         editorWindow.focus();
         return;
       }
+      const host = settings.ownerDocument.defaultView;
       const bounds = settings.getBoundingClientRect();
-      const left = Math.max(window.screen.availLeft, Math.min(
-        window.screenX + bounds.right + 18,
-        window.screen.availLeft + window.screen.availWidth - 300));
-      const top = Math.max(window.screen.availTop, Math.min(
-        window.screenY + bounds.top + 50,
-        window.screen.availTop + window.screen.availHeight - 440));
-      editorWindow = Services.ww.openWindow(window,
+      const left = Math.max(host.screen.availLeft, Math.min(
+        host.mozInnerScreenX + bounds.right + 18,
+        host.screen.availLeft + host.screen.availWidth - 300));
+      const top = Math.max(host.screen.availTop, Math.min(
+        host.mozInnerScreenY + bounds.top + 50,
+        host.screen.availTop + host.screen.availHeight - 440));
+      editorWindow = Services.ww.openWindow(host,
         "chrome://arc-ui/content/features/library/color-editor.xhtml", null,
         `chrome,titlebar=no,alwaysontop,dependent,dialog=yes,resizable=no,minimizable=no,width=216,height=350,left=${Math.round(left)},top=${Math.round(top)}`, null);
       const floating = editorWindow;
@@ -766,6 +759,17 @@ var ArcLibrary = {
     motion.checked = Services.prefs.getBoolPref(prefBranch + "reduce-motion", false);
     motion.addEventListener("change", () => Services.prefs.setBoolPref(prefBranch + "reduce-motion", motion.checked));
     motionRow.append(motion);
+    // Liquid Glass controls in this window, on by default (settings.css).
+    const glassRow = html("label", "");
+    glassRow.className = "arc-settings-row";
+    glassRow.append(html("span", "Liquid Glass"));
+    const glassToggle = html("input", "");
+    glassInput = glassToggle;
+    glassToggle.type = "checkbox";
+    glassToggle.checked = Services.prefs.getBoolPref(prefBranch + "liquid-glass", true);
+    glassToggle.addEventListener("change", () => Services.prefs.setBoolPref(prefBranch + "liquid-glass", glassToggle.checked));
+    glassRow.append(glassToggle);
+    applyGlass = enabled => settings.toggleAttribute("data-arc-glass", enabled);
     const reset = html("button", "Reset appearance");
     reset.type = "button";
     reset.addEventListener("click", () => {
@@ -791,9 +795,13 @@ var ArcLibrary = {
         const selected = item === tab;
         item.setAttribute("aria-selected", String(selected));
         item.tabIndex = selected ? 0 : -1;
+        // Opening the window focuses the current section.
+        item.toggleAttribute("autofocus", selected);
         panels.get(item.dataset.section).hidden = !selected;
       }
       settings.dataset.section = tab.dataset.section;
+      title.textContent = tab.dataset.label;
+      if (settingsWindow && !settingsWindow.closed) settingsWindow.document.title = tab.dataset.label;
       reset.hidden = tab.dataset.section === 'updates';
       body.scrollTop = 0;
       // A hidden panel reports zero sizes; re-measure when it shows again.
@@ -801,11 +809,13 @@ var ArcLibrary = {
       editorWindow?.close();
       if (focus) tab.focus();
     }
-    for (const [key, label] of [["appearance", "Appearance"], ["colors", "Colors"], ["presets", "Presets"], ["updates", "Updates"]]) {
-      const tab = html("button", label);
+    for (const [key, label, image] of [["appearance", "Appearance", "sliders"], ["colors", "Colors", "palette"], ["presets", "Presets", "layers"], ["updates", "Updates", "download"]]) {
+      const tab = html("button", "");
+      tab.append(icon(image), html("span", label));
       tab.type = "button";
       tab.id = "arc-settings-tab-" + key;
       tab.dataset.section = key;
+      tab.dataset.label = label;
       tab.setAttribute("role", "tab");
       tab.setAttribute("aria-controls", "arc-settings-panel-" + key);
       tab.addEventListener("click", () => selectSection(tab));
@@ -830,7 +840,17 @@ var ArcLibrary = {
       navigation.append(tab);
       body.append(panel);
     }
-    // Arc groups related rows into rounded inset cards; headings stay outside.
+    // Rows read like Arc's settings list: a title with a quieter description.
+    function describe(row, text) {
+      const label = row.firstElementChild;
+      const copy = html("div", "");
+      copy.className = "arc-row-text";
+      const note = html("small", text);
+      label.before(copy);
+      copy.append(label, note);
+      return row;
+    }
+    // Arc groups related rows into one bordered list; headings stay outside.
     function group(...rows) {
       const card = html("div", "");
       card.className = "arc-settings-group";
@@ -839,17 +859,48 @@ var ArcLibrary = {
     }
     const appearancePanel = panels.get("appearance");
     const generalGroup = group(
-      modeRow,
-      settings.querySelector('[data-appearance-key="content-radius"]'),
-      motionRow,
+      describe(modeRow, "Follow your system, or keep Zen light or dark."),
+      describe(settings.querySelector('[data-appearance-key="content-radius"]'), "Rounding of the frame around web pages."),
+      describe(motionRow, "Skip motion in the sidebar, menus and dialogs."),
+      describe(glassRow, "Glass switches, sliders and segmented controls in this window."),
     );
-    const backgroundHeading = heading.cloneNode(true);
-    backgroundHeading.firstChild.textContent = "Background";
+    // Edit one appearance at a time: each list heading carries a Light/Dark
+    // switch, and the rows show only that mode's control.
+    const editSwitches = [];
+    function setEditMode(mode) {
+      settings.dataset.editMode = mode;
+      for (const button of editSwitches) button.setAttribute("aria-pressed", String(button.value === mode));
+    }
+    function editHeading(text) {
+      const row = html("div", "");
+      row.className = "arc-palette-heading";
+      const switcher = html("div", "");
+      switcher.className = "arc-edit-mode";
+      switcher.setAttribute("role", "group");
+      switcher.setAttribute("aria-label", `${text}: appearance to edit`);
+      for (const [value, label] of [["light", "Light"], ["dark", "Dark"]]) {
+        const button = html("button", "");
+        button.append(icon(value === "light" ? "sun" : "moon"), html("span", label));
+        button.type = "button";
+        button.value = value;
+        button.addEventListener("click", () => setEditMode(value));
+        editSwitches.push(button);
+        switcher.append(button);
+      }
+      row.append(html("span", text), switcher);
+      return row;
+    }
+    resetEditMode = () => {
+      const mode = Services.prefs.getStringPref(prefBranch + "mode", "system");
+      setEditMode(mode === "system" ? (systemScheme.matches ? "dark" : "light") : mode);
+    };
+    const backgroundHeading = editHeading("Background");
     const backgroundRows = [];
     for (const key of ["background", "gradient", "gradient-end", "gradient-angle"]) {
       const row = settings.querySelector(`[data-appearance-key="${key}"]`);
       if (key === "background") row.firstChild.textContent = "Start color";
       if (key === "gradient-end") row.firstChild.textContent = "End color";
+      if (key === "gradient") describe(row, "Blend the window from the start color to the end color.");
       backgroundRows.push(row);
     }
     const opacityRow = html("div", "");
@@ -863,16 +914,43 @@ var ArcLibrary = {
       opacityPair.append(controls);
     }
     opacityRow.append(opacityPair);
+    describe(opacityRow, "Let your desktop show through the window.");
     const backgroundGroup = group(...backgroundRows, opacityRow);
     appearancePanel.append(generalGroup, backgroundHeading, backgroundGroup);
     const colorsPanel = panels.get("colors");
-    colorsPanel.append(heading);
+    colorsPanel.append(editHeading("Colors"));
+    resetEditMode();
     const colorRows = [];
+    const colorNotes = {
+      foreground: "Tab titles, labels and menu text.",
+      accent: "Secondary labels and highlights.",
+      popup: "Menus, popups and this window's lists.",
+      folder: "Folder icons in the sidebar.",
+      "tab-active": "The selected tab.",
+      "tab-hover": "Tabs under the pointer.",
+      hover: "Menu rows under the pointer.",
+      pressed: "Menu rows while pressed.",
+    };
     for (const [key] of appearance) {
       if (key !== "background" && key !== "gradient-end")
-        colorRows.push(settings.querySelector(`[data-appearance-key="${key}"]`));
+        colorRows.push(describe(settings.querySelector(`[data-appearance-key="${key}"]`), colorNotes[key] || ""));
     }
     colorsPanel.append(group(...colorRows));
+    // Presets read as two cards: the gallery with its actions, then saving.
+    const presetSaveHeading = html("h4", "Save current appearance");
+    presetSaveHeading.className = "arc-settings-section";
+    const presetSaveRow = html("div", "");
+    presetSaveRow.className = "arc-preset-save-row";
+    save.textContent = "Save";
+    presetName.placeholder = "Preset name";
+    presetName.setAttribute("aria-label", "Preset name");
+    presetSaveRow.append(presetName, save);
+    presetDetails.replaceChildren(
+      group(previewLabel, preview, presetLabel, presetActions),
+      presetSaveHeading,
+      group(presetSaveRow),
+      presetStatus,
+    );
     panels.get("presets").append(presetDetails);
     const { ArcUpdater: updater } = window.ChromeUtils.importESModule('chrome://arc-ui/content/updater.sys.mjs');
     const trackRow = html('label', '');
@@ -888,7 +966,14 @@ var ArcLibrary = {
     const trackDescription = html('p', 'Stable receives stable releases only. Beta also receives prereleases.');
     trackDescription.id = 'arc-update-track-description';
     track.setAttribute('aria-describedby', trackDescription.id);
-    panels.get('updates').append(group(trackRow), trackDescription);
+    trackDescription.remove();
+    const trackNote = html("small", trackDescription.textContent);
+    trackNote.id = trackDescription.id;
+    const trackCopy = html("div", "");
+    trackCopy.className = "arc-row-text";
+    trackCopy.append(trackRow.firstElementChild, trackNote);
+    trackRow.prepend(trackCopy);
+    panels.get('updates').append(group(trackRow));
     const syncTrack = () => {
       void updater.getTrack().then(value => {
         track.value = value;
@@ -906,9 +991,10 @@ var ArcLibrary = {
     const footer = html("footer", "");
     footer.className = "arc-settings-footer";
     reset.id = "arc-settings-reset";
-    close.id = "arc-settings-done";
-    footer.append(reset, close);
-    settings.replaceChildren(header, navigation, body, footer);
+    footer.append(reset);
+    // Reset scrolls with the settings list, as the last item under it.
+    body.append(footer);
+    settings.replaceChildren(header, navigation, body);
     selectSection(tabs[0]);
     document.documentElement.append(settings);
     for (const select of settings.querySelectorAll("select")) {
@@ -921,8 +1007,10 @@ var ArcLibrary = {
       menu.className = "arc-select-menu";
       menu.setAttribute("popover", "auto");
       menu.setAttribute("role", "menu");
+      const triggerLabel = html("span", "");
+      trigger.append(triggerLabel, icon("chevron"));
       const sync = () => {
-        trigger.textContent = (select.selectedOptions[0]?.textContent || "Choose") + " ?";
+        triggerLabel.textContent = select.selectedOptions[0]?.textContent || "Choose";
         trigger.disabled = select.disabled;
         for (const item of menu.children) item.setAttribute("aria-checked", String(item.dataset.value === select.value));
       };
@@ -942,12 +1030,13 @@ var ArcLibrary = {
         if (menu.matches(":popover-open")) { menu.hidePopover(); return; }
         sync(); menu.showPopover();
         const r = trigger.getBoundingClientRect();
-        menu.style.left = Math.min(r.left, innerWidth - menu.offsetWidth - 8) + "px";
-        menu.style.top = Math.min(r.bottom + 4, innerHeight - menu.offsetHeight - 8) + "px";
+        const view = settings.ownerDocument.defaultView;
+        menu.style.left = Math.min(r.left, view.innerWidth - menu.offsetWidth - 8) + "px";
+        menu.style.top = Math.min(r.bottom + 4, view.innerHeight - menu.offsetHeight - 8) + "px";
         (menu.querySelector('[aria-checked="true"]') || menu.firstElementChild)?.focus();
       });
       menu.addEventListener("keydown", event => {
-        const items = [...menu.children], index = items.indexOf(document.activeElement);
+        const items = [...menu.children], index = items.indexOf(settings.ownerDocument.activeElement);
         if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
           event.preventDefault();
           items[event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : (index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus();
@@ -961,16 +1050,53 @@ var ArcLibrary = {
       new MutationObserver(sync).observe(select, { attributes: true, subtree: true });
       sync();
     }
+    function openSettings() {
+      if (settingsWindow && !settingsWindow.closed) {
+        settingsWindow.focus();
+        return;
+      }
+      resetEditMode();
+      const host = Services.ww.openWindow(window,
+        "chrome://arc-ui/content/features/library/settings.xhtml", "arc-ui-settings",
+        "chrome,titlebar,close,minimizable,resizable,centerscreen,dependent,width=640,height=640", null);
+      settingsWindow = host;
+      host.addEventListener("load", () => {
+        // XUL window documents have no document.body; find the HTML body.
+        host.document.querySelector("body").append(settings);
+        // Firefox's own window buttons (see settings.xhtml) need their actions.
+        const control = (name, action) => host.document.querySelector(`.titlebar-${name}`)
+          ?.addEventListener("command", action);
+        control("min", () => host.minimize());
+        control("max", () => host.maximize());
+        control("restore", () => host.restore());
+        control("close", () => host.close());
+        // The browser skin swaps Maximize for Restore by the root's sizemode.
+        const syncSizeMode = () => host.document.documentElement.setAttribute("sizemode",
+          host.windowState === host.STATE_MAXIMIZED ? "maximized" : "normal");
+        host.addEventListener("sizemodechange", syncSizeMode);
+        syncSizeMode();
+        settings.show();
+        host.document.title = title.textContent;
+        applyAppearance();
+        syncModeThumb();
+        host.requestAnimationFrame(syncModeThumb);
+        host.addEventListener("keydown", event => {
+          if (event.key === "Escape" && !settings.querySelector(":popover-open")) host.close();
+        });
+        // Register after navigation: the initial about:blank unload is not a close.
+        host.addEventListener("unload", () => {
+          if (settings.open) settings.close();
+          document.documentElement.append(settings);
+          if (settingsWindow === host) settingsWindow = null;
+        }, { once: true });
+      }, { once: true });
+    }
     for (const [label, image, action] of [
       ["GitHub", "github", () => {
         window.openTrustedLinkIn("https://github.com/SpyC0der77/arc-ui-for-zen", "tab");
         void setRail(false).catch(report);
       }],
-      ["Settings", "settings", () => {
-        settings.showModal();
-        syncModeThumb();
-        requestAnimationFrame(syncModeThumb);
-      }],
+      ["Settings", "settings", () => openSettings()],
     ]) {
       const item = document.createXULElement("menuitem");
       item.setAttribute("label", label);
@@ -1092,6 +1218,7 @@ var ArcLibrary = {
         libraryObserver.disconnect();
         footerObserver.disconnect();
         editorWindow?.close();
+        settingsWindow?.close();
         Services.prefs.removeObserver(prefBranch, appearanceObserver);
         systemScheme.removeEventListener("change", applyAppearance);
         document.documentElement.removeAttribute("data-arc-color-mode");

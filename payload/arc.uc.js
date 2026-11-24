@@ -60,6 +60,7 @@
   }
 
   install("features/menus/create-menu", "ArcMenus");
+  install("features/tabs/hover-sync", "ArcTabHoverSync");
   install("features/sidebar/width", "ArcSidebarWidth", { Services });
   const address = install(
     "features/address-bar/address-label",

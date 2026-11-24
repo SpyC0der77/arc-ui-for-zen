@@ -87,6 +87,15 @@ var ArcUI = {
       folder: [
         "M20 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5l2 2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2z",
       ],
+      // Settings navigation (Lucide sliders-horizontal, palette, layers).
+      sliders: ["M21 4h-7", "M10 4H3", "M21 12h-9", "M8 12H3", "M21 20h-5",
+        "M12 20H3", "M14 2v4", "M8 10v4", "M16 18v4"],
+      palette: [
+        "M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-1.8a2 2 0 0 0-1.4 3.4A2 2 0 0 1 12 22Z",
+        "M13.5 6.5h.01", "M17.5 10.5h.01", "M8.5 7.5h.01", "M6.5 12.5h.01",
+      ],
+      layers: ["m12 2 10 5-10 5L2 7z", "m2 17 10 5 10-5", "m2 12 10 5 10-5"],
+      chevron: ["m6 9 6 6 6-6"],
     };
     function icon(name) {
       const svg = document.createElementNS(SVG, "svg");

@@ -1,0 +1,590 @@
+@-moz-document url("chrome://browser/content/browser.xhtml"), url("chrome://arc-ui/content/features/library/settings.xhtml")
+{
+  /* Arc UI settings, modelled on Arc's own macOS settings window: the section
+     name as a centered title, an icon toolbar of sections, then one bordered
+     list of rows with a title, a quieter description and a blue switch. */
+  #arc-settings-dialog {
+    --set-window: light-dark(#ececec, #2a2a2a);
+    --set-chrome: light-dark(#e3e3e3, #363636);
+    --set-chrome-edge: light-dark(#c9c9c9, #1b1b1b);
+    --set-list: light-dark(#ffffff, #2c2c2c);
+    --set-line: light-dark(#0000001a, #ffffff17);
+    --set-divider: light-dark(#0000000f, #ffffff0f);
+    --set-text: light-dark(#1f1f1f, #e6e6e6);
+    --set-muted: light-dark(#6e6e73, #9a9a9e);
+    --set-control: light-dark(#ffffff, #ffffff1f);
+    --set-control-edge: light-dark(#0000001f, #ffffff0d);
+    --set-hover: light-dark(#f4f4f4, #ffffff29);
+    --set-track: light-dark(#d9d9d9, #4f4f52);
+    --set-accent: light-dark(#0a64e4, #1f63c6);
+    --set-accent-text: light-dark(#0a64e4, #4c8ff0);
+    --set-on-accent: #ffffff;
+    --set-tile: light-dark(#0000000f, #ffffff17);
+    --set-focus: light-dark(#0a64e480, #4c8ff099);
+    --set-font: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    width: 600px;
+    height: min(620px, 85vh);
+    max-width: calc(100vw - 32px);
+    max-height: 85vh;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid light-dark(#00000033, #000000b3);
+    border-radius: 18px;
+    corner-shape: round;
+    background: var(--set-window);
+    color: var(--set-text);
+    box-shadow: inset 0 0 0 1px light-dark(#ffffff80, #ffffff14), 0 20px 56px #0000005c, 0 2px 8px #00000033;
+    font: 13px/1.35 var(--set-font);
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Typography follows the OS (SF on macOS, Segoe UI Variable on Windows),
+     like Arc's native settings window, instead of the theme's Geist. */
+  #arc-settings-dialog :is(button, input, select, output, h2, h3, h4, legend, small) {
+    font-family: var(--set-font) !important;
+  }
+  #arc-settings-dialog[open] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    animation: arc-settings-open 180ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  }
+  #arc-settings-dialog::backdrop { background: #0000004d; }
+  @keyframes arc-settings-open {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: none; }
+  }
+  /* Exit runs while the attribute is present; the JS fallback close guards
+     against a missing animationend (for example reduced motion). */
+  #arc-settings-dialog[data-arc-closing] { animation: arc-settings-close 140ms ease both; }
+  #arc-settings-dialog[data-arc-closing]::backdrop { animation: arc-veil-out 140ms ease both; }
+  @keyframes arc-settings-close { to { opacity: 0; transform: scale(0.97); } }
+  @keyframes arc-veil-out { to { opacity: 0; } }
+  #arc-settings-dialog,
+  #arc-settings-dialog * {
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+  }
+  /* Zen gives every element a superellipse corner-shape, which flattens
+     radii toward squares (and dots toward squircles). Our sheet is a user
+     sheet, so only !important beats it: keep true round corners here. */
+  #arc-settings-dialog,
+  #arc-settings-dialog *,
+  #arc-settings-dialog *::before,
+  #arc-settings-dialog *::after,
+  #arc-settings-dialog::backdrop {
+    corner-shape: round !important;
+  }
+
+  /* The title bar belongs to the OS window; this heading only names the
+     dialog for assistive technology. */
+  #arc-settings-dialog .arc-settings-header { display: none; }
+
+  /* Hosted in settings.xhtml, the dialog simply fills its native window. */
+  :root.arc-settings-window {
+    color-scheme: light dark;
+    background: light-dark(#ececec, #2a2a2a);
+  }
+  .arc-settings-window body { margin: 0; height: 100vh; display: flex; }
+  /* Custom title bar, as in Zen's browser window: the toolbar drags the
+     window and the platform's own window buttons sit in its corner. */
+  .arc-settings-window #arc-settings-window-controls {
+    position: fixed;
+    top: 0;
+    inset-inline-end: 0;
+    z-index: 10;
+    color: var(--set-text, light-dark(#1f1f1f, #e6e6e6));
+    --toolbarbutton-background-color-hover: light-dark(#0000001a, #ffffff1a);
+    --toolbarbutton-background-color-active: light-dark(#0000002e, #ffffff2e);
+    -moz-window-dragging: no-drag;
+  }
+  .arc-settings-window #arc-settings-dialog .arc-settings-tabs { -moz-window-dragging: drag; }
+  .arc-settings-window #arc-settings-dialog .arc-settings-tabs button { -moz-window-dragging: no-drag; }
+  /* macOS draws its traffic lights itself at the top left. */
+  @media (-moz-platform: macos) {
+    .arc-settings-window #arc-settings-window-controls { display: none; }
+    .arc-settings-window #arc-settings-dialog .arc-settings-tabs { padding-top: 28px; }
+  }
+  .arc-settings-window #arc-settings-dialog {
+    position: static;
+    inset: auto;
+    flex: 1;
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    animation: none;
+  }
+  #arc-settings-dialog .arc-settings-tabs {
+    grid-row: 2;
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    padding: 8px 12px 7px;
+    background: var(--set-chrome);
+    border-bottom: 1px solid var(--set-chrome-edge);
+    user-select: none;
+  }
+  #arc-settings-dialog .arc-settings-tabs button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 72px;
+    padding: 6px 10px 5px;
+    border-radius: 12px;
+    background: transparent;
+    box-shadow: none;
+    color: light-dark(#5b5b5f, #b4b4b8);
+    font-size: 11px;
+  }
+  #arc-settings-dialog .arc-settings-tabs svg { width: 22px; height: 22px; stroke-width: 1.6; }
+  #arc-settings-dialog .arc-settings-tabs button:not([aria-selected="true"]):is(:hover, :focus-visible) {
+    background: transparent;
+    color: var(--set-text);
+    box-shadow: none;
+  }
+  #arc-settings-dialog .arc-settings-tabs button[aria-selected="true"] {
+    background: var(--set-tile);
+    color: var(--set-accent-text);
+  }
+  /* Arrow keys move selection with focus, so the selected tile marks focus. */
+  #arc-settings-dialog .arc-settings-tabs button:focus-visible { box-shadow: none; }
+
+  /* Content */
+  #arc-settings-dialog .arc-settings-body {
+    grid-row: 3;
+    overflow: auto;
+    min-height: 0;
+    padding: 18px 20px 22px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--set-track) transparent;
+  }
+  #arc-settings-dialog .arc-settings-footer {
+    display: flex;
+    padding-top: 16px;
+  }
+  #arc-settings-dialog .arc-settings-footer:not(:has(> :not([hidden]))) { display: none; }
+  #arc-settings-dialog .arc-settings-panel[hidden] { display: none !important; }
+  #arc-settings-dialog .arc-settings-panel { animation: arc-panel-in 150ms ease both; }
+  @keyframes arc-panel-in { from { opacity: 0; } }
+  #arc-settings-dialog .arc-settings-panel:focus { outline: none; }
+
+  /* One bordered list per group, rows divided by inset hairlines. */
+  #arc-settings-dialog .arc-settings-group {
+    margin: 0;
+    padding: 0 16px;
+    border: 1px solid var(--set-line);
+    border-radius: 14px;
+    background: var(--set-list);
+  }
+  #arc-settings-dialog .arc-settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 54px;
+    padding: 11px 0;
+    box-sizing: border-box;
+  }
+  #arc-settings-dialog .arc-settings-group > * + * { border-top: 1px solid var(--set-divider); }
+  #arc-settings-dialog .arc-row-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+  #arc-settings-dialog .arc-row-text > span { font-size: 13.5px; }
+  #arc-settings-dialog .arc-row-text > small { color: var(--set-muted); font-size: 12px; line-height: 1.4; }
+  #arc-settings-dialog .arc-palette-heading,
+  #arc-settings-dialog .arc-settings-section {
+    margin: 20px 0 6px;
+    padding: 0 2px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--set-text);
+  }
+  #arc-settings-dialog .arc-palette-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 4px 2px;
+  }
+  #arc-settings-panel-colors .arc-palette-heading { margin-top: 0; }
+  /* The Light/Dark editing switch shares the segmented-pill look below. */
+  #arc-settings-dialog .arc-edit-mode button[aria-pressed="true"] {
+    background: var(--set-segment);
+    box-shadow: var(--set-segment-shadow);
+    color: var(--set-text);
+  }
+  /* Only the edited appearance's control is shown in each row. */
+  #arc-settings-dialog[data-edit-mode="light"] :is(.arc-color-pair, .arc-gradient-pair) > :nth-child(2),
+  #arc-settings-dialog[data-edit-mode="dark"] :is(.arc-color-pair, .arc-gradient-pair) > :nth-child(1) {
+    display: none !important;
+  }
+
+  /* macOS push buttons */
+  #arc-settings-dialog button {
+    appearance: none !important;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 3px 12px;
+    min-height: 24px;
+    border: 0;
+    border-radius: 10px;
+    corner-shape: round;
+    outline: none !important;
+    background: var(--set-control);
+    box-shadow: 0 0 0 0.5px var(--set-control-edge), 0 1px 1px light-dark(#0000001a, #00000040);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease, opacity 120ms ease;
+  }
+  #arc-settings-dialog button:not(:disabled):is(:hover, :focus-visible) { background-color: var(--set-hover); }
+  #arc-settings-dialog button:focus-visible { box-shadow: 0 0 0 3px var(--set-focus); }
+  #arc-settings-dialog button:active:not(:disabled) { opacity: .8; }
+  #arc-settings-dialog button:disabled { opacity: .45; cursor: default; }
+
+  /* macOS switches */
+  #arc-settings-dialog input[type="checkbox"] {
+    appearance: none !important;
+    flex: none;
+    width: 30px;
+    height: 17px;
+    margin: 0;
+    border-radius: 999px;
+    background-color: var(--set-track);
+    background-image: radial-gradient(circle closest-side, light-dark(#fff, #e9e9e9) 86%, #fff0 100%);
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
+    background-position: 1px center;
+    box-shadow: inset 0 0 0 0.5px #0000001f;
+    cursor: pointer;
+    transition: background-color 160ms ease, background-position 160ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  #arc-settings-dialog input[type="checkbox"]:checked {
+    background-color: var(--set-accent);
+    background-position: 14px center;
+  }
+  #arc-settings-dialog input[type="checkbox"]:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--set-focus); }
+  #arc-settings-dialog input:disabled { opacity: .4; cursor: default; }
+
+  /* macOS sliders */
+  #arc-settings-dialog input[type="range"] {
+    appearance: none !important;
+    height: 18px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  #arc-settings-dialog input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--set-track); }
+  #arc-settings-dialog input[type="range"]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--set-accent); }
+  #arc-settings-dialog input[type="range"]::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    border: 0;
+    border-radius: 50%;
+    background: light-dark(#fff, #e9e9e9);
+    box-shadow: 0 0.5px 2px #00000059, 0 0 0 0.5px #00000026;
+  }
+  #arc-settings-dialog input[type="range"]:focus-visible { outline: none; }
+  #arc-settings-dialog input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px var(--set-focus); }
+  #arc-settings-dialog .arc-range-control { display: flex; align-items: center; gap: 10px; width: 200px; flex: none; }
+  #arc-settings-dialog .arc-range-control input { flex: 1; min-width: 0; }
+  #arc-settings-dialog .arc-range-control output {
+    width: 36px;
+    text-align: right;
+    color: var(--set-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  #arc-settings-dialog .arc-angle-control { display: flex; align-items: center; gap: 10px; min-width: 0; width: 200px; }
+  #arc-settings-dialog .arc-angle-control input[type="range"] { flex: 1; min-width: 0; }
+  /* Text and number fields: a filled, slightly sunken well that reads as a
+     field on both the list and the window, with an accent ring on focus. */
+  #arc-settings-dialog {
+    --set-field: light-dark(#f0eff2, #ffffff0f);
+    --set-field-edge: light-dark(#0000001a, #ffffff14);
+    --set-field-shadow: inset 0 1px 2px light-dark(#0000000f, #00000040);
+  }
+  #arc-settings-dialog :is(input[type="number"], input[type="text"]) {
+    appearance: none !important;
+    box-sizing: border-box;
+    height: 30px;
+    margin: 0;
+    border: 1px solid var(--set-field-edge);
+    border-radius: 10px !important;
+    background: var(--set-field);
+    box-shadow: var(--set-field-shadow);
+    color: var(--set-text);
+    font: inherit;
+    transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+  }
+  #arc-settings-dialog input[type="number"] {
+    appearance: textfield !important;
+    width: 44px;
+    height: 26px;
+    padding: 0 4px;
+    border-radius: 8px !important;
+    font-size: 12px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  #arc-settings-dialog :is(input[type="number"], input[type="text"]):hover:not(:disabled, :focus) {
+    border-color: light-dark(#00000029, #ffffff24);
+  }
+  #arc-settings-dialog :is(input[type="number"], input[type="text"]):focus-visible,
+  #arc-settings-dialog :is(input[type="number"], input[type="text"]):focus {
+    outline: none;
+    border-color: var(--set-accent);
+    background: light-dark(#ffffff, #ffffff14);
+    box-shadow: 0 0 0 3px var(--set-focus);
+  }
+  #arc-settings-dialog :is(input[type="number"], input[type="text"])::placeholder { color: var(--set-muted); opacity: 1; }
+
+  /* Light / dark value pairs and colour wells */
+  #arc-settings-dialog :is(.arc-color-pair, .arc-gradient-pair) {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  #arc-settings-dialog .arc-color-swatch {
+    width: 44px;
+    min-height: 0;
+    height: 24px;
+    padding: 0;
+    border-radius: 8px;
+    background: var(--swatch) !important;
+    box-shadow: inset 0 0 0 1px light-dark(#00000026, #ffffff2e), 0 0 0 2px var(--set-control), 0 0 0 2.5px var(--set-control-edge);
+    transition: box-shadow 120ms ease, background-color 160ms ease;
+  }
+  #arc-settings-dialog .arc-color-swatch:not(:disabled):is(:hover, :focus-visible) {
+    box-shadow: inset 0 0 0 1px light-dark(#00000026, #ffffff2e), 0 0 0 2px var(--set-control), 0 0 0 4px var(--set-focus);
+  }
+  #arc-settings-dialog .arc-color-swatch[aria-expanded="true"] {
+    box-shadow: inset 0 0 0 1px light-dark(#00000026, #ffffff2e), 0 0 0 2px var(--set-control), 0 0 0 4px var(--set-accent);
+  }
+
+  /* Segmented pills: Theme mode and the Light/Dark editing switch. Equal
+     segments, icon and label centred, one soft raised highlight. */
+  #arc-settings-dialog {
+    --set-segment: light-dark(#ffffff, #5c5c60);
+    --set-segment-shadow: 0 1px 2px light-dark(#0000002e, #00000059), 0 0 0 0.5px light-dark(#00000014, #ffffff0f);
+  }
+  #arc-appearance-mode,
+  #arc-settings-dialog .arc-edit-mode {
+    position: relative;
+    display: flex;
+    flex: none;
+    padding: 2px;
+    border-radius: 999px;
+    background: light-dark(#00000012, #ffffff12);
+  }
+  #arc-appearance-mode .arc-segment-thumb {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 0;
+    width: 0;
+    border-radius: 999px;
+    background: var(--set-segment);
+    box-shadow: var(--set-segment-shadow);
+    transition: transform 160ms cubic-bezier(0.2, 0.7, 0.3, 1), width 160ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  #arc-appearance-mode label { position: relative; cursor: pointer; flex: 1 1 0; }
+  #arc-appearance-mode input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  #arc-appearance-mode span,
+  #arc-settings-dialog .arc-edit-mode button {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    box-sizing: border-box;
+    min-width: 72px;
+    height: 24px;
+    min-height: 0;
+    margin: 0;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: none;
+    color: var(--set-muted);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1;
+  }
+  #arc-settings-dialog .arc-edit-mode button { flex: 1 1 0; }
+  #arc-appearance-mode :is(span, svg),
+  #arc-settings-dialog .arc-edit-mode :is(span, svg) { pointer-events: none; }
+  #arc-appearance-mode svg,
+  #arc-settings-dialog .arc-edit-mode svg { width: 13px; height: 13px; flex: none; }
+  #arc-appearance-mode label:hover input:not(:checked) + span,
+  #arc-settings-dialog .arc-edit-mode button:not([aria-pressed="true"]):hover { background: transparent; color: var(--set-text); }
+  #arc-appearance-mode input:checked + span { color: var(--set-text); }
+  #arc-appearance-mode input:focus-visible + span,
+  #arc-settings-dialog .arc-edit-mode button:focus-visible { box-shadow: 0 0 0 3px var(--set-focus); }
+
+  /* macOS pop-up button */
+  #arc-settings-dialog .arc-select-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 110px;
+    padding: 3px 6px 3px 10px;
+    text-align: start;
+  }
+  #arc-settings-dialog .arc-select-trigger svg { width: 12px; height: 12px; color: var(--set-muted); flex: none; }
+  #arc-settings-dialog .arc-select-menu {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 5px;
+    min-width: 140px;
+    border: 1px solid var(--set-line);
+    border-radius: 12px;
+    background: light-dark(#f6f6f6, #323232);
+    color: inherit;
+    box-shadow: 0 10px 28px #00000040, 0 1px 3px #00000033;
+  }
+  #arc-settings-dialog .arc-select-menu button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    min-height: 24px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: transparent;
+    box-shadow: none;
+    text-align: start;
+  }
+  #arc-settings-dialog .arc-select-menu button:is(:hover, :focus) { background: var(--set-accent); color: #fff; box-shadow: none; }
+  #arc-settings-dialog .arc-select-menu button[aria-checked="true"]::after {
+    content: "\2713";
+    margin-inline-start: 16px;
+  }
+
+  /* Presets */
+  #arc-theme-presets .arc-settings-group { padding: 14px; }
+  #arc-theme-presets .arc-settings-group > * + * { border-top: 0; }
+  #arc-preset-preview { max-width: 340px; }
+  #arc-preset-preview-label { margin: 0 0 10px; color: var(--set-muted); font-size: 11.5px; }
+  #arc-theme-presets fieldset.arc-preset-field { border: 0; padding: 0; margin: 14px 0 0; min-width: 0; }
+  #arc-theme-presets legend { padding: 0; margin-bottom: 8px; font-weight: 600; }
+  #arc-preset-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+  #arc-preset-gallery[hidden] { display: none; }
+  #arc-settings-dialog .arc-preset-choice { position: relative; display: grid; min-width: 0; gap: 6px; cursor: pointer; }
+  #arc-settings-dialog .arc-preset-choice > input { position: absolute; width: 1px; height: 1px; opacity: 0; margin: 0; }
+  #arc-settings-dialog .arc-preset-caption { overflow-wrap: anywhere; font-size: 12px; padding-inline: 2px; }
+  #arc-settings-dialog .arc-preset-choice:hover .arc-preset-mini { border-color: var(--set-muted); }
+  #arc-settings-dialog .arc-preset-choice:has(input:checked) .arc-preset-mini { outline: 3px solid var(--set-accent); outline-offset: 1px; }
+  #arc-settings-dialog .arc-preset-choice:has(input:checked) .arc-preset-caption { font-weight: 600; }
+  #arc-settings-dialog .arc-preset-choice:has(input:focus-visible) .arc-preset-mini { outline: 3px solid var(--set-focus); outline-offset: 1px; }
+  #arc-preset-empty { margin: 0; color: var(--set-muted); font-size: 11.5px; line-height: 1.4; }
+  #arc-theme-presets .arc-preset-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  #arc-preset-import { margin-inline-start: auto !important; }
+  #arc-theme-presets .arc-preset-save-row { display: flex; align-items: center; gap: 8px; }
+  #arc-theme-presets input[type="text"] { flex: 1; min-width: 0; padding: 0 12px; }
+  /* Save matches the field's height so the row reads as one control. */
+  #arc-settings-dialog #arc-preset-save { height: 30px; padding-inline: 16px; background: var(--set-accent); color: var(--set-on-accent); }
+  #arc-preset-status { margin: 8px 2px 0; color: var(--set-muted); font-size: 11.5px; line-height: 1.4; }
+  #arc-preset-status:empty { display: none; }
+
+  /* One miniature browser layout; gallery and empty-state previews scale together.
+     Sidebar/frame use the saved shell color. Menu colors do not tint the shell. */
+  #arc-settings-dialog .arc-theme-preview {
+    container-type: inline-size;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: 27% minmax(0, 1fr);
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border: 1px solid var(--set-line);
+    border-radius: 10px;
+    margin: 0;
+    background: #f5f5f5;
+    color: var(--preview-foreground);
+  }
+  #arc-settings-dialog .arc-theme-preview[hidden] { display: none; }
+  #arc-settings-dialog .arc-theme-preview[data-mode="dark"] { background: #202020; }
+  #arc-settings-dialog .arc-theme-preview::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--preview-background); opacity: var(--preview-opacity); }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-rail { min-width: 0; display: flex; flex-direction: column; padding: 1.5cqw .8cqw; }
+  #arc-settings-dialog .arc-theme-preview svg { width: 1.6cqw; height: 1.6cqw; flex: none; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-toolbar { display: flex; justify-content: space-between; gap: 1cqw; padding: .5cqw .7cqw; margin-bottom: 1.5cqw; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-address { padding: 1cqw .8cqw; margin-bottom: 1cqw; border-radius: 1cqw; background: color-mix(in oklch, var(--preview-foreground) 8%, transparent); font-size: 1.4cqw; white-space: nowrap; overflow: hidden; }
+  #arc-settings-dialog .arc-theme-preview[data-mode="dark"] .arc-preview-address { background: color-mix(in oklch, var(--preview-foreground) 15%, transparent); }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-tab { display: flex; align-items: center; gap: 1cqw; padding: 1.2cqw .8cqw; margin-bottom: .3cqw; font-size: 1.4cqw; line-height: 1.3; border-radius: 1.5cqw; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-tab span { overflow: hidden; white-space: nowrap; text-overflow: clip; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-tab:nth-last-child(3) { border-top: 1px solid #8883; margin-top: .6cqw; padding-top: 1.5cqw; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-folder svg { color: var(--preview-folder); }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-active { background: var(--preview-tab-active); }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding: 1cqw .7cqw 0; border-top: 1px solid #8883; font-size: 2cqw; }
+  #arc-settings-dialog .arc-theme-preview .arc-preview-page { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4cqw; margin: 1cqw 1cqw 1cqw 0; border-radius: var(--preview-radius); background: #fff; color: #383838; }
+  #arc-settings-dialog .arc-theme-preview[data-mode="dark"] .arc-preview-page { background: #3b3942; color: #dedde0; }
+
+  @media (max-width: 600px) {
+    #arc-settings-dialog .arc-settings-row { gap: 8px; }
+    #arc-settings-dialog .arc-settings-body { padding-inline: 16px; }
+    #arc-settings-dialog .arc-settings-tabs button { min-width: 56px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #arc-settings-dialog,
+    #arc-settings-dialog * {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+    #arc-settings-dialog[open],
+    #arc-settings-dialog .arc-settings-panel,
+    #arc-settings-dialog[data-arc-closing],
+    #arc-settings-dialog[data-arc-closing]::backdrop,
+    #arc-appearance-mode .arc-segment-thumb {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* Liquid Glass controls (on by default; Appearance > Liquid Glass). Visual
+     reference: onemorethink.dev's MIT Liquid Glass UI, which renders with a
+     WebGL shader. Here it is CSS and limited to the switches, sliders and
+     segmented pills: recessed tracks with raised, glossy glass thumbs.
+     Everything else keeps the flat style, as do reduced-transparency systems. */
+  @media not (prefers-reduced-transparency) {
+    #arc-settings-dialog[data-arc-glass] {
+      --glass-edge: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.16));
+      --glass-rim: light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.35));
+      --glass-shine: light-dark(rgb(255 255 255 / 1), rgb(255 255 255 / 0.28));
+      --glass-lift: 0 3px 10px -3px light-dark(rgb(30 20 45 / 0.25), rgb(0 0 0 / 0.6));
+      --glass: inset 0 1px 0 var(--glass-shine), inset 0 -1px 1px light-dark(rgb(255 255 255 / 0.45), rgb(255 255 255 / 0.05)),
+        0 0 0 0.5px var(--glass-rim), 0 0 0 1px var(--glass-edge), var(--glass-lift);
+      --set-segment: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.2));
+      --set-segment-shadow: var(--glass);
+    }
+    /* Segmented pills: a recessed glass track with a raised glass thumb. */
+    #arc-settings-dialog[data-arc-glass] :is(#arc-appearance-mode, .arc-edit-mode) {
+      background: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.06));
+      box-shadow: inset 0 1px 3px light-dark(rgb(30 20 45 / 0.14), rgb(0 0 0 / 0.45)), 0 0 0 0.5px var(--glass-edge);
+    }
+    /* Switches: recessed track, glossy thumb; the accent glows when on. */
+    #arc-settings-dialog[data-arc-glass] input[type="checkbox"] {
+      background-image: radial-gradient(circle closest-side, #fff 80%, rgb(255 255 255 / 0.6) 92%, #fff0 100%);
+      box-shadow: inset 0 1px 3px light-dark(rgb(30 20 45 / 0.18), rgb(0 0 0 / 0.45)), 0 0 0 0.5px var(--glass-edge);
+    }
+    #arc-settings-dialog[data-arc-glass] input[type="checkbox"]:checked {
+      box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -1px 2px rgb(0 0 0 / 0.15), 0 2px 10px -2px var(--set-accent);
+    }
+    /* Sliders: a glass bead on a recessed track. */
+    #arc-settings-dialog[data-arc-glass] input[type="range"]::-moz-range-track {
+      box-shadow: inset 0 1px 2px light-dark(rgb(30 20 45 / 0.18), rgb(0 0 0 / 0.5));
+    }
+    #arc-settings-dialog[data-arc-glass] input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 16px;
+      border-radius: 999px;
+      background: light-dark(rgb(255 255 255 / 0.92), rgb(255 255 255 / 0.88));
+      box-shadow: inset 0 1px 0 #fff, inset 0 -1px 1px rgb(0 0 0 / 0.08), 0 0 0 0.5px var(--glass-rim), 0 3px 8px light-dark(rgb(30 20 45 / 0.3), rgb(0 0 0 / 0.6));
+    }
+  }
+}

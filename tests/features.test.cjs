@@ -344,3 +344,38 @@ test("invalid shared presets and full galleries leave saved data untouched", () 
   assert.throws(() => library.importPreset(prefs, JSON.stringify(valid)), /20 presets/);
   assert.equal(writes, 0);
 });
+test("tab hover re-syncs only when a tab closes under a still pointer with stale hover", () => {
+  const listeners = {}, sent = [], frames = [], timers = [];
+  const tabA = {id: "a"}, tabB = {id: "b"};
+  let under = tabA, hovered = tabA;
+  const closed = {getBoundingClientRect: () => ({left: 0, right: 200, top: 0, bottom: 40})};
+  const window = {
+    document: {
+      elementFromPoint: () => ({closest: () => under}),
+      querySelector: () => hovered,
+    },
+    synthesizeMouseEvent: (...args) => sent.push(args),
+    addEventListener: (type, fn) => { listeners[type] = fn; },
+    removeEventListener: (type) => { delete listeners[type]; },
+    requestAnimationFrame: fn => frames.push(fn),
+    cancelAnimationFrame() {},
+    setTimeout: fn => timers.push(fn),
+    clearTimeout() {},
+  };
+  const feature = load("features/tabs/hover-sync.js", "ArcTabHoverSync").install(window);
+  listeners.mousemove({clientX: 50, clientY: 20, buttons: 0});
+  const drain = () => { while (frames.length || timers.length) (frames.shift() || timers.shift())(); };
+  listeners.TabClose({target: closed});
+  drain();
+  assert.equal(sent.length, 0, "hover already matches the tab under the pointer");
+  under = tabB;
+  listeners.TabClose({target: closed});
+  frames.shift()(); frames.shift()();
+  assert.equal(JSON.stringify(sent), JSON.stringify([["mousemove", 50, 20, {buttons: 0}, {isDOMEventSynthesized: false}]]));
+  drain();
+  listeners.mousemove({clientX: 500, clientY: 20, buttons: 0});
+  listeners.TabClose({target: closed});
+  assert.equal(frames.length + timers.length, 0, "closes away from the pointer are ignored");
+  feature.destroy();
+  assert.equal(Object.keys(listeners).length, 0);
+});
