@@ -970,6 +970,7 @@ def main():
     parser.add_argument("--no-intro", action="store_true")
     parser.add_argument("--no-outro", action="store_true")
     parser.add_argument("--preset", default="medium")
+    parser.add_argument("--crf", type=int, default=16, help="x264 quality (lower is better; default 16)")
     parser.add_argument("--label", action="append", default=[], metavar="LANE=TEXT",
                         help='Lane label override, e.g. --label "arc=Arc (macOS)"')
     parser.add_argument("--subtitle", help="Intro subtitle override")
@@ -987,7 +988,7 @@ def main():
         SUBTITLE = args.subtitle
     cut = None if args.cut == "full" else (Path(__file__).resolve().parent.parent / "timeline" / "highlights.json"
                                            if args.cut == "highlights" else Path(args.cut))
-    out, n = render(args.manifest, args.output, shots, not args.no_intro, not args.no_outro, preset=args.preset, cut=cut,
+    out, n = render(args.manifest, args.output, shots, not args.no_intro, not args.no_outro, preset=args.preset, cut=cut, crf=args.crf,
                     bento_path=args.bento)
     print(f"{out}  {n} frames, {n / FPS:.2f}s")
 

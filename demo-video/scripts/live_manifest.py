@@ -85,7 +85,11 @@ def arc_library(main_f, cards_f):
              f"[1:v]fps=60,scale={cw}:{ch}:flags=lanczos,pad=1920:1080:{cx}:{cy}:color={bg},setsar=1,"
              f"tpad=stop_mode=clone:stop_duration=4,format=yuv420p[b];"
              f"[a][b]xfade=transition=fade:duration={XFADE}:offset={head - XFADE:.4f}[v]")
-    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-ss', str(main_f['start']), '-t', f'{head:.4f}', '-i', main_f['source'],
+    # Reuse an already-built clip (e.g. the exact one made on the Mac) when it
+    # is newer than both inputs; the timing below depends only on arc.json.
+    newest = max(Path(main_f['source']).stat().st_mtime, Path(cards_f['source']).stat().st_mtime)
+    if not (out.exists() and out.stat().st_mtime > newest):
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-ss', str(main_f['start']), '-t', f'{head:.4f}', '-i', main_f['source'],
                     '-ss', str(cards_f['start']), '-i', cards_f['source'], '-filter_complex', graph, '-map', '[v]',
                     '-c:v', 'libx264', '-preset', 'medium', '-crf', '14', '-pix_fmt', 'yuv420p', str(out)], check=True)
     joined = head - XFADE  # cards clip time 0 lands here
