@@ -151,6 +151,53 @@ env -u ELECTRON_RUN_AS_NODE ARC_DEMO_ZEN_SOURCE=/path/to/unpatched/Zen.app node_
 python demo-video/scripts/prepare-onboarding.py --take demo-video/recordings/comparison/onboarding-window.json --output-root artifacts/comparison-themed-03
 ```
 
+### Polished render
+
+`scripts/polished.py` renders the same manifest and the same real footage with
+the same rules: each lane plays to its ready frame and early lanes wait for
+the slowest one. It renders at 60 fps in Python with Pillow and NumPy:
+
+- eased camera moves, and cursor paths eased per move instead of per sample;
+- the cursor carried over between features;
+- staggered crossfades and animated titles;
+- per-lane running/done/unavailable status, with a light dim on lanes that
+  finished early;
+- a chaptered progress bar, plus short intro and outro cards.
+
+By default it renders the highlight cut in `timeline/highlights.json`: nine
+headline features with short titles, about 41 seconds. It leaves out undo steps,
+empty states and near-duplicates. The Library is shown as the Spaces overview,
+because Arc's Downloads pane is empty in its take. A cut can give a lane a static
+zoom (`camera: [x, y, width]` in source pixels), so small sidebar features stay
+legible. This also crops out stale address-bar text. Features change with
+clean cuts. Lanes that finish early show a check and do not dim. The shared
+hold after each feature is 1.5 seconds. Pass `--cut full` for all 36 features.
+
+Cursor pacing: the Arc recorder parks the pointer off-window and flicks it about
+1,800 px in half a second. Those flicks, and the jumps between features, now
+become glides at a human pace (0.4 to 1.15 s, depending on distance, with sine
+easing). Each glide happens during the previous feature's hold, so it lands
+before the action. Later moves keep their recorded departure time. Only their
+arrival is slowed, and never past the next move.
+
+The vanilla Zen lane's actions were scripted, and its Marionette captures contain
+no pointer. `timeline/zen-cursor.json` gives it a composited cursor, like the
+other two lanes. Each listed feature's first point is the control the scripted
+action targets, measured from the footage. The cursor glides there during the
+previous feature's hold. Features that aren't listed leave the cursor where it
+is.
+
+The hand pointer in the Arc split-view shots is part of an animated WorkOS ad on
+the MDN page, not a cursor.
+
+```sh
+python3 -m venv artifacts/video-python && artifacts/video-python/bin/pip install pillow numpy
+artifacts/video-python/bin/python demo-video/scripts/polished.py demo-video/timeline/comparison.json \
+  --output demo-video/exports/arc-zen-comparison-polished.mp4
+# Quick preview of a few features: --shots 0:4 --no-outro --preset veryfast
+artifacts/video-python/bin/python -m unittest demo-video/tests/test_polished.py
+```
+
 `--plan` validates editorial timing without footage; `--check` additionally probes
 all real videos and camera bounds. Tests include actual H.264 encoding and frame
 checks for early arrival, the shared pause, captions and original feature order.
@@ -186,3 +233,33 @@ be assembled as complete lanes. macOS startup assessment was resolved for fresh
 disposable themed copies by local signing. The first unsigned copy is still held
 before startup, and graceful browser shutdowns can take several minutes. No
 process has been force-killed and no personal profile has been used.
+
+## Real-time recordings (current polished export)
+
+The old browser takes were screenshot loops: Arc used one `screencapture` call
+per frame (about 3 per second), and Zen used Marionette screenshots (about 5 to
+10 per second). Every animation in them was 2 or 3 still images. The current
+export uses new takes recorded as real 60 fps window video:
+
+- `scripts/capture/window-recorder.swift`: ScreenCaptureKit, one window only,
+  no system cursor. An optional capture-time crop means excluded pixels are
+  never recorded. Build with
+  `swiftc -O -o artifacts/bin/window-recorder demo-video/scripts/capture/window-recorder.swift`.
+  The screen must be unlocked, because macOS delivers no frames while it is locked.
+- `scripts/capture/marionette-host.py`: holds the single Marionette session that
+  Zen 1.24b allows after setup. `scripts/capture/live_zen.py` runs the nine
+  highlight features in it for the themed and vanilla disposable copies made by
+  `prepare-comparison.cjs`.
+- `scripts/capture/live_arc.py`: the same features in Arc's dedicated "Arc UI
+  Demo" Spaces, using real pointer and keyboard input. Accessibility and Screen
+  Recording are required. The Spaces overview is captured cropped to the three
+  demo cards.
+- `scripts/live_manifest.py`: converts the takes in `recordings/live/` to
+  constant 60 fps and writes `timeline/live.json` from the logged timings and
+  cursor paths.
+
+```sh
+artifacts/video-python/bin/python demo-video/scripts/live_manifest.py
+artifacts/video-python/bin/python demo-video/scripts/polished.py demo-video/timeline/live.json \
+  --output demo-video/exports/arc-zen-comparison-polished.mp4
+```

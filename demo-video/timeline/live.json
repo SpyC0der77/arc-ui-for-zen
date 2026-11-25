@@ -1,0 +1,734 @@
+{
+ "capture": "Real-time 60 fps window recordings (ScreenCaptureKit)",
+ "shots": [
+  {
+   "id": "work-space-essentials-and-real-documentation",
+   "title": "Work space, Essentials and real documentation",
+   "synced_on": [
+    "move0",
+    "collapse",
+    "expand"
+   ],
+   "panels": {
+    "arc": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/arc-main-60.mp4",
+     "start": 2.2737,
+     "end": 6.2262,
+     "ready": 3.6642,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/arc-work-space-essentials-and-real-documentation.json"
+    },
+    "themed": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/themed-60.mp4",
+     "start": 0.6165,
+     "end": 4.1209,
+     "ready": 3.22,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/themed-work-space-essentials-and-real-documentation.json",
+     "holds": [
+      [
+       0.3196,
+       0.1593
+      ],
+      [
+       1.2185,
+       0.0472
+      ],
+      [
+       2.263,
+       0.1544
+      ]
+     ]
+    },
+    "zen": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/vanilla-60.mp4",
+     "start": 0.6167,
+     "end": 4.1406,
+     "ready": 3.2394,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/zen-work-space-essentials-and-real-documentation.json",
+     "holds": [
+      [
+       0.3246,
+       0.1543
+      ],
+      [
+       1.2312,
+       0.0228
+      ],
+      [
+       2.2803,
+       0.1498
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "personal-space",
+   "title": "Personal Space",
+   "synced_on": [
+    "move0",
+    "switch"
+   ],
+   "panels": {
+    "arc": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/arc-main-60.mp4",
+     "start": 7.9499,
+     "end": 11.1344,
+     "ready": 2.8961,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/arc-personal-space.json"
+    },
+    "themed": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/themed-60.mp4",
+     "start": 4.4983,
+     "end": 7.3934,
+     "ready": 2.6115,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/themed-personal-space.json",
+     "holds": [
+      [
+       0.2654,
+       0.163
+      ],
+      [
+       1.1142,
+       0.2242
+      ]
+     ]
+    },
+    "zen": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/vanilla-60.mp4",
+     "start": 4.5189,
+     "end": 7.4224,
+     "ready": 2.6101,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/zen-personal-space.json",
+     "holds": [
+      [
+       0.2748,
+       0.1536
+      ],
+      [
+       1.125,
+       0.2395
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "hover-peek",
+   "title": "Hover peek",
+   "synced_on": [
+    "move0",
+    "hide",
+    "move1",
+    "move2",
+    "move3"
+   ],
+   "panels": {
+    "arc": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/arc-main-60.mp4",
+     "start": 13.9359,
+     "end": 21.0859,
+     "ready": 6.8617,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/arc-hover-peek.json",
+     "holds": [
+      [
+       1.4807,
+       0.0933
+      ]
+     ]
+    },
+    "themed": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/themed-60.mp4",
+     "start": 9.0044,
+     "end": 15.6953,
+     "ready": 6.3976,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/themed-hover-peek.json",
+     "holds": [
+      [
+       0.2744,
+       0.1795
+      ],
+      [
+       2.1047,
+       0.2757
+      ],
+      [
+       2.8274,
+       0.0453
+      ],
+      [
+       4.8438,
+       0.0229
+      ]
+     ]
+    },
+    "zen": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/vanilla-60.mp4",
+     "start": 9.0402,
+     "end": 15.7199,
+     "ready": 6.3863,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/zen-hover-peek.json",
+     "holds": [
+      [
+       0.2751,
+       0.1788
+      ],
+      [
+       1.2517,
+       0.2935
+      ],
+      [
+       2.815,
+       0.0406
+      ],
+      [
+       4.8318,
+       0.0225
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "centered-command-bar",
+   "title": "Centered command bar",
+   "synced_on": [
+    "open",
+    "typed"
+   ],
+   "panels": {
+    "arc": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/arc-main-60.mp4",
+     "start": 22.7615,
+     "end": 25.8842,
+     "ready": 2.8346,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        480.0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/arc-centered-command-bar.json"
+    },
+    "themed": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/themed-60.mp4",
+     "start": 17.3235,
+     "end": 19.8288,
+     "ready": 2.2119,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        480.0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/themed-centered-command-bar.json",
+     "holds": [
+      [
+       0.3691,
+       0.5461
+      ],
+      [
+       1.2713,
+       0.2221
+      ]
+     ]
+    },
+    "zen": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/vanilla-60.mp4",
+     "start": 17.3374,
+     "end": 19.8281,
+     "ready": 2.1973,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        480.0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/zen-centered-command-bar.json",
+     "holds": [
+      [
+       0.3607,
+       0.6045
+      ],
+      [
+       1.2514,
+       0.1836
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "side-by-side-split-view",
+   "title": "Side by side split view",
+   "synced_on": [
+    "move0",
+    "split"
+   ],
+   "panels": {
+    "arc": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/arc-main-60.mp4",
+     "start": 26.7799,
+     "end": 31.6352,
+     "ready": 4.5701,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        740,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/arc-side-by-side-split-view.json",
+     "zoom_out": 1.5
+    },
+    "themed": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/themed-60.mp4",
+     "start": 20.2305,
+     "end": 24.441,
+     "ready": 3.9199,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        740,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/themed-side-by-side-split-view.json",
+     "holds": [
+      [
+       0.2751,
+       0.1756
+      ],
+      [
+       1.8478,
+       0.89
+      ]
+     ],
+     "zoom_out": 1.5
+    },
+    "zen": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/vanilla-60.mp4",
+     "start": 20.2271,
+     "end": 24.4462,
+     "ready": 3.9257,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        740,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/zen-side-by-side-split-view.json",
+     "holds": [
+      [
+       0.276,
+       0.1747
+      ],
+      [
+       1.8551,
+       0.8836
+      ]
+     ],
+     "zoom_out": 1.5
+    }
+   }
+  },
+  {
+   "id": "library-spaces",
+   "title": "Library Spaces",
+   "synced_on": [
+    "move0",
+    "library"
+   ],
+   "panels": {
+    "arc": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/arc-library-60.mp4",
+     "start": 0.0,
+     "end": 3.3681,
+     "ready": 3.0798,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/arc-library-spaces.json",
+     "holds": [
+      [
+       1.237,
+       0.0483
+      ]
+     ]
+    },
+    "themed": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/themed-60.mp4",
+     "start": 28.0643,
+     "end": 32.359,
+     "ready": 4.0013,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/themed-library-spaces.json",
+     "holds": [
+      [
+       0.274,
+       0.1772
+      ],
+      [
+       1.0836,
+       0.0912
+      ]
+     ]
+    },
+    "zen": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/vanilla-60.mp4",
+     "start": 28.0789,
+     "end": 32.3968,
+     "ready": 4.0254,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/zen-library-spaces.json",
+     "holds": [
+      [
+       0.2739,
+       0.1773
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "download-file-flight",
+   "title": "Download file flight",
+   "synced_on": [
+    "move0",
+    "download"
+   ],
+   "panels": {
+    "arc": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/arc-tail-60.mp4",
+     "start": 2.8893,
+     "end": 7.4167,
+     "ready": 4.239,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        600,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/arc-download-file-flight.json"
+    },
+    "themed": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/themed-60.mp4",
+     "start": 33.9556,
+     "end": 38.0145,
+     "ready": 3.7743,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        918.0301507537688,
+        0,
+        720.0,
+        1080
+       ]
+      },
+      {
+       "time": 0.8,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/themed-download-file-flight.json",
+     "holds": [
+      [
+       1.3168,
+       0.6488
+      ]
+     ]
+    },
+    "zen": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/vanilla-60.mp4",
+     "start": 33.9947,
+     "end": 36.5294,
+     "ready": 2.2457,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "unavailable",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/zen-download-file-flight.json",
+     "holds": [
+      [
+       1.1992,
+       0.7664
+      ]
+     ],
+     "caption": "No native equivalent"
+    }
+   }
+  },
+  {
+   "id": "github-live-folders",
+   "title": "GitHub Live Folders",
+   "synced_on": [
+    "create"
+   ],
+   "panels": {
+    "arc": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/arc-tail-60.mp4",
+     "start": 10.4573,
+     "end": 13.9912,
+     "ready": 3.2455,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "alternative",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/arc-github-live-folders.json",
+     "caption": "Needs GitHub sign-in"
+    },
+    "themed": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/themed-60.mp4",
+     "start": 38.3938,
+     "end": 41.8291,
+     "ready": 3.142,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/themed-github-live-folders.json",
+     "holds": [
+      [
+       0.3969,
+       1.1165
+      ]
+     ]
+    },
+    "zen": {
+     "source": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cfr/vanilla-60.mp4",
+     "start": 36.9097,
+     "end": 40.3714,
+     "ready": 3.1683,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "/Users/carter/.t3/worktrees/arc-ui-for-zen/t3-aa9ba944-7e3e20d9f7fbf944/demo-video/recordings/live/cursor/zen-github-live-folders.json",
+     "holds": [
+      [
+       0.4002,
+       1.0965
+      ]
+     ]
+    }
+   }
+  }
+ ]
+}
