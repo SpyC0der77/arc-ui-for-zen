@@ -3,6 +3,9 @@
 
     python live_arc.py --window <CG id> --applescript-window <Arc window id> --out DIR [--only id ...]
 
+Set WINDOW_RECORDER_CODEC=prores422hq for near-lossless takes; the recorder
+inherits it. Without it the takes are real-time HEVC.
+
 Requires Accessibility (real mouse/keyboard input) and Screen Recording.
 The window must be at 80,80 and 1592x896 points, not full screen. Capture is
 ScreenCaptureKit (window-recorder, 60 fps, window only, no system cursor);
@@ -68,6 +71,11 @@ class Take:
         self.clip_features = []
         time.sleep(.5)
 
+    def hold(self, on):
+        """Pause (or resume) writing frames; the last written frame stays up."""
+        self.rec.stdin.write('hold\n' if on else 'resume\n')
+        self.rec.stdin.flush()
+
     def stop(self):
         self.rec.stdin.close()
         done = json.loads(self.rec.stdout.read().strip().splitlines()[-1])
@@ -128,12 +136,6 @@ class Take:
             S.run(S.NATIVE, 'rightclick', *self.pointer)
         else:
             subprocess.run([HUMANCLICK, *map(str, self.pointer)], check=True)
-
-
-def keystrokes(text, gap=.09):
-    """Type at the same pace as the Zen lanes (one script, so no per-key launch delay)."""
-    body = '\n'.join(f'keystroke {json.dumps(ch)}\ndelay {gap}' for ch in text)
-    S.run('osascript', '-e', 'tell application "System Events"\n' + body + '\nend tell', timeout=20)
 
 
 HUMANCLICK = str(ROOT / 'artifacts/bin/humanclick')
@@ -226,14 +228,21 @@ def f_peek(t):
 
 
 def f_command(t):
+    # Arc paints its empty-query list (built-in "Contact the Team", "The Browser
+    # Company", resources.arc.net) and, while typing, site and history
+    # suggestions such as springer.com, which are not demo content. Even with
+    # the whole query in one burst, one or two frames of the empty list are
+    # painted, so frames are held from just before the bar opens until "split"
+    # has filtered the list down to Arc's split commands.
     t.begin('centered-command-bar')
     time.sleep(.4)
+    t.hold(True)
     t.event('open')
-    S.menu('File', 'Open Command Bar')
-    time.sleep(.35)
-    keystrokes('split')
+    S.run('osascript', '-e', 'tell application "System Events"\nkeystroke "l" using command down\nkeystroke "split"\nend tell')
+    time.sleep(.3)
+    t.hold(False)
     t.event('typed')
-    t.ready(.9)
+    t.ready(1.2)
     S.native('key', 53)
     time.sleep(.6)
 

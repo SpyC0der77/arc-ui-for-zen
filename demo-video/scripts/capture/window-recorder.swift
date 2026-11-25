@@ -5,6 +5,14 @@
 // The optional rectangle (window points) crops at capture time, so pixels
 // outside it are never recorded.
 //
+// Set WINDOW_RECORDER_CODEC=prores422hq for ProRes 422 HQ instead of the
+// default real-time HEVC.
+//
+// A "hold" line on stdin stops writing frames captured from that moment until
+// a "resume" line, so a transient state (such as a list of non-demo
+// suggestions) never reaches the file; the previous frame simply lasts longer.
+// Other lines are ignored.
+//
 // Records only the given window (other windows, the desktop and the system
 // cursor are never captured) until stdin closes or SIGINT/SIGTERM. Frames keep
 // their host-clock timestamps. On start it prints {"ready":true,...}. On exit it
@@ -49,20 +57,36 @@ final class Recorder: NSObject, SCStreamOutput, SCStreamDelegate {
     var last: CMTime?
     var frames = 0
     var dropped = 0
+    var held = 0
+    // Host-clock intervals whose frames are not written; holdFrom is open.
+    var holds: [(CMTime, CMTime)] = []
+    var holdFrom: CMTime?
     let queue = DispatchQueue(label: "frames")
 
     init(width: Int, height: Int) throws {
         writer = try AVAssetWriter(outputURL: output, fileType: .mov)
-        input = AVAssetWriterInput(mediaType: .video, outputSettings: [
-            AVVideoCodecKey: AVVideoCodecType.hevc,
-            AVVideoWidthKey: width,
-            AVVideoHeightKey: height,
-            AVVideoCompressionPropertiesKey: [
-                AVVideoAverageBitRateKey: 45_000_000,
-                AVVideoExpectedSourceFrameRateKey: 60,
-                AVVideoAllowFrameReorderingKey: false,
-            ],
-        ])
+        // Real-time HEVC lands far below its bit-rate target on flat, frosted
+        // areas and smears them, so near-lossless ProRes 422 HQ is opt-in.
+        let settings: [String: Any]
+        if ProcessInfo.processInfo.environment["WINDOW_RECORDER_CODEC"] == "prores422hq" {
+            settings = [
+                AVVideoCodecKey: AVVideoCodecType.proRes422HQ,
+                AVVideoWidthKey: width,
+                AVVideoHeightKey: height,
+            ]
+        } else {
+            settings = [
+                AVVideoCodecKey: AVVideoCodecType.hevc,
+                AVVideoWidthKey: width,
+                AVVideoHeightKey: height,
+                AVVideoCompressionPropertiesKey: [
+                    AVVideoAverageBitRateKey: 45_000_000,
+                    AVVideoExpectedSourceFrameRateKey: 60,
+                    AVVideoAllowFrameReorderingKey: false,
+                ],
+            ]
+        }
+        input = AVAssetWriterInput(mediaType: .video, outputSettings: settings)
         input.expectsMediaDataInRealTime = true
         adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: nil)
         writer.add(input)
@@ -75,6 +99,14 @@ final class Recorder: NSObject, SCStreamOutput, SCStreamDelegate {
               let raw = attachments.first?[.status] as? Int, SCFrameStatus(rawValue: raw) == .complete,
               let buffer = CMSampleBufferGetImageBuffer(sample) else { return }
         let time = CMSampleBufferGetPresentationTimeStamp(sample)
+        if let from = holdFrom, time >= from {
+            held += 1
+            return
+        }
+        if holds.contains(where: { time >= $0.0 && time <= $0.1 }) {
+            held += 1
+            return
+        }
         if first == nil {
             first = time
             writer.startWriting()
@@ -147,7 +179,7 @@ func finish() -> Never {
         }
         let first = recorder.first?.seconds ?? 0
         let last = recorder.last?.seconds ?? 0
-        print("{\"first\":\(first),\"last\":\(last),\"frames\":\(recorder.frames),\"dropped\":\(recorder.dropped),\"status\":\(recorder.writer.status.rawValue)}")
+        print("{\"first\":\(first),\"last\":\(last),\"frames\":\(recorder.frames),\"dropped\":\(recorder.dropped),\"held\":\(recorder.held),\"status\":\(recorder.writer.status.rawValue)}")
         fflush(stdout)
         done.signal()
     }
@@ -164,7 +196,18 @@ let sources = [SIGINT, SIGTERM].map { sig -> DispatchSourceSignal in
     return source
 }
 DispatchQueue.global().async {
-    while readLine() != nil {}
+    while let line = readLine() {
+        let now = CMClockGetTime(CMClockGetHostTimeClock())
+        let command = line.trimmingCharacters(in: .whitespaces)
+        recorder.queue.async {
+            if command == "hold", recorder.holdFrom == nil {
+                recorder.holdFrom = now
+            } else if command == "resume", let from = recorder.holdFrom {
+                recorder.holds.append((from, now))
+                recorder.holdFrom = nil
+            }
+        }
+    }
     DispatchQueue.main.async { finish() }
 }
 _ = sources
