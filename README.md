@@ -4,6 +4,17 @@ An Arc-style interface for Zen **1.22.3b, 1.23.3b, 1.23.4b, 1.24b and 1.24.1b**,
 
 On 1.22.3b, which predates Zen's native library, the gift button opens a native menu with Downloads, Bookmarks, History and restorable recently closed tabs. Downloads uses the browser's native downloads view, including its private-window behavior. Auto-archive and Debug Mode require the newer native library and are unavailable on 1.22.3b. Idle tabs stay open on that version, and sidebar transitions use the older browser's native behavior. Other versions retain the existing library interface. These versions have Windows runtime coverage; macOS/Linux runtime validation remains pending.
 
+## Demo videos
+
+Arc, Arc UI for Zen and vanilla Zen side by side, feature by feature, in real 60 fps recordings of the actual browsers. Click a thumbnail to watch.
+
+| Windows 11 | macOS |
+| --- | --- |
+| [![Arc UI for Zen comparison on Windows 11](public/arc-ui-for-zen-comparison-windows.jpg)](public/arc-ui-for-zen-comparison-windows.mp4) | [![Arc UI for Zen comparison on macOS](public/arc-ui-for-zen-comparison-macos.jpg)](public/arc-ui-for-zen-comparison-macos.mp4) |
+| [arc-ui-for-zen-comparison-windows.mp4](public/arc-ui-for-zen-comparison-windows.mp4) | [arc-ui-for-zen-comparison-macos.mp4](public/arc-ui-for-zen-comparison-macos.mp4) |
+
+The Windows video's Zen lanes were recorded on Windows 11. Its Arc lane reuses the macOS Arc recording, because Arc for Windows was not available on the recording PC. [public/README.md](public/README.md) explains how both videos were made and links the code.
+
 ## Install
 
 Open the installer, select your Zen application and profile, close Zen, then click **Install**. Use **Open Zen** afterward. On first launch after Zen onboarding, a local preview page opens. Its Download button plays the file animation without downloading anything.
