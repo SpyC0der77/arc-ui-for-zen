@@ -99,11 +99,16 @@ def verify_shutdown_target(info):
     app = Path(info['app']).resolve(strict=True)
     if sys.platform == 'win32':
         expected = app/'zen.exe'
+        # zen.exe on Windows is a launcher process: the browser (and its
+        # Marionette listener) is its direct child running the same executable.
         command = (f'$p=Get-Process -Id {pid} -ErrorAction Stop; '
                    f'$t=Get-NetTCPConnection -LocalPort {int(info["port"])} -State Listen -ErrorAction Stop; '
-                   '@{exe=$p.Path;owners=@($t.OwningProcess)}|ConvertTo-Json -Compress')
+                   f'$k=@(Get-CimInstance Win32_Process -Filter "ParentProcessId={pid}" | Where-Object {{ $_.ExecutablePath -eq $p.Path }} | ForEach-Object {{ $_.ProcessId }}); '
+                   '@{exe=$p.Path;owners=@($t.OwningProcess);children=$k}|ConvertTo-Json -Compress')
         result = json.loads(subprocess.check_output(['powershell','-NoProfile','-Command',command],text=True))
-        if Path(result['exe']).resolve()!=expected or pid not in result['owners']:
+        children = result.get('children') or []
+        children = children if isinstance(children, list) else [children]
+        if Path(result['exe']).resolve()!=expected or not ({pid, *children} & set(result['owners'])):
             raise ValueError('Disposable PID/executable/Marionette listener ownership did not match')
     else:
         expected = app/'Contents/MacOS/zen' if sys.platform=='darwin' else app/'zen'

@@ -6,27 +6,38 @@ or 'vanilla'), OUT (folder) and optionally ONLY (feature ids) first:
     LANE='themed'; OUT='/path/out'; exec(open('live_zen.py').read()); result=record()
 
 The window is captured by window-recorder (ScreenCaptureKit, 60 fps, window
-only, no system cursor). Every action is real browser code; the cursor is
+only, no system cursor); on Windows by window-recorder.exe (Windows.Graphics.
+Capture, same contract) with win_native.py for the window and focus. Every action is real browser code; the cursor is
 composited later from the logged positions. Writes <lane>.mov and <lane>.json
 (per feature: start, ready and end in seconds of the movie, plus the cursor
 track in 1920x1080 pixels).
 """
 import json
 import subprocess
+import sys
 import time
 from pathlib import Path
 
 ROOTDIR = Path(__file__).resolve().parents[3] if '__file__' in globals() else Path.cwd()
-RECORDER = str(ROOTDIR / 'artifacts/bin/window-recorder')
+WINDOWS = sys.platform == 'win32'
+RECORDER = str(ROOTDIR / ('artifacts/bin/window-recorder-win/window-recorder.exe' if WINDOWS else 'artifacts/bin/window-recorder'))
 SCALE = 1920 / 1592  # window points -> 1920x1080 video pixels
+if WINDOWS:
+    sys.path.insert(0, str(ROOTDIR / 'demo-video/scripts/capture'))
+    import win_native as W
 
 
 def now():
-    return time.clock_gettime(time.CLOCK_UPTIME_RAW)
+    return W.now() if WINDOWS else time.clock_gettime(time.CLOCK_UPTIME_RAW)
 
 
 def js(code, *args):
     return m.execute_script(code, script_args=list(args))
+
+
+def browser_pid():
+    """The process that owns the window (on Windows, the launcher's child)."""
+    return js('return Services.appinfo.processID')
 
 
 def center(expr):
@@ -46,6 +57,8 @@ class Take:
 
     # -- capture
     def start(self):
+        if WINDOWS:
+            return self.start_windows()
         subprocess.run(['osascript', '-e', f'tell application "System Events" to set frontmost of (first process whose unix id is {info["pid"]}) to true'], check=True)
         time.sleep(.8)
         wins = json.loads(subprocess.check_output([RECORDER, 'list', str(info['pid'])]))
@@ -62,6 +75,21 @@ class Take:
         js('document.documentElement.style.outline="0px solid transparent"')
         time.sleep(.6)
 
+    def start_windows(self):
+        win = W.main_window(browser_pid(), (1592, 896))
+        self.hwnd = win['id']
+        W.move(1900, 1000)  # park the real pointer outside the window: no stray hover
+        W.front(self.hwnd)
+        time.sleep(.8)
+        self.mov = self.out / f'{LANE}.mp4'
+        self.rec = subprocess.Popen([RECORDER, str(self.hwnd), str(self.mov), '60'], stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE, text=True)
+        ready = json.loads(self.rec.stdout.readline())
+        if not ready.get('ready') or (ready['width'], ready['height']) != (1592, 896):
+            raise RuntimeError(f'Recorder did not start as expected: {ready}')
+        js('document.documentElement.style.outline="0px solid transparent"')
+        time.sleep(.6)
+
     def stop(self):
         self.rec.stdin.close()
         done = json.loads(self.rec.stdout.read().strip().splitlines()[-1])
@@ -75,6 +103,8 @@ class Take:
             f['cursor'] = [[round(t, 4), round(x * SCALE, 1), round(y * SCALE, 1)] for t, x, y in f['cursor']]
         meta = {'lane': LANE, 'source': str(self.mov), 'first_host': first, 'frames': done['frames'],
                 'features': self.features}
+        if WINDOWS:
+            meta['recorder'] = done
         (self.out / f'{LANE}.json').write_text(json.dumps(meta, indent=1))
         return meta
 
@@ -287,9 +317,30 @@ def cleanup():
     time.sleep(1.0)
 
 
+def fit_window():
+    """1592x896 visible pixels. On Windows the outer rect includes invisible
+    resize borders, so correct by the difference from the DWM frame bounds."""
+    m.set_window_rect(x=0, y=30, width=1592, height=896)
+    if not WINDOWS:
+        return
+    time.sleep(.5)
+    for _ in range(3):
+        win = W.main_window(browser_pid())
+        bw, bh = win['bounds']['Width'], win['bounds']['Height']
+        if (bw, bh) == (1592, 896):
+            return
+        r = m.window_rect
+        m.set_window_rect(x=r['x'], y=r['y'], width=r['width'] + 1592 - bw, height=r['height'] + 896 - bh)
+        time.sleep(.5)
+    raise RuntimeError(f'Window is {bw}x{bh}, expected 1592x896')
+
+
 def record():
     cleanup()
-    m.set_window_rect(x=0, y=30, width=1592, height=896)
+    if WINDOWS:
+        js("Services.prefs.setIntPref('ui.systemUsesDarkTheme',0);"
+           "Services.prefs.setIntPref('layout.css.prefers-color-scheme.content-override',1)")
+    fit_window()
     js("gURLBar.view.close();gURLBar.blur();window.focus()")
     reset_work()
     take = Take(OUT)
@@ -303,4 +354,6 @@ def record():
             time.sleep(.4)
     finally:
         meta = take.stop()
+        if WINDOWS and globals().get('PREVIOUS_FOREGROUND'):
+            W.give_back(PREVIOUS_FOREGROUND)
     return {'features': [(f['id'], round(f['ready'] - f['start'], 2)) for f in meta['features']], 'frames': meta['frames']}

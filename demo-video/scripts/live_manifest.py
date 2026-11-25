@@ -1,16 +1,19 @@
 """Turn the real-time takes (recordings/live) into a polished.py manifest.
 
     python demo-video/scripts/live_manifest.py
+    python demo-video/scripts/live_manifest.py --live demo-video/recordings/windows         --output demo-video/timeline/live-windows.json      # Windows takes
 
 Each window movie is converted to constant 60 fps, 1920x1080 H.264 (a cropped
 take is scaled by the same factor and padded to the panel's 2:3 shape). Feature
 timings and cursor tracks come from the take logs. Per-lane cameras default
 to the original comparison cameras for that feature.
 """
+import argparse
 import json
 import math
 from pathlib import Path
 import subprocess
+import sys
 
 DEMO = Path(__file__).resolve().parents[1]
 LIVE = DEMO / 'recordings/live'
@@ -104,6 +107,18 @@ REGIONS = {'collapse': (0, 0, 400, 1080), 'expand': (0, 0, 400, 1080), 'switch':
 LEAD_IN = {'peek': .75, 'unpeek': 0}
 
 
+def local_source(path):
+    """Takes copied from another machine (e.g. the macOS Arc takes used by the
+    Windows export) keep their original absolute paths; find them by name in
+    the --live folder instead."""
+    if path is None or Path(path).exists():
+        return path
+    moved = LIVE / str(path).replace(chr(92), '/').rsplit('/', 1)[-1]
+    if not moved.exists():
+        raise FileNotFoundError(f'Take {path} is missing (also looked for {moved})')
+    return str(moved)
+
+
 def response(source, t, region=None, window=1.8, threshold=.35):
     """Seconds after source time t until the region visibly changes (the UI's
     real reaction to an action), or 0 if nothing changes."""
@@ -188,6 +203,13 @@ SPLIT_CAMERA = [{'time': 0, 'rect': [740, 0, 720, 1080]}]
 
 
 def main():
+    global LIVE, CFR
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--live', type=Path, default=LIVE, help='folder with themed/vanilla/arc .json takes')
+    parser.add_argument('--output', type=Path, default=DEMO / 'timeline/live.json')
+    args = parser.parse_args()
+    LIVE = args.live.resolve()
+    CFR = LIVE / 'cfr'
     old = {s['id']: s for s in json.loads((DEMO / 'timeline/comparison.json').read_text())['shots']}
     lanes = {}
     for lane, name in (('themed', 'themed'), ('zen', 'vanilla'), ('arc', 'arc')):
@@ -195,6 +217,7 @@ def main():
         lanes[lane] = {f['id']: f for f in data['features']}
         for f in lanes[lane].values():
             f.setdefault('source', data.get('source'))
+            f['source'] = local_source(f['source'])
     CFR.mkdir(parents=True, exist_ok=True)
     if 'library-spaces-cards' in lanes['arc']:
         cards = lanes['arc'].pop('library-spaces-cards')
@@ -241,8 +264,10 @@ def main():
                 panel['caption'] = f['caption']
             panels[lane] = panel
         shots.append({'id': fid, 'title': old.get(fid, {}).get('title', fid), 'synced_on': shared, 'panels': panels})
-    out = DEMO / 'timeline/live.json'
-    out.write_text(json.dumps({'capture': 'Real-time 60 fps window recordings (ScreenCaptureKit)', 'shots': shots}, indent=1))
+    out = args.output
+    capture = ('Real-time 60 fps window recordings (Windows.Graphics.Capture)' if sys.platform == 'win32'
+               else 'Real-time 60 fps window recordings (ScreenCaptureKit)')
+    out.write_text(json.dumps({'capture': capture, 'shots': shots}, indent=1))
     print(out)
 
 

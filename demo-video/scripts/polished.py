@@ -39,6 +39,7 @@ PX0 = (W - 3 * PW - 2 * GUTTER) // 2
 PY = 150
 RADIUS = 18
 LABELS = {"arc": "Arc", "themed": "Arc UI for Zen", "zen": "Vanilla Zen"}
+SUBTITLE = "Side by side with Arc and vanilla Zen, feature by feature"
 ACCENT = (185, 169, 255)
 DONE = (110, 220, 150)
 TEXT = (242, 244, 250)
@@ -70,7 +71,8 @@ CHAPTERS = [
                  "finish-on-work"]),
 ]
 
-FONT_PATH = "/System/Library/Fonts/SFNS.ttf"
+WINDOWS = sys.platform == "win32"
+FONT_PATH = "C:/Windows/Fonts/SegUIVar.ttf" if WINDOWS else "/System/Library/Fonts/SFNS.ttf"
 _fonts = {}
 
 
@@ -84,8 +86,13 @@ def font(size, weight="Regular"):
     if key not in _fonts:
         try:
             f = ImageFont.truetype(FONT_PATH, size)
-            # Axes: Width, Optical Size, GRAD, Weight.
-            f.set_variation_by_axes([100, max(17, min(96, size)), 400, WEIGHTS.get(weight, 400)])
+            if WINDOWS:
+                # Segoe UI Variable axes: Weight, Optical Size (points). Used for
+                # measuring; sprites come from DirectWrite (text-render.exe).
+                f.set_variation_by_axes([min(700, WEIGHTS.get(weight, 400)), max(5, min(36, size * .75))])
+            else:
+                # Axes: Width, Optical Size, GRAD, Weight.
+                f.set_variation_by_axes([100, max(17, min(96, size)), 400, WEIGHTS.get(weight, 400)])
         except OSError:
             f = ImageFont.load_default(size=size)
         _fonts[key] = f
@@ -259,7 +266,7 @@ def humanize(start, positions, approach_window):
 
 
 def cursor_sprite(scale):
-    """macOS-style arrow: black fill, white outline, soft shadow. Returns RGBA and hotspot."""
+    """Arrow cursor (macOS style; Windows colours on Windows), soft shadow. Returns RGBA and hotspot."""
     ss = 4
     shape = [(0, 0), (0, 16.5), (3.9, 12.9), (6.4, 18.6), (8.9, 17.5), (6.5, 11.9), (11.8, 11.9)]
     size = 1.45 * scale
@@ -272,10 +279,12 @@ def cursor_sprite(scale):
     shadow = shadow.filter(ImageFilter.GaussianBlur(1.6 * ss))
     img.paste((0, 0, 0, 255), (0, 0), shadow)
     d = ImageDraw.Draw(img)
-    d.polygon(pts, fill=(255, 255, 255, 255), outline=(255, 255, 255, 255), width=int(2.6 * ss * size / 1.45))
+    # Windows arrow: white fill, black outline (macOS: the reverse).
+    edge, body = ((10, 10, 12, 255), (255, 255, 255, 255)) if WINDOWS else ((255, 255, 255, 255), (10, 10, 12, 255))
+    d.polygon(pts, fill=edge, outline=edge, width=int((1.6 if WINDOWS else 2.6) * ss * size / 1.45))
     inner = [((x * size + pad) * ss, (y * size + pad) * ss) for x, y in
              [(1.25, 2.9), (1.25, 13.6), (4.3, 10.8), (6.95, 16.9), (7.9, 16.5), (5.3, 10.6), (9.1, 10.6)]]
-    d.polygon(inner, fill=(10, 10, 12, 255))
+    d.polygon(inner, fill=body)
     img = img.resize((w // ss, h // ss), Image.LANCZOS)
     return img, (pad, pad)
 
@@ -358,13 +367,15 @@ def clamp_arr(a):
     return np.clip(a, 0, 1)
 
 
-TEXT_RENDER = Path(__file__).resolve().parents[2] / "artifacts/bin/text-render"
+TEXT_RENDER = Path(__file__).resolve().parents[2] / (
+    "artifacts/bin/text-render-win/text-render.exe" if WINDOWS else "artifacts/bin/text-render")
 _text_cache = {}
 
 
 def text_image(text, size, weight, color, tracking=0):
     """Text sprite drawn by Core Text (macOS's text engine), so SF Pro gets its
-    real kerning, optical sizes and spacing. Falls back to Pillow elsewhere."""
+    real kerning, optical sizes and spacing. On Windows, DirectWrite draws
+    Segoe UI Variable the same way (text-render-win). Falls back to Pillow."""
     key = (text, size, weight, tuple(color), tracking)
     if key in _text_cache:
         return _text_cache[key]
@@ -658,7 +669,7 @@ class Renderer:
     def intro(self, emit):
         n = round(INTRO * FPS)
         big = text_image("Arc UI for Zen", 92, "Bold", TEXT)
-        sub = text_image("Side by side with Arc and vanilla Zen, feature by feature", 28, "Regular", MUTED)
+        sub = text_image(SUBTITLE, 28, "Regular", MUTED)
         lanes = [self.labels[l] for l in LANES]
         for f in range(n):
             frame = self.backdrop.copy()
@@ -769,9 +780,9 @@ class Renderer:
             emit(frame)
 
 
-def extra_bento(root):
+def extra_bento(root, path=None):
     """Tiles for the closing Apple-style bento page (timeline/bento.json)."""
-    path = root / "timeline" / "bento.json"
+    path = Path(path) if path else root / "timeline" / "bento.json"
     if not path.is_file():
         return None
     data = json.loads(path.read_text())
@@ -899,7 +910,7 @@ def apply_cut(plan, path):
 
 
 def render(manifest, output, shots=None, intro=True, outro=True, crf=16, preset="medium", zen_cursor=None,
-           cut=None):
+           cut=None, bento_path=None):
     plan = load_plan(manifest, require_assets=True)
     raw = json.loads(Path(manifest).read_text())["shots"]
     extra = {s["id"]: s for s in raw}
@@ -912,7 +923,7 @@ def render(manifest, output, shots=None, intro=True, outro=True, crf=16, preset=
             held = sum(h for _, h in p.get("holds", []))
             p["src_frames"] = max(1, math.ceil(p["ready"] * SRC_FPS - 1e-8))
             p["ready_frames"] = max(1, math.ceil((p["ready"] + held) * SRC_FPS - 1e-8))
-    bento = extra_bento(root := Path(__file__).resolve().parent.parent)
+    bento = extra_bento(root := Path(__file__).resolve().parent.parent, bento_path)
     add_scripted_cursor(plan, zen_cursor if zen_cursor is not None else root / "timeline" / "zen-cursor.json")
     if cut:
         apply_cut(plan, cut)
@@ -959,11 +970,25 @@ def main():
     parser.add_argument("--no-intro", action="store_true")
     parser.add_argument("--no-outro", action="store_true")
     parser.add_argument("--preset", default="medium")
+    parser.add_argument("--label", action="append", default=[], metavar="LANE=TEXT",
+                        help='Lane label override, e.g. --label "arc=Arc (macOS)"')
+    parser.add_argument("--subtitle", help="Intro subtitle override")
+    parser.add_argument("--bento", type=Path, help="Bento board JSON (default timeline/bento.json), "
+                        "e.g. demo-video/timeline/bento-windows.json")
     args = parser.parse_args()
     shots = tuple(int(v) for v in args.shots.split(":")) if args.shots else None
+    global SUBTITLE
+    for item in args.label:
+        lane, _, text = item.partition("=")
+        if lane not in LABELS or not text:
+            parser.error(f"--label expects LANE=TEXT with LANE in {sorted(LABELS)}")
+        LABELS[lane] = text
+    if args.subtitle:
+        SUBTITLE = args.subtitle
     cut = None if args.cut == "full" else (Path(__file__).resolve().parent.parent / "timeline" / "highlights.json"
                                            if args.cut == "highlights" else Path(args.cut))
-    out, n = render(args.manifest, args.output, shots, not args.no_intro, not args.no_outro, preset=args.preset, cut=cut)
+    out, n = render(args.manifest, args.output, shots, not args.no_intro, not args.no_outro, preset=args.preset, cut=cut,
+                    bento_path=args.bento)
     print(f"{out}  {n} frames, {n / FPS:.2f}s")
 
 

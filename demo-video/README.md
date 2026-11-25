@@ -263,3 +263,73 @@ artifacts/video-python/bin/python demo-video/scripts/live_manifest.py
 artifacts/video-python/bin/python demo-video/scripts/polished.py demo-video/timeline/live.json \
   --output demo-video/exports/arc-zen-comparison-polished.mp4
 ```
+
+## Windows export
+
+`exports/arc-zen-comparison-windows.mp4` is the Windows edition of the polished
+comparison. It sits alongside the macOS export and doesn't replace it. It shows
+Arc UI for Zen and vanilla Zen as they actually look on Windows 11. Nothing in
+the macOS outputs or behaviour changed. The Windows code lives in separate
+files or behind `sys.platform == "win32"` checks and new CLI options.
+
+- `scripts/capture/window-recorder-win/`: the Windows counterpart of
+  window-recorder, using Windows.Graphics.Capture. It records one window only:
+  overlapping windows and the system cursor never reach the file, and the
+  window can stay behind other windows. Frames go on a constant 60 fps grid by
+  their capture timestamp (QueryPerformanceCounter, the same clock as Python's
+  `time.perf_counter()`). The minimum update interval is lowered, because the
+  default rounds up to every third vsync on a 144 Hz display (48 fps). An
+  optional `x y w h` crops at capture time. `<out>.frames.json` lists the grid
+  slots that carried new pixels, so you can verify the frame rate is real.
+  Build with
+  `dotnet publish demo-video/scripts/capture/window-recorder-win -c Release -o artifacts/bin/window-recorder-win`.
+- `scripts/capture/win_native.py`: window discovery by PID, front/back, real
+  SendInput pointer and keys, and the shared clock (ctypes only).
+- `scripts/capture/live_windows.py`: start / take / bento / close for the
+  disposable lanes made by `prepare-comparison.cjs`. On Windows the
+  disposable profiles also get light appearance, no URL autofill, no occlusion
+  throttling and a downloads folder inside the disposable directory.
+  - The host runs detached on 127.0.0.1, because CPython has no AF_UNIX on
+    Windows. Zen 1.24b allows only one Marionette session per launch, so setup,
+    takes and bento captures all share it.
+  - zen.exe is a launcher, so window lookup uses `Services.appinfo.processID`.
+    The graceful-shutdown guard accepts the listener of the launcher's direct
+    child running the same executable.
+- `scripts/capture/live_zen.py`: the macOS-only parts have Windows branches:
+  bringing the window to the front, finding the window by PID, the recorder,
+  and sizing the visible frame to exactly 1592x896 (the outer rect includes
+  invisible resize borders).
+- `scripts/capture/bento_zen.py`: isolated bento captures. Each image is a
+  real window frame cropped to one element: the command bar with "Open
+  Archive" selected, the downloads popup and library list (real local-file
+  downloads), a split of two Wikipedia articles, the download-flight trail
+  over a blank page with the sidebar hidden, and the GitHub Live Folders.
+  `timeline/bento-windows.json` points at them.
+- `scripts/text-render-win/`: DirectWrite text sprites with the same command
+  line as `text-render.swift`. It uses Segoe UI Variable with an exact weight
+  axis, automatic optical size (Display for titles), OpenType kerning and
+  grayscale antialiasing. polished.py uses it on Windows. Build with
+  `dotnet publish demo-video/scripts/text-render-win -c Release -o artifacts/bin/text-render-win`.
+
+Arc for Windows was not installed on the recording PC, so the Arc lane reuses
+the macOS real-time Arc takes (`arc.json` plus its `arc-*.mov`), copied into
+`recordings/windows/`. `live_manifest.py` finds moved takes by file name, and
+the lane is labelled "Arc (macOS)".
+
+```powershell
+node demo-video/scripts/capture/prepare-comparison.cjs create <unpatched Zen folder>
+python demo-video/scripts/capture/live_windows.py start <session.json> themed
+python demo-video/scripts/capture/live_windows.py start <session.json> vanilla
+python demo-video/scripts/capture/live_windows.py take  <session.json> themed    # brings Zen to the front
+python demo-video/scripts/capture/live_windows.py take  <session.json> vanilla
+python demo-video/scripts/capture/live_windows.py bento <session.json>
+python demo-video/scripts/capture/live_windows.py close <session.json> themed
+python demo-video/scripts/capture/live_windows.py close <session.json> vanilla
+python demo-video/scripts/live_manifest.py --live demo-video/recordings/windows --output demo-video/timeline/live-windows.json
+python demo-video/scripts/polished.py demo-video/timeline/live-windows.json --bento demo-video/timeline/bento-windows.json `
+  --label "arc=Arc (macOS)" --subtitle "On Windows, side by side with Arc and vanilla Zen" `
+  --output demo-video/exports/arc-zen-comparison-windows.mp4
+```
+
+Keep the screen unlocked during takes, because Windows blocks input and capture
+on the lock screen.

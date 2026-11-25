@@ -6,6 +6,9 @@ setup, so recording and iteration go through this long-lived host instead.
   python marionette-host.py --manifest SESSION --role themed --socket /path/sock [--setup]
   python marionette-host.py --send /path/sock 'm.execute_script("return 1")'
 
+On Windows (no AF_UNIX in CPython) pass --socket tcp:PORT; the host listens on
+127.0.0.1 only and --send takes the same tcp:PORT address.
+
 Snippets run in one persistent namespace with `m` (the session), `info` and
 `rv` (record-vanilla helpers). The value of `result`, if set, is returned as JSON.
 """
@@ -29,13 +32,7 @@ def serve(args):
     spec.loader.exec_module(rv)
     info = rv.session_info(args.manifest, args.role)
     # Bind first: a failure after setup would lose the only usable session.
-    path = Path(args.socket)
-    with contextlib.suppress(FileNotFoundError):
-        path.unlink()
-    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    server.bind(str(path))
-    os.chmod(path, 0o600)
-    server.listen(1)
+    server = listen(args.socket)
     m = rv.connect(info)
     ns = {'m': m, 'info': info, 'rv': rv}
     if args.setup:
@@ -64,9 +61,31 @@ def serve(args):
             conn.sendall(json.dumps(reply, default=str).encode())
 
 
-def send(path, code):
+def listen(address):
+    if address.startswith('tcp:'):
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind(('127.0.0.1', int(address[4:])))
+    else:
+        path = Path(address)
+        with contextlib.suppress(FileNotFoundError):
+            path.unlink()
+        server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        server.bind(str(path))
+        os.chmod(path, 0o600)
+    server.listen(1)
+    return server
+
+
+def connect_host(address):
+    if address.startswith('tcp:'):
+        return socket.create_connection(('127.0.0.1', int(address[4:])))
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect(path)
+    client.connect(address)
+    return client
+
+
+def send(path, code):
+    client = connect_host(path)
     client.sendall(code.encode() + b'\0')
     data = b''
     while chunk := client.recv(65536):

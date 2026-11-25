@@ -44,6 +44,7 @@ async function create(source) {
     const app = path.join(folder, process.platform === 'darwin' ? 'Zen.app' : 'Zen');
     const profile = path.join(folder, 'profile');
     await fs.mkdir(folder); await fs.cp(source, app, {recursive:true}); await fs.mkdir(profile);
+    if (process.platform === 'win32') await fs.mkdir(path.join(folder,'downloads'));
     await fs.writeFile(path.join(profile,'prefs.js'), '// Disposable comparison profile\n');
     const prefs = {
       'marionette.port':port, 'zen.welcome-screen.seen':true,
@@ -53,6 +54,15 @@ async function create(source) {
       'browser.tabs.warnOnClose':false, 'browser.sessionstore.resume_from_crash':false,
       'zen.updates.show-update-notification':false,
     };
+    if (process.platform === 'win32') Object.assign(prefs, {
+      // Windows takes: keep painting while covered (real 60 fps capture), light
+      // appearance, no URL autofill, and downloads inside this disposable folder.
+      'widget.windows.window_occlusion_tracking.enabled':false,
+      'ui.systemUsesDarkTheme':0, 'layout.css.prefers-color-scheme.content-override':1,
+      'browser.urlbar.autoFill':false,
+      'browser.download.dir':path.join(folder,'downloads'), 'browser.download.folderList':2,
+      'browser.download.useDownloadDir':true, 'browser.download.always_ask_before_handling_new_types':false,
+    });
     await fs.writeFile(path.join(profile,'user.js'), Object.entries(prefs).map(([k,v]) => `user_pref(${JSON.stringify(k)}, ${JSON.stringify(v)});`).join('\n')+'\n');
     // The running-app exception is scoped to this verified new disposable copy.
     if (role === 'themed') await engine.install(app,profile,{checkClosed:async()=>{}});
