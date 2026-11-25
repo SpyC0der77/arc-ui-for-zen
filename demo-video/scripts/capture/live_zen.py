@@ -341,6 +341,13 @@ def record():
         js("Services.prefs.setIntPref('ui.systemUsesDarkTheme',0);"
            "Services.prefs.setIntPref('layout.css.prefers-color-scheme.content-override',1)")
     fit_window()
+    if WINDOWS:
+        # Make Wikipedia the Personal Space's remembered tab before recording,
+        # so the switch lands on it directly instead of flashing the last
+        # opened tab (Spotify's dark page) first.
+        js("gZenWorkspaces.changeWorkspaceWithID(demoSpaces.Personal)"
+           ".then(()=>gBrowser.selectedTab=demoTabs.find(t=>t.title==='Wikipedia').tab)")
+        time.sleep(1.5)
     js("gURLBar.view.close();gURLBar.blur();window.focus()")
     reset_work()
     take = Take(OUT)

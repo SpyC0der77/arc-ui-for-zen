@@ -1,0 +1,728 @@
+{
+ "capture": "Real-time 60 fps window recordings (Windows.Graphics.Capture)",
+ "shots": [
+  {
+   "id": "work-space-essentials-and-real-documentation",
+   "title": "Work space, Essentials and real documentation",
+   "synced_on": [
+    "move0",
+    "collapse",
+    "expand"
+   ],
+   "panels": {
+    "arc": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\arc-main-60.mp4",
+     "start": 2.2737,
+     "end": 6.2262,
+     "ready": 3.6642,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\arc-work-space-essentials-and-real-documentation.json"
+    },
+    "themed": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\themed-60.mp4",
+     "start": 0.596,
+     "end": 4.0434,
+     "ready": 3.1637,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\themed-work-space-essentials-and-real-documentation.json",
+     "holds": [
+      [
+       0.3121,
+       0.1668
+      ],
+      [
+       1.1933,
+       0.0815
+      ],
+      [
+       2.218,
+       0.1742
+      ]
+     ]
+    },
+    "zen": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\vanilla-60.mp4",
+     "start": 0.5899,
+     "end": 4.0626,
+     "ready": 3.189,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\zen-work-space-essentials-and-real-documentation.json",
+     "holds": [
+      [
+       0.3124,
+       0.1665
+      ],
+      [
+       1.2189,
+       0.0729
+      ],
+      [
+       2.2434,
+       0.1744
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "personal-space",
+   "title": "Personal Space",
+   "synced_on": [
+    "move0",
+    "switch"
+   ],
+   "panels": {
+    "arc": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\arc-main-60.mp4",
+     "start": 7.9499,
+     "end": 11.1344,
+     "ready": 2.8961,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\arc-personal-space.json"
+    },
+    "themed": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\themed-60.mp4",
+     "start": 4.412,
+     "end": 7.2468,
+     "ready": 2.5511,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\themed-personal-space.json",
+     "holds": [
+      [
+       0.2622,
+       0.1662
+      ],
+      [
+       1.094,
+       0.2412
+      ]
+     ]
+    },
+    "zen": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\vanilla-60.mp4",
+     "start": 4.4309,
+     "end": 7.2728,
+     "ready": 2.5581,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\zen-personal-space.json",
+     "holds": [
+      [
+       0.2617,
+       0.1667
+      ],
+      [
+       1.1038,
+       0.2476
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "hover-peek",
+   "title": "Hover peek",
+   "synced_on": [
+    "move0",
+    "hide",
+    "move1",
+    "move2",
+    "move3"
+   ],
+   "panels": {
+    "arc": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\arc-main-60.mp4",
+     "start": 13.9359,
+     "end": 21.0859,
+     "ready": 6.8617,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\arc-hover-peek.json",
+     "holds": [
+      [
+       2.4635,
+       0.0342
+      ]
+     ]
+    },
+    "themed": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\themed-60.mp4",
+     "start": 8.8306,
+     "end": 15.4067,
+     "ready": 6.2925,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\themed-hover-peek.json",
+     "holds": [
+      [
+       0.2621,
+       0.1918
+      ],
+      [
+       1.2158,
+       0.1898
+      ],
+      [
+       2.0451,
+       0.071
+      ],
+      [
+       2.7469,
+       0.0693
+      ],
+      [
+       4.7498,
+       0.0364
+      ]
+     ]
+    },
+    "zen": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\vanilla-60.mp4",
+     "start": 8.8548,
+     "end": 15.4277,
+     "ready": 6.2894,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\zen-hover-peek.json",
+     "holds": [
+      [
+       0.2621,
+       0.1918
+      ],
+      [
+       1.2201,
+       0.2688
+      ],
+      [
+       2.7436,
+       0.0646
+      ],
+      [
+       4.7467,
+       0.0362
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "centered-command-bar",
+   "title": "Centered command bar",
+   "synced_on": [
+    "open",
+    "typed"
+   ],
+   "panels": {
+    "arc": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\arc-main-60.mp4",
+     "start": 22.7615,
+     "end": 25.8842,
+     "ready": 2.8346,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        480.0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\arc-centered-command-bar.json"
+    },
+    "themed": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\themed-60.mp4",
+     "start": 16.9949,
+     "end": 19.4075,
+     "ready": 2.1288,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        480.0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\themed-centered-command-bar.json",
+     "holds": [
+      [
+       0.3601,
+       0.0384
+      ],
+      [
+       1.1885,
+       0.6792
+      ]
+     ]
+    },
+    "zen": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\vanilla-60.mp4",
+     "start": 17.0061,
+     "end": 19.4183,
+     "ready": 2.1284,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        480.0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\zen-centered-command-bar.json",
+     "holds": [
+      [
+       0.3602,
+       0.055
+      ],
+      [
+       1.188,
+       0.6632
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "side-by-side-split-view",
+   "title": "Side by side split view",
+   "synced_on": [
+    "move0",
+    "split"
+   ],
+   "panels": {
+    "arc": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\arc-main-60.mp4",
+     "start": 26.7799,
+     "end": 31.6352,
+     "ready": 4.5701,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        740,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\arc-side-by-side-split-view.json",
+     "zoom_out": 1.5
+    },
+    "themed": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\themed-60.mp4",
+     "start": 19.7837,
+     "end": 23.9238,
+     "ready": 3.8564,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        740,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\themed-side-by-side-split-view.json",
+     "holds": [
+      [
+       0.2631,
+       0.1876
+      ],
+      [
+       1.8041,
+       0.9383
+      ]
+     ],
+     "zoom_out": 1.5
+    },
+    "zen": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\vanilla-60.mp4",
+     "start": 19.7938,
+     "end": 23.9603,
+     "ready": 3.8826,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        740,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\zen-side-by-side-split-view.json",
+     "holds": [
+      [
+       0.2635,
+       0.1872
+      ],
+      [
+       1.8312,
+       0.895
+      ]
+     ],
+     "zoom_out": 1.5
+    }
+   }
+  },
+  {
+   "id": "library-spaces",
+   "title": "Library Spaces",
+   "synced_on": [
+    "move0",
+    "library"
+   ],
+   "panels": {
+    "arc": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\arc-library-60.mp4",
+     "start": 0.0,
+     "end": 3.3681,
+     "ready": 3.0798,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\arc-library-spaces.json"
+    },
+    "themed": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\themed-60.mp4",
+     "start": 27.5059,
+     "end": 31.6955,
+     "ready": 3.9058,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\themed-library-spaces.json",
+     "holds": [
+      [
+       0.262,
+       0.1892
+      ]
+     ]
+    },
+    "zen": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\vanilla-60.mp4",
+     "start": 27.5425,
+     "end": 31.7505,
+     "ready": 3.9244,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\zen-library-spaces.json",
+     "holds": [
+      [
+       0.262,
+       0.1892
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "download-file-flight",
+   "title": "Download file flight",
+   "synced_on": [
+    "move0",
+    "download"
+   ],
+   "panels": {
+    "arc": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\arc-tail-60.mp4",
+     "start": 2.8893,
+     "end": 7.4167,
+     "ready": 4.239,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        600,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\arc-download-file-flight.json"
+    },
+    "themed": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\themed-60.mp4",
+     "start": 33.2675,
+     "end": 37.2857,
+     "ready": 3.7347,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        918.0301507537688,
+        0,
+        720.0,
+        1080
+       ]
+      },
+      {
+       "time": 0.8,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\themed-download-file-flight.json",
+     "holds": [
+      [
+       1.2908,
+       0.6748
+      ]
+     ]
+    },
+    "zen": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\vanilla-60.mp4",
+     "start": 33.3238,
+     "end": 35.833,
+     "ready": 2.2253,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "unavailable",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\zen-download-file-flight.json",
+     "holds": [
+      [
+       1.185,
+       0.7806
+      ]
+     ],
+     "caption": "No native equivalent"
+    }
+   }
+  },
+  {
+   "id": "github-live-folders",
+   "title": "GitHub Live Folders",
+   "synced_on": [
+    "create"
+   ],
+   "panels": {
+    "arc": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\arc-tail-60.mp4",
+     "start": 10.4573,
+     "end": 13.9912,
+     "ready": 3.2455,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "alternative",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\arc-github-live-folders.json",
+     "caption": "Needs GitHub sign-in"
+    },
+    "themed": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\themed-60.mp4",
+     "start": 37.6542,
+     "end": 41.0329,
+     "ready": 3.0952,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720.0,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\themed-github-live-folders.json",
+     "holds": [
+      [
+       0.3807,
+       1.166
+      ]
+     ]
+    },
+    "zen": {
+     "source": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cfr\\vanilla-60.mp4",
+     "start": 36.2015,
+     "end": 39.6057,
+     "ready": 3.1198,
+     "camera": [
+      {
+       "time": 0,
+       "rect": [
+        0,
+        0,
+        720,
+        1080
+       ]
+      }
+     ],
+     "availability": "native",
+     "cursor_track": "C:\\Users\\Carter\\.t3\\worktrees\\arc-skeleton-for-zen\\t3-windows-demo-video-0a24c9df465f2463\\demo-video\\recordings\\windows\\cursor\\zen-github-live-folders.json",
+     "holds": [
+      [
+       0.3811,
+       1.1656
+      ]
+     ]
+    }
+   }
+  }
+ ]
+}
