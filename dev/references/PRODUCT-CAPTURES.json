@@ -1,20 +1,20 @@
 {
-  "capturedAt": "2026-10-29T00:03:49.364372Z",
-  "zen": "1.23.4b",
+  "capturedAt": "2026-11-26T02:10:40.108668Z",
+  "zen": "1.24b",
   "capture": "Actual browser chrome, Marionette, disposable application and profile",
   "content": "Public real websites and official favicons, arranged only in the disposable capture profile. Debug Mode fixtures in the project are unchanged. Downloads retain local mock files.",
   "payloadHashes": {
-    "payload/arc.css": "120671849f244332f582ea1778f3a5b6237d26f44621aac283f4994789a4b5fc",
-    "payload/arc.uc.js": "b0e5dd140efc938c0a1023369789a32f25ac4b8344f313898b54cef470f14f15",
-    "payload/content/menu-popup.css": "63de3eedd7232cdf93970838975e1698a6cdc8b15d17905643661e73b06d21e1",
-    "payload/content/debug.sys.mjs": "203b917d982012456298511a3a19f17c7cd1ce9e8b87267c21ee5adc28ff154b"
+    "payload/zennia.css": "752585bd443cc16f9736161fd6877c3f12e7a7dc4b57ed80256b14d4a16dd5a0",
+    "payload/zennia.uc.js": "416f26d01f5cbfdc5e84e400a1fb7f1f28b9bb7d93ac406a7df36d6cf249dd85",
+    "payload/content/menu-popup.css": "90ecd9580e9d267124b437c032b8a3e16c99f5b3b2748ae36705b7f94f4d4003",
+    "payload/content/debug.sys.mjs": "7d3e0fc048262d615352e5384c8e03067b1768c6e7f9e502834b3b97aa8896ea"
   },
   "screenshots": [
     {
       "file": "product-sidebar.png",
       "caption": "Your folders and tabs, together in the sidebar. Sample data.",
-      "sha256": "c7e414a4cfd3f23c8eb7a0df5ba05e749e13d6f4bc9368567343beaaaaa1663e",
-      "capturedAt": "2026-10-29T00:03:49.364372Z",
+      "sha256": "730ed4cae1bb2dccb398eb67a9a386a15c0f4b6ed5668b65462efa8d694dd929",
+      "capturedAt": "2026-11-26T02:10:40.108668Z",
       "width": 2048,
       "height": 1544,
       "devicePixelRatio": 2
@@ -22,8 +22,8 @@
     {
       "file": "product-spaces.png",
       "caption": "Keep work and personal tabs in separate Spaces. Sample data.",
-      "sha256": "18194ab3d29e08f15687220d781ceca5c7aada8ba02486964e386b3d323eaed8",
-      "capturedAt": "2026-10-29T00:03:49.364372Z",
+      "sha256": "b2117acfe25c2fd9b830f13953c20ac4d8a05298c8ded9286ed6a45f5be9d2c9",
+      "capturedAt": "2026-11-26T02:10:40.108668Z",
       "width": 1945,
       "height": 1543,
       "note": "Native library element screenshot at 2x density with Work, Personal and Reading Spaces. Fractional CSS bounds produce odd pixel dimensions. The webpage is outside the captured element.",
@@ -32,8 +32,8 @@
     {
       "file": "product-commands.png",
       "caption": "Open browser actions from the command bar. Sample data.",
-      "sha256": "a15b50c858b33da2344ec77376d2e79ef2993379f6f2394af674bb7b32e2ea53",
-      "capturedAt": "2026-10-29T00:03:49.364372Z",
+      "sha256": "8c3208b41926d82a220b0fb88eb134b183f25b9c65d7eb0b0070d03c02b63bdf",
+      "capturedAt": "2026-11-26T02:10:40.108668Z",
       "width": 2048,
       "height": 1544,
       "devicePixelRatio": 2
@@ -41,8 +41,8 @@
     {
       "file": "product-library.png",
       "caption": "Find and manage your downloads in the library. Sample data.",
-      "sha256": "fe29848c89a84e02936a266d9ee410cfe66bb684224b2856bbc8c07e41605c92",
-      "capturedAt": "2026-10-29T00:03:49.364372Z",
+      "sha256": "0afaee2865698d42f0087abda2eefd0732b6c9dc38ccfcb93955cf99a7c5b667",
+      "capturedAt": "2026-11-26T02:10:40.108668Z",
       "width": 2048,
       "height": 1544,
       "devicePixelRatio": 2
