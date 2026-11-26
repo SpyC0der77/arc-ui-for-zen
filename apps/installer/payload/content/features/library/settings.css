@@ -675,7 +675,7 @@
     #zennia-settings-dialog[data-zennia-glass] .zennia-select-trigger:not(:disabled):active { transform: scale(1.06); transition-duration: 160ms; }
     #zennia-settings-dialog[data-zennia-glass] .zennia-select-trigger svg { width: 14px; height: 14px; color: currentColor; opacity: 0.6; }
     #zennia-settings-dialog[data-zennia-glass] .zennia-select-trigger:focus-visible {
-      outline: 2px solid var(--glass-blue);
+      outline: 2px solid var(--glass-blue) !important;
       outline-offset: 2px;
     }
 

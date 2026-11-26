@@ -148,7 +148,7 @@ void main() {
   float rim = 1.0 - smoothstep(0.0, rimW * 1.6, abs(dist + rimW * 1.8));
   float rimFalloff = exp(-pow(local.y / 30.0, 2.0));
   float rimDir = pow(right, 2.0) * rimFalloff * 0.9 + pow(down, 2.0) * 0.2 + pow(left, 2.0) * 0.55;
-  vec3 warmCool = mix(vec3(0.82, 0.9, 1.08), vec3(1.2, 0.95, 0.78), smoothstep(0.1, -0.5, nx));
+  vec3 warmCool = mix(vec3(0.82, 0.9, 1.08), vec3(1.2, 0.95, 0.78), 1.0 - smoothstep(-0.5, 0.1, nx));
   vec3 rimCol = mix(vec3(1.0), warmCool, down * 0.6);
   rimCol = mix(rimCol, vec3(0.12, 0.6, 1.2), left * 0.85);
   glass += rimCol * (rim * rimDir * uRim + fresnel * right * 0.02);
