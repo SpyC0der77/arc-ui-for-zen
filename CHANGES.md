@@ -15,7 +15,7 @@
 - Upgrade earlier Arc UI installations from the installer, keeping saved appearance settings and presets. Previously exported presets still import.
 - Import and export named appearance presets as versioned JSON files from Settings → Presets.
 - Validate imported appearance values, preview before applying, and preserve existing presets when names match.
-- On Windows, use thin overlay scrollbars that hide until used and momentum scrolling that eases like a Mac trackpad.
+- On Windows, use macOS-style overlay scrollbars that hide until used and momentum scrolling that eases like a Mac trackpad. These are new managed preferences, so existing Windows installations cannot take this release as an in-place update: run the installer again to update.
 - On Windows and Linux, suggest the SF Pro family when the browser font is Default, with a button that selects it.
 
 ## v0.1.8-beta.10

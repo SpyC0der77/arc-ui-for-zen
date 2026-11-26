@@ -154,7 +154,10 @@ function renderFont(){
  $('font-name').textContent=$('font-name').title=name||imports?.empty||'No file selected';
  $('font-preview').hidden=choice!=='geist'&&!previewFace;
  // Default is Zen's own font off macOS, so point those users at the closest SF Pro match.
- $('font-suggestion').hidden=!(platform&&!mac&&choice==='default');
+ const suggest=!!platform&&!mac&&choice==='default';
+ $('font-suggestion').hidden=!suggest;
+ // Describe the select by the suggestion only while it is shown.
+ $('font-preset').setAttribute('aria-describedby',suggest?'font-help font-suggestion-text':'font-help');
 }
 $('font-preset').addEventListener('change',()=>{
  resetFontChoice();

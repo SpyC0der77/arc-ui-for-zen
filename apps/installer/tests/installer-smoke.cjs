@@ -76,13 +76,16 @@ app.whenReady().then(async()=>{
  assert.equal(await run('document.getElementById("appearance-panel").hidden'),false);
  assert.equal(await run('document.getElementById("installation-panel").hidden'),true);
  // Off macOS, Default is Zen's own font, so offer the closest SF Pro match once.
+ // macOS never shows the suggestion, so these steps run only on Windows and Linux.
+ if(process.platform!=='darwin'){
  await choosePreset('default');
  assert.equal(await run('document.getElementById("font-suggestion").hidden'),false,'Default off macOS suggests the SF Pro family');
+ assert.equal(await run('document.getElementById("font-preset").getAttribute("aria-describedby")'),'font-help font-suggestion-text','The shown suggestion describes the font choice');
  await run('document.getElementById("use-sf-pro-family").click()');
  assert.equal(await run('document.getElementById("font-preset").value'),'sf-pro-family','The suggestion selects the SF Pro family');
  assert.equal(await run('document.getElementById("font-suggestion").hidden'),true,'Using the suggestion hides it');
  assert.equal(await run('document.activeElement.id'),'font-preset','Focus stays on the font choice after the suggestion hides');
- // Rescanning resets the font choice and reactivates the Installation tab.
+ // A rescan that reports macOS relabels Default and hides the suggestion.
  discovery.platform='darwin';
  await run('document.getElementById("search-again").click()');
  for(let i=0;i<100;i++){if(await run('document.querySelector("#font-preset option[value=default]").textContent==="Default (SF Pro)"'))break;await delay(50);}
@@ -96,6 +99,8 @@ app.whenReady().then(async()=>{
  assert.equal(await run('document.getElementById("font-suggestion").hidden'),false,'Restoring the platform brings the suggestion back');
  await choosePreset('geist');
  assert.equal(await run('document.getElementById("font-suggestion").hidden'),true,'Other choices hide the suggestion');
+ assert.equal(await run('document.getElementById("font-preset").getAttribute("aria-describedby")'),'font-help','A hidden suggestion no longer describes the font choice');
+ }
  assert.equal(await run('document.getElementById("font-preview").hidden'),false);
  await choosePreset('sf-pro');
  await run('document.getElementById("install").click()');
