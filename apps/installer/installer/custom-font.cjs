@@ -12,6 +12,41 @@ const FORMATS = {
 const MAX_BYTES = 8 * 1024 * 1024;
 const PRESETS = new Set(['geist', 'sf-pro', 'sf-pro-family']);
 const family = '"Zennia Custom"';
+// WOFF2 known table tags by flag index (WOFF2 section 5.1). Index 63 is followed by an explicit tag.
+const WOFF2_TAGS = ['cmap', 'head', 'hhea', 'hmtx', 'maxp', 'name', 'OS/2', 'post', 'cvt ', 'fpgm', 'glyf', 'loca', 'prep', 'CFF ', 'VORG', 'EBDT', 'EBLC', 'gasp', 'hdmx', 'kern', 'LTSH', 'PCLT', 'VDMX', 'vhea', 'vmtx', 'BASE', 'GDEF', 'GPOS', 'GSUB', 'EBSC', 'JSTF', 'MATH', 'CBDT', 'CBLC', 'COLR', 'CPAL', 'SVG ', 'sbix', 'acnt', 'avar', 'bdat', 'bloc', 'bsln', 'cvar', 'fdsc', 'feat', 'fmtx', 'fvar', 'gvar', 'hsty', 'just', 'lcar', 'mort', 'morx', 'opbd', 'prop', 'trak', 'Zapf', 'Silf', 'Glat', 'Gloc', 'Feat', 'Sill'];
+
+/** Whether the WOFF2 table directory lists an fvar table. The tables themselves stay compressed. */
+function woff2HasFvar(bytes, invalid) {
+  let at = 48;
+  const base128 = () => {
+    let value = 0;
+    for (let i = 0; i < 5; i++) {
+      if (at >= bytes.length) throw invalid();
+      const byte = bytes[at++];
+      value = value * 128 + (byte & 0x7f);
+      if (!(byte & 0x80)) return value;
+    }
+    throw invalid();
+  };
+  let variable = false;
+  for (let i = 0; i < bytes.readUInt16BE(12); i++) {
+    if (at >= bytes.length) throw invalid();
+    const flags = bytes[at++];
+    let tag = WOFF2_TAGS[flags & 0x3f];
+    if ((flags & 0x3f) === 0x3f) {
+      if (at + 4 > bytes.length) throw invalid();
+      tag = bytes.toString('latin1', at, at + 4);
+      at += 4;
+    }
+    base128(); // origLength
+    const version = flags >> 6;
+    // glyf and loca are transformed at version 0; every other table is transformed at any other version.
+    const transformed = tag === 'glyf' || tag === 'loca' ? version === 0 : version !== 0;
+    if (transformed) base128(); // transformLength
+    if (tag === 'fvar') variable = true;
+  }
+  return variable;
+}
 
 async function readFont(file, name = path.basename(file)) {
   const format = FORMATS[path.extname(name).toLowerCase()];
@@ -30,6 +65,7 @@ async function readFont(file, name = path.basename(file)) {
   let variable = false;
   if (format.css === 'woff2') {
     if (bytes.length < 48 || bytes.readUInt32BE(8) !== bytes.length || !bytes.readUInt16BE(12)) throw invalid();
+    variable = woff2HasFvar(bytes, invalid);
   } else {
     const count = bytes.readUInt16BE(4);
     if (!count || 12 + 16 * count > bytes.length) throw invalid();
