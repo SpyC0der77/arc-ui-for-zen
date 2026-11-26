@@ -186,3 +186,44 @@ for (const platform of ['win32','darwin','linux']) test(`in-place update preserv
   await assert.rejects(fs.access(fontFile),{code:'ENOENT'});
   assert.equal(await fs.readFile(path.join(profile,'user.js'),'utf8'),'// personal settings\n');
 });
+test('in-place updates keep an installed SF Pro family and its receipt entries',async t=>{
+ const fs = require('node:fs/promises'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
+ const {applyThemeUpdate} = await import('../payload/content/update-apply.mjs');
+ const engine = require('../installer/engine.cjs');
+ const {FAMILY,STYLES} = require('../installer/custom-font.cjs');
+ const folder = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'zennia-family-update-')));
+ t.after(()=>fs.rm(folder,{recursive:true,force:true}));
+ const app=path.join(folder,'Zen'), profile=path.join(folder,'profile');
+ const target=engine.layout(app,'linux');
+ await fs.mkdir(path.join(target.resources,'defaults','pref'),{recursive:true});await fs.mkdir(profile);
+ await fs.mkdir(path.dirname(target.exe),{recursive:true});await fs.writeFile(target.exe,'');
+ await fs.writeFile(path.join(target.resources,'application.ini'),'[App]\nVersion=1.24b\n');
+ await fs.writeFile(path.join(profile,'prefs.js'),'// personal prefs\n');
+ await fs.writeFile(path.join(profile,'user.js'),'// personal settings\n');
+ // Minimal OpenType files that pass the importer's checks.
+ const otf=tag=>{const bytes=Buffer.alloc(64);bytes.write('OTTO',0,'latin1');bytes.writeUInt16BE(1,4);bytes.write('CFF ',12,'latin1');bytes.writeUInt32BE(28,20);bytes.writeUInt32BE(4,24);bytes.write(tag,40,'latin1');return bytes;};
+ const sf=path.join(folder,'SF Pro');await fs.mkdir(sf);
+ const faces=['SF-Pro-Text-Regular.otf','SF-Pro-Text-Medium.otf'];
+ for(const file of faces)await fs.writeFile(path.join(sf,file),otf(file));
+ await engine.install(app,profile,{platform:'linux',checkClosed:async()=>{},customFont:sf,fontPreset:'sf-pro-family'});
+ const familyFiles=faces.map(file=>path.join(profile,'chrome','zennia',FAMILY,file));
+ const stylesheet=path.join(profile,'chrome','zennia',STYLES);
+ const css=await fs.readFile(stylesheet);
+ const files={};
+ async function collect(dir,prefix=''){for(const item of await fs.readdir(dir,{withFileTypes:true})){if(item.isDirectory())await collect(path.join(dir,item.name),prefix+item.name+'/');else files[prefix+item.name]=(await fs.readFile(path.join(dir,item.name))).toString('base64');}}
+ await collect(path.join(__dirname,'../payload'));
+ const bundle={format:1,version:'9.0.0',supported:['1.24b'],files};
+ const context={paths:{profile,resources:target.resources,join:path.join,separator:path.sep},zenData:require('../payload/content/shared/zen-data.js'),version:'9.0.0',browserVersion:'1.24b',platform:'Linux',decode:s=>Buffer.from(s,'base64'),encode:s=>Buffer.from(s),hash:async b=>crypto.createHash('sha256').update(b).digest('hex'),io:{exists:p=>fs.access(p).then(()=>true,()=>false),readJSON:async p=>JSON.parse(await fs.readFile(p,'utf8')),read:p=>fs.readFile(p),write:async(p,b)=>{await fs.mkdir(path.dirname(p),{recursive:true});await fs.writeFile(p,b);},remove:p=>fs.rm(p,{force:true}),assertPath:async p=>{assert.equal(path.resolve(p),p);}}};
+ const receiptPath=engine.receiptFile(profile);
+ await applyThemeUpdate(bundle,context);
+ const receipt=await context.io.readJSON(receiptPath);
+ assert.equal(receipt.version,'9.0.0');
+ assert.equal(receipt.fontPreset,'sf-pro-family');
+ for(const file of familyFiles){
+  assert.deepEqual(await fs.readFile(file),otf(path.basename(file)));
+  assert.ok(receipt.files.some(entry=>entry.path===file),'receipt keeps '+path.basename(file));
+ }
+ assert.deepEqual(await fs.readFile(stylesheet),css);
+ await engine.remove(app,profile,{platform:'linux',checkClosed:async()=>{}});
+ await assert.rejects(fs.access(familyFiles[0]),{code:'ENOENT'});
+});

@@ -45,7 +45,9 @@ export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode,
   }
   // settings*.json are only in bundles for updaters that predate zen-versions/.
   const skip = new Set(['zennia.cfg','zennia-autoconfig.js','settings.json','settings.windows.json']);
-  const isThemeFile = file => underRoot(file) && !localFontPaths.has(file);
+  // The imported SF Pro family is kept, like the single font file, so updates never remove it.
+  const familyRoot = join(root, 'content', 'custom-font', 'sf-pro') + paths.separator;
+  const isThemeFile = file => underRoot(file) && !localFontPaths.has(file) && !file.startsWith(familyRoot);
   const writes = new Map(), nextFiles = receipt.files.filter(file => !isThemeFile(file.path));
   for (const [relative, bytes] of data) {
     if (skip.has(relative)) continue;
