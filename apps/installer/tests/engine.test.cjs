@@ -152,6 +152,26 @@ test('the SF Pro family imports every Text and Display face and uses heavier cut
  await assert.rejects(engine.install(f.app,f.profile,{...f.options,customFont:folder,fontPreset:'sf-pro-family'}),/SF-Pro-Text-Regular\.otf/);
  await assert.rejects(engine.install(f.app,f.profile,{...f.options,fontPreset:'sf-pro-family'}),/Choose the folder/);
 });
+test('a reinstall stops before removing the old theme when its imported font is missing',async t=>{
+ const {FAMILY,FACE,STYLES}=require('../installer/custom-font.cjs');
+ const f=await fixture(t);
+ const installed=relative=>path.join(f.profile,'chrome','zennia',relative);
+ const folder=path.join(f.root,'SF Pro');
+ await fs.mkdir(folder);
+ await fs.writeFile(path.join(folder,'SF-Pro-Text-Regular.otf'),otf('regular'));
+ await engine.install(f.app,f.profile,{...f.options,customFont:folder,fontPreset:'sf-pro-family'});
+ await fs.rm(installed(FAMILY),{recursive:true});
+ await assert.rejects(engine.install(f.app,f.profile,f.options),/Choose the font again/);
+ assert.equal((await engine.inspect(f.app,f.profile)).fontPreset,'sf-pro-family');
+ assert.ok(await fs.stat(installed(STYLES)));
+ const g=await fixture(t),source=path.join(g.root,'Example.woff2');
+ await fs.copyFile(path.join(__dirname,'../payload/content/geist-400.woff2'),source);
+ await engine.install(g.app,g.profile,{...g.options,customFont:source});
+ await fs.rm(path.join(g.profile,'chrome','zennia',FACE));
+ await assert.rejects(engine.install(g.app,g.profile,g.options),/Choose the font again/);
+ assert.equal((await engine.inspect(g.app,g.profile)).customFont,'Example.woff2');
+ assert.ok(await fs.stat(path.join(g.profile,'chrome','zennia',STYLES)));
+});
 for(const platform of ['win32','darwin','linux'])test('install/remove preserves original files on '+platform,async t=>{
  const f=await fixture(t,platform),user=path.join(f.profile,'user.js');
  const original=Buffer.from('// original\r\nuser_pref("custom", true);\r\n');await fs.writeFile(user,original);

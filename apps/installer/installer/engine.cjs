@@ -120,6 +120,7 @@ async function inspect(installation,profile) {
     ...(receipt?.customFont?{customFont:receipt.customFont}:{}),
     ...(font.PRESETS.has(receipt?.fontPreset)?{fontPreset:receipt.fontPreset}:{})};
 }
+function missingFont(){return new Error('The browser font from the previous install is missing. Choose the font again before reinstalling, or choose Default to remove it.');}
 async function install(installation,profile,{payload=path.join(__dirname,'..','payload'),customFont,fontPreset,...options}={}) {
   const target=await validate(installation,profile,options);
   const root=path.join(target.profile,'chrome','zennia');
@@ -153,9 +154,12 @@ async function install(installation,profile,{payload=path.join(__dirname,'..','p
         // Keep the imported family: read the owned faces back before the old theme is removed.
         const owned=previous.files.filter(file=>path.dirname(file.path)===family);
         for(const file of owned)await assertRealPath(file.path);
-        if(owned.length&&await exists(family))picked=await font.readFamily(family,previous.customFont);
+        if(!owned.length||!await exists(family))throw missingFont();
+        picked=await font.readFamily(family,previous.customFont);
       }
-      else if(typeof previous.customFont==='string'&&previous.files.some(file=>file.path===face)&&await exists(face)) {
+      else if(typeof previous.customFont==='string') {
+        // Keep the imported file. Without it, the reinstall would silently fall back to Default.
+        if(!previous.files.some(file=>file.path===face)||!await exists(face))throw missingFont();
         await assertRealPath(face);
         picked=await font.readFont(face,previous.customFont);
         if(previous.fontPreset==='sf-pro')picked.preset='sf-pro';
