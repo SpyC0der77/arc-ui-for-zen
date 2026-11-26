@@ -15,7 +15,7 @@ export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode,
   if (!files || typeof files !== 'object' || !files['zennia.uc.js'] || !files['chrome.manifest'] || Object.keys(files).length > 2000) throw new Error('Incomplete update bundle.');
   const data = new Map();
   for (const [relative, value] of Object.entries(files)) {
-    if (localFont.has(relative) || !/^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/.test(relative) || relative.split('/').some(s => s === '.' || s === '..') || typeof value !== 'string') throw new Error('Invalid update payload path.');
+    if (localFont.has(relative) || relative.startsWith('content/custom-font/sf-pro/') || !/^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/.test(relative) || relative.split('/').some(s => s === '.' || s === '..') || typeof value !== 'string') throw new Error('Invalid update payload path.');
     data.set(relative, decode(value));
   }
   // This bundle format updates the theme without changing the startup loader or

@@ -215,6 +215,10 @@ test('in-place updates keep an installed SF Pro family and its receipt entries',
  const bundle={format:1,version:'9.0.0',supported:['1.24b'],files};
  const context={paths:{profile,resources:target.resources,join:path.join,separator:path.sep},zenData:require('../payload/content/shared/zen-data.js'),version:'9.0.0',browserVersion:'1.24b',platform:'Linux',decode:s=>Buffer.from(s,'base64'),encode:s=>Buffer.from(s),hash:async b=>crypto.createHash('sha256').update(b).digest('hex'),io:{exists:p=>fs.access(p).then(()=>true,()=>false),readJSON:async p=>JSON.parse(await fs.readFile(p,'utf8')),read:p=>fs.readFile(p),write:async(p,b)=>{await fs.mkdir(path.dirname(p),{recursive:true});await fs.writeFile(p,b);},remove:p=>fs.rm(p,{force:true}),assertPath:async p=>{assert.equal(path.resolve(p),p);}}};
  const receiptPath=engine.receiptFile(profile);
+ // A bundle may not replace an imported face: the whole update is refused before anything is written.
+ const hostile={...bundle,files:{...files,[FAMILY+'/'+path.basename(familyFiles[0])]:Buffer.from('replaced').toString('base64')}};
+ await assert.rejects(applyThemeUpdate(hostile,context),/Invalid update payload path/);
+ assert.deepEqual(await fs.readFile(familyFiles[0]),otf(path.basename(familyFiles[0])));
  await applyThemeUpdate(bundle,context);
  const receipt=await context.io.readJSON(receiptPath);
  assert.equal(receipt.version,'9.0.0');
