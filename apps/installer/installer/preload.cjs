@@ -4,6 +4,8 @@ contextBridge.exposeInMainWorld('zenInstaller',Object.freeze({
   updateSelection:()=>ipcRenderer.invoke('zennia:update-selection'),
   inspect:selection=>ipcRenderer.invoke('zennia:inspect',selection),
   chooseFolder:()=>ipcRenderer.invoke('zennia:folder'),
-  apply:(action,selection)=>ipcRenderer.invoke('zennia:apply',action,selection),
+  openFontSource:preset=>ipcRenderer.invoke('zennia:font-source',preset),
+  chooseFont:preset=>ipcRenderer.invoke('zennia:font',preset),
+  apply:(action,selection,fontChoice)=>ipcRenderer.invoke('zennia:apply',action,selection,fontChoice),
   launch:selection=>ipcRenderer.invoke('zennia:launch',selection),
 }));

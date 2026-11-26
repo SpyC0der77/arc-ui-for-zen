@@ -145,7 +145,8 @@ for (const platform of ['win32','darwin','linux']) test(`in-place update preserv
   await fs.writeFile(path.join(target.resources,'application.ini'),'[App]\nVersion=1.24b\n');
   await fs.writeFile(path.join(profile,'prefs.js'),'// personal prefs\n');
   await fs.writeFile(path.join(profile,'user.js'),'// personal settings\n');
-  await engine.install(app,profile,{platform,checkClosed:async()=>{}});
+  const font=path.join(__dirname,'../payload/content/geist-400.woff2');
+  await engine.install(app,profile,{platform,checkClosed:async()=>{},customFont:font});
   const files={};
   async function collect(dir,prefix=''){for(const item of await fs.readdir(dir,{withFileTypes:true})){if(item.isDirectory())await collect(path.join(dir,item.name),prefix+item.name+'/');else files[prefix+item.name]=(await fs.readFile(path.join(dir,item.name))).toString('base64');}}
   await collect(path.join(__dirname,'../payload'));
@@ -161,6 +162,8 @@ for (const platform of ['win32','darwin','linux']) test(`in-place update preserv
   assert.deepEqual(await fs.readFile(managed),original);assert.deepEqual(await fs.readFile(receiptPath),receiptBefore);
   context.io.write=write;
   files['../outside']='eA==';await assert.rejects(applyThemeUpdate(bundle,context),/payload path/);delete files['../outside'];
+  const {FACE,STYLES}=require('../installer/custom-font.cjs');
+  files[FACE]='eA==';await assert.rejects(applyThemeUpdate(bundle,context),/payload path/);delete files[FACE];
   // Managed preferences come from the bundle's data for the running Zen version.
   const versionFile=files['zen-versions/1.24b.json'];
   files['zen-versions/1.24b.json']=Buffer.from(JSON.stringify({...JSON.parse(Buffer.from(versionFile,'base64')),prefs:{'zen.urlbar.behavior':'normal'}})).toString('base64');
@@ -171,11 +174,15 @@ for (const platform of ['win32','darwin','linux']) test(`in-place update preserv
   await applyThemeUpdate(bundle,context);
   assert.equal((await context.io.readJSON(receiptPath)).version,'9.0.0');
   assert.deepEqual(await fs.readFile(path.join(profile,'user.js')),userBefore);
+  const fontFile=path.join(profile,'chrome','zennia',FACE);
+  assert.deepEqual(await fs.readFile(fontFile),await fs.readFile(font));
+  assert.ok(await fs.stat(path.join(profile,'chrome','zennia',STYLES)));
   const journal=path.join(profile,'chrome','zennia-update-journal.json');
   await fs.writeFile(journal,JSON.stringify({files:[{path:managed,bytes:Array.from(original)}]}));
   await recoverThemeUpdate(context);assert.deepEqual(await fs.readFile(managed),original);
   // Restore the committed update before verifying normal installer removal.
   await fs.writeFile(managed,Buffer.from(files['zennia.uc.js'],'base64'));
   await engine.remove(app,profile,{platform,checkClosed:async()=>{}});
+  await assert.rejects(fs.access(fontFile),{code:'ENOENT'});
   assert.equal(await fs.readFile(path.join(profile,'user.js'),'utf8'),'// personal settings\n');
 });

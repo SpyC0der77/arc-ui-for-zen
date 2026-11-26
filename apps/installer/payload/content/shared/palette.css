@@ -1,7 +1,8 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
   :root[data-zennia] {
-    --zennia-font: -apple-system, BlinkMacSystemFont, Geist, sans-serif;
+    --zennia-default-font: -apple-system, BlinkMacSystemFont, Geist, sans-serif;
+    --zennia-font: var(--zennia-user-font, var(--zennia-default-font));
     font-family: var(--zennia-font) !important;
     font-synthesis: none;
     --zennia-surface: light-dark(#cec7d4, #23202a);

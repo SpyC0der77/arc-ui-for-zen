@@ -1,5 +1,6 @@
 ﻿const {app,BrowserWindow}=require('electron');
 const fs=require('node:fs/promises');const path=require('node:path');const os=require('node:os');const assert=require('node:assert/strict');
+const {dialog,shell}=require('electron');
 const appRoot=process.argv[2]||path.join(__dirname,'..');
 const engine=require(path.join(appRoot,'installer','engine.cjs'));
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -7,7 +8,7 @@ process.env.ARC_INSTALLER_SMOKE='1';
 app.disableHardwareAcceleration();
 let fixture;
 const originalInstall=engine.install,originalRemove=engine.remove;
-engine.install=(installation,profile)=>originalInstall(installation,profile,{checkClosed:async()=>{}});
+engine.install=(installation,profile,options)=>originalInstall(installation,profile,{...options,checkClosed:async()=>{}});
 engine.remove=(installation,profile)=>originalRemove(installation,profile,{checkClosed:async()=>{}});
 app.whenReady().then(async()=>{
  fixture=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'zennia-ui-')));
@@ -63,12 +64,42 @@ app.whenReady().then(async()=>{
  assert.equal(await window.webContents.executeJavaScript('new Set([...document.querySelectorAll(".product-image img")].map(img=>img.src)).size'),4,'Every setup/completion page has a distinct current product view');
  assert.equal(await window.webContents.executeJavaScript('[...document.querySelectorAll(".product-image img")].every(img=>img.naturalWidth>0)'),true,'All current product screenshots load');
  window.setSize(1080,740);
+ const font=path.join(fixture,'Example Font.woff2');
+ await fs.copyFile(path.join(appRoot,'payload','content','geist-400.woff2'),font);
+ dialog.showOpenDialog=async()=>({canceled:false,filePaths:[font]});
+ let source;
+ shell.openExternal=async url=>{source=url;};
+ const run=source=>window.webContents.executeJavaScript(source);
+ const choosePreset=preset=>run(`{const field=document.getElementById("font-preset");field.value=${JSON.stringify(preset)};field.dispatchEvent(new Event("change"));}`);
+ await run('document.getElementById("installation-tab").dispatchEvent(new KeyboardEvent("keydown",{key:"ArrowRight"}))');
+ assert.equal(await run('document.activeElement.id'),'appearance-tab');
+ assert.equal(await run('document.getElementById("appearance-panel").hidden'),false);
+ assert.equal(await run('document.getElementById("installation-panel").hidden'),true);
+ await choosePreset('geist');
+ assert.equal(await run('document.getElementById("font-preview").hidden'),false);
+ await choosePreset('sf-pro');
+ await run('document.getElementById("install").click()');
+ assert.match(await run('document.getElementById("review-error").textContent'),/Choose the downloaded SF-Pro.ttf/);
+ await run('document.getElementById("font-source").click()');
+ for(let i=0;i<100&&(!source||await run('document.getElementById("font-source").disabled'));i++)await delay(20);
+ assert.equal(source,'https://github.com/sahibjotsaggu/San-Francisco-Pro-Fonts/blob/master/SF-Pro.ttf');
+ await choosePreset('custom');
+ assert.equal(await run('document.getElementById("font-source").hidden'),true);
+ await choosePreset('sf-pro');
+ await window.webContents.executeJavaScript('document.getElementById("choose-font").click()');
+ for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('!document.getElementById("font-preview").hidden'))break;await delay(20);}
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("font-name").textContent'),'Example Font.woff2');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("font-preview").hidden'),false);
  await window.webContents.executeJavaScript('document.getElementById("install").click()');
  for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('document.getElementById("status").textContent.startsWith("Installed.")'))break;await delay(50);}
  assert.ok(await fs.stat(engine.receiptFile(profile)));
+ const installed=await engine.inspect(zen,profile);
+ assert.equal(installed.customFont,'Example Font.woff2');
+ assert.equal(installed.fontPreset,'sf-pro');
  await window.webContents.executeJavaScript('document.getElementById("manage").click();document.getElementById("remove").click()');
  for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('document.getElementById("status").textContent.startsWith("Removed." )'))break;await delay(50);}
  await assert.rejects(fs.access(engine.receiptFile(profile)));
+ await assert.rejects(fs.access(path.join(profile,'chrome','zennia','content','custom-font','face')));
  discovery.apps=[];discovery.profiles=[];discovery.instances=[];
  await window.webContents.executeJavaScript('document.getElementById("search-again").click()');
  for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('document.getElementById("status").textContent.startsWith("No Zen found")'))break;await delay(50);}
@@ -114,7 +145,7 @@ app.whenReady().then(async()=>{
  }
  assert.equal(await window.webContents.executeJavaScript('document.getElementById("review-profile").textContent'),profile,'Queued handoff is applied after the operation');
  await delay(250);
- const artifacts=path.join(__dirname,'..','artifacts');await fs.mkdir(artifacts,{recursive:true});await fs.writeFile(path.join(artifacts,'installer.png'),(await window.webContents.capturePage()).toPNG());
+ const artifacts=path.join(__dirname,'..','..','..','artifacts');await fs.mkdir(artifacts,{recursive:true});await fs.writeFile(path.join(artifacts,'installer.png'),(await window.webContents.capturePage()).toPNG());
  assert.deepEqual(errors,[]);
  console.log('PASS: Electron UI install/remove, profile preservation, renderer isolation, layout');
  window.destroy();await fs.rm(fixture,{recursive:true,force:true});app.exit(0);

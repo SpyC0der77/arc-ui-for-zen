@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const engine = require('../installer/engine.cjs');
 
-const ROOT = path.resolve(__dirname, '..', 'zen-instances', 'dev-zen');
+const ROOT = path.resolve(__dirname, '..', '..', '..', 'zen-instances', 'dev-zen');
 const POLICIES = { DisableAppUpdate: true, DontCheckDefaultBrowser: true };
 
 // Adds the policies to the app's distribution/policies.json, keeping any others.

@@ -16,7 +16,7 @@ from pathlib import Path
 
 from PIL import Image, ImageChops
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'artifacts/test-python'))
 from marionette_driver.marionette import Marionette, ActionSequence
 

@@ -8,8 +8,8 @@ const {execFile} = require('node:child_process');
 const {promisify} = require('node:util');
 const {load} = require('./prepare-comparison.cjs');
 const {sign} = require('./sign-disposable.cjs');
-const engine = require('../../../installer/engine.cjs');
-const {launch} = require('../../../installer/launch.cjs');
+const engine = require('../../../apps/installer/installer/engine.cjs');
+const {launch} = require('../../../apps/installer/installer/launch.cjs');
 const run = promisify(execFile);
 
 async function refresh(file) {

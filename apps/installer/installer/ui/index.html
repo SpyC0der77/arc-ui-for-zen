@@ -37,14 +37,40 @@
 <p class="help">Find the root directory in Zen at <code>about:profiles</code>.</p>
 <div class="actions"><button type="button" data-back="setup">Back</button><button id="profile-next" class="primary" type="button">Continue</button></div>
 </section></div><footer><p class="status-copy">Looking for Zen...</p><p class="version-copy help"></p></footer></div><figure class="product-column"><div class="product-image"><img src="product-spaces.png" width="973" height="771" alt="Current Zennia Spaces library with sample work and personal spaces"></div><figcaption>Keep work and personal tabs in separate Spaces. Sample data.</figcaption></figure></div></article>
-<article class="screen" inert aria-hidden="true"><div class="screen-content"><div class="setup-column"><header><img src="zennia-mark.svg" width="32" height="32" alt=""><p>Zennia</p></header><div class="pages"><section id="review">
+<article class="screen review-screen" inert aria-hidden="true"><div class="screen-content"><div class="setup-column"><header><img src="zennia-mark.svg" width="32" height="32" alt=""><p>Zennia</p></header><div class="pages"><section id="review">
 <p class="progress">3 of 3</p>
 <h1 class="title" tabindex="-1">Ready to install.</h1>
+<div class="review-tabs" role="tablist" aria-label="Installer settings">
+  <button id="installation-tab" type="button" role="tab" aria-controls="installation-panel" aria-selected="true">Installation</button>
+  <button id="appearance-tab" type="button" role="tab" aria-controls="appearance-panel" aria-selected="false" tabindex="-1">Appearance</button>
+</div>
+<div id="installation-panel" role="tabpanel" aria-labelledby="installation-tab" tabindex="0">
 <p class="intro">Close all Zen windows before continuing.</p>
 <dl class="review-paths"><dt>Browser</dt><dd id="review-installation"></dd><dt>Profile</dt><dd id="review-profile"></dd></dl>
 <p id="review-versions" class="help" role="status" aria-live="polite"></p>
 <p class="notice">Installs privileged local browser UI scripts and a startup loader. Website sandboxing stays enabled. Existing configuration is backed up; conflicting loaders are left untouched.</p>
 <details><summary>What this installs</summary><ul><li>Lavender theme, sidebar and command bar</li><li>Library and download controls</li><li>Sidebar and download animations</li></ul></details>
+</div>
+<div id="appearance-panel" role="tabpanel" aria-labelledby="appearance-tab" hidden>
+  <label for="font-preset">Browser font</label>
+  <select id="font-preset" aria-describedby="font-help">
+    <option value="default">Default</option>
+    <option value="geist">Geist</option>
+    <option value="sf-pro">SF Pro</option>
+    <option value="sf-pro-family">SF Pro family (all weights)</option>
+    <option value="custom">Custom file…</option>
+  </select>
+  <p id="font-help" class="help">Applies to Zen’s interface and built-in pages.</p>
+  <div id="font-import" hidden>
+    <p id="sf-pro-help" class="help" hidden>Download SF-Pro.ttf from GitHub, then choose the file here.</p>
+    <div class="font-actions">
+      <button id="font-source" type="button" hidden>Open SF-Pro.ttf on GitHub</button>
+      <button id="choose-font" type="button" aria-describedby="font-name">Choose file…</button>
+    </div>
+    <p id="font-name" class="help" role="status"></p>
+  </div>
+  <p id="font-preview" class="font-preview" hidden>Project notes · Search or enter address</p>
+</div>
 <p id="review-error" class="review-error" hidden></p>
 <form id="installer"><div class="actions"><button type="button" data-back="profile-step">Back</button><button id="install" class="primary" type="submit">Install</button></div></form>
 <div class="manage-actions"><button id="remove" type="button">Remove theme</button><button id="launch" type="button">Open Zen</button></div>

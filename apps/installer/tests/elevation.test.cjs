@@ -27,6 +27,19 @@ test('UAC cancellation is actionable and not retried',async()=>{
  await assert.rejects(elevate('install','a','p',{appPath:process.cwd(),run:async()=>{calls++;throw Object.assign(new Error('cancelled'),{code:1223});}}),/permission was declined/);
  assert.equal(calls,1);
 });
+test('the elevated install receives the selected font or explicit default',async t=>{
+ const root=await fs.mkdtemp(path.join(os.tmpdir(),'zennia-font-worker-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));
+ const file=path.join(root,'My Font.otf'),calls=[];
+ const engine={install:async(app,profile,options)=>{calls.push(options);return true;}};
+ assert.equal(await worker(['install',root,root,path.join(root,'chosen.json'),file],engine),0);
+ assert.equal(await worker(['install',root,root,path.join(root,'default.json'),'--default-font'],engine),0);
+ assert.equal(await worker(['install',root,root,path.join(root,'geist.json'),'geist'],engine),0);
+ assert.equal(await worker(['install',root,root,path.join(root,'sf-pro.json'),file,'sf-pro'],engine),0);
+ assert.equal(await worker(['install',root,root,path.join(root,'family.json'),root,'sf-pro-family'],engine),0);
+ await assert.rejects(worker(['install',root,root,path.join(root,'invalid.json'),'sf-pro'],engine),/Invalid/);
+ await assert.rejects(worker(['install',root,root,path.join(root,'unknown.json'),root,'sf-pro-rounded'],engine),/Invalid/);
+ assert.deepEqual(calls,[{customFont:file},{customFont:null},{customFont:'geist'},{customFont:file,fontPreset:'sf-pro'},{customFont:root,fontPreset:'sf-pro-family'}]);
+});
 test('elevation transports quoted paths as data in encoded PowerShell',()=>{
  const script=elevationScript("C:\\O'Brien\\installer.exe",['C:\\a b\\','p"q','$(not-code)']);
  assert.match(script,/-Verb RunAs -Wait -PassThru/);assert.ok(script.includes("'C:\\O''Brien\\installer.exe'"));assert.ok(script.includes('$(not-code)'));

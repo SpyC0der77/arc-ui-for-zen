@@ -2,11 +2,26 @@
 
 Zennia (formerly Arc UI for Zen) is an Arc-inspired interface for Zen **1.22b to 1.24.3b** (every release in that range), with a lavender sidebar, centered address bar, library, auto-archive and animated downloads. It brings Arc's visual design to Zen's native tabs and browser features through local CSS and JavaScript patches, installed with an Electron app. It does not replace the browser engine or fork Zen.
 
-On 1.22.x and 1.23b, which predate Zen's startup-loaded native library, the gift button opens a native menu with Downloads, Bookmarks, History and restorable recently closed tabs. Downloads uses the browser's native downloads view, including its private-window behavior. Auto-archive and Debug Mode require the newer native library and are unavailable on those versions. Idle tabs stay open there, and sidebar transitions use the older browser's native behavior. Later versions have every feature. Each version's differences are listed in `payload/zen-versions/<version>.json`. These versions have Windows runtime coverage; macOS/Linux runtime validation remains pending.
+On 1.22.x and 1.23b, which predate Zen's startup-loaded native library, the gift button opens a native menu with Downloads, Bookmarks, History and restorable recently closed tabs. Downloads uses the browser's native downloads view, including its private-window behavior. Auto-archive and Debug Mode require the newer native library and are unavailable on those versions. Idle tabs stay open there, and sidebar transitions use the older browser's native behavior. Later versions have every feature. Each version's differences are listed in `apps/installer/payload/zen-versions/<version>.json`. These versions have Windows runtime coverage; macOS/Linux runtime validation remains pending.
+
+## Repository layout
+
+This is a pnpm workspace with two packages:
+
+| Folder | Package | What it is |
+| --- | --- | --- |
+| `apps/installer` | `zennia-installer` | The Electron installer and CLI (`installer/`), the browser theme and patches (`payload/`), their tests and build scripts, and developer notes (`dev/`). |
+| `apps/website` | `zennia-website` | The Next.js project website. It reads supported Zen versions from `apps/installer/payload/zen-versions/`, the changelog from `CHANGES.md`, and the screenshots from `apps/installer/installer/ui/` at build time. |
+
+`demo-video/`, `CHANGES.md` and this README stay at the repository root. Local development data also stays at the root: `zen-instances/` for development Zen instances and `artifacts/` for downloaded Zen builds, the Python test driver and captures. Installer scripts and tests resolve those two folders from the repository root.
+
+Run `pnpm install` once at the root. `pnpm test`, `pnpm start`, `pnpm cli`, `pnpm test:runtime` and `pnpm dev:lock` work from the root and run in `apps/installer`; other installer scripts run from `apps/installer`. `pnpm web:dev` and `pnpm web:build` run the website.
 
 ## Install
 
 Open the installer, select your Zen application and profile, close Zen, then click **Install**. Use **Open Zen** afterward. On first launch after Zen onboarding, a local preview page opens. Its Download button plays the file animation without downloading anything.
+
+On the installer's **Appearance** tab, choose **Default**, **Geist**, **SF Pro**, or **Custom file…** under **Browser font**. Geist is bundled. For SF Pro, use **Open SF-Pro.ttf on GitHub** and import the downloaded file. Custom files can be OTF, TTF, or WOFF2. Zennia applies the chosen font across Zen's interface and built-in pages and keeps it through theme updates. Choose **Default** and reinstall to restore the default font.
 
 ### Upgrading from Arc UI for Zen
 
@@ -14,7 +29,7 @@ This project was renamed from Arc UI for Zen. Versions released under the old na
 
 ## Publishing a release
 
-Set the same installer version in `package.json` and `installer/engine.cjs`, commit the changes, then push a matching tag such as `v0.1.0`. The **Create release** workflow tests and builds Windows, macOS and Linux installers before publishing a GitHub release with all four distribution files, SHA-256 checksums, supported Zen versions, installation notes and GitHub-generated changes since the previous release. Tags with a prerelease suffix, such as `v0.2.0-beta.1`, produce prereleases.
+Set the same installer version in `apps/installer/package.json` and `apps/installer/installer/engine.cjs`, commit the changes, then push a matching tag such as `v0.1.0`. The **Create release** workflow tests and builds Windows, macOS and Linux installers before publishing a GitHub release with all four distribution files, SHA-256 checksums, supported Zen versions, installation notes and GitHub-generated changes since the previous release. Tags with a prerelease suffix, such as `v0.2.0-beta.1`, produce prereleases.
 
 To retry a failed run, rerun it in Actions, or run **Create release** manually with the existing version tag selected. Branch runs and version mismatches fail before building. An existing published release is never overwritten. macOS bundles use ad-hoc signing and pass strict signature verification before publication. They are not Developer ID signed or notarized; Windows and Linux builds are unsigned.
 
@@ -33,10 +48,10 @@ Select your actual profile explicitly when there is more than one. Zen's `about:
 With Node.js installed, run from this checkout:
 
 ```sh
-node installer/cli.cjs discover
-node installer/cli.cjs install --installation "/path/to/Zen" --profile "/path/to/profile" --open
-node installer/cli.cjs open --installation "/path/to/Zen" --profile "/path/to/profile"
-node installer/cli.cjs remove --installation "/path/to/Zen" --profile "/path/to/profile"
+node apps/installer/installer/cli.cjs discover
+node apps/installer/installer/cli.cjs install --installation "/path/to/Zen" --profile "/path/to/profile" --open
+node apps/installer/installer/cli.cjs open --installation "/path/to/Zen" --profile "/path/to/profile"
+node apps/installer/installer/cli.cjs remove --installation "/path/to/Zen" --profile "/path/to/profile"
 ```
 
 Use quoted Windows paths on Windows. `pnpm cli <command>` also works. Folders can be omitted when discovery finds exactly one application and one profile. Multiple matches require explicit selection. The CLI installs the theme into an existing supported Zen installation, not Zen itself. Close Zen before install or remove. To update, remove first, then install with `--open`. Opening uses the same cache-purging launcher as the graphical installer.
@@ -87,7 +102,7 @@ Zennia settings groups general and background controls in **Appearance**, indivi
 
 Zen continues to manage library sections, workspaces, pinned tabs, folders, permissions, extensions, navigation and session restore. This theme recreates parts of Arc's interface using those native features; it does not reproduce every Arc feature or exactly match its macOS behavior.
 
-Download actions use bundled [Lucide](https://lucide.dev/) SVGs. Their license is included in `payload/content/lucide/LICENSE`. Files retain their native icons and image previews.
+Download actions use bundled [Lucide](https://lucide.dev/) SVGs. Their license is included in `apps/installer/payload/content/lucide/LICENSE`. Files retain their native icons and image previews.
 
 ### Debug mode
 
@@ -113,7 +128,7 @@ To update an existing installation, close Zen, use the previous installer to Rem
 
 The installer adds two app startup files, `zennia.cfg` and `defaults/pref/zennia-autoconfig.js`. They register local chrome packages and load `chrome/zennia/zennia.uc.js` only in the selected profile. Scripts and fonts are bundled; no remote scripts are downloaded or executed.
 
-Each supported Zen version has a data file in `payload/zen-versions/` that records how it differs from the others: renamed or missing Zen internals, features it cannot support, and the preferences to manage. The loader runs only when the running Zen version has a file, and feature code reads version differences from that file rather than checking version numbers. See [dev/ZEN-VERSIONS.md](dev/ZEN-VERSIONS.md).
+Each supported Zen version has a data file in `apps/installer/payload/zen-versions/` that records how it differs from the others: renamed or missing Zen internals, features it cannot support, and the preferences to manage. The loader runs only when the running Zen version has a file, and feature code reads version differences from that file rather than checking version numbers. See [apps/installer/dev/ZEN-VERSIONS.md](apps/installer/dev/ZEN-VERSIONS.md).
 
 The loader enables the unsandboxed **AutoConfig script context**, which gives these local scripts browser-level privileges. This does not disable web-content sandboxing, extension signatures, TLS checks or web security. The installer discloses this before installation and refuses to replace an existing AutoConfig loader, including Sine/fx-autoconfig installations.
 
@@ -135,12 +150,13 @@ Install and removal use atomic file writes and rollback on ordinary write failur
 
 ## Build and verify
 
-From the project root, with Node.js and pnpm:
+From the repository root, with Node.js and pnpm (the `dist` commands and the commands below run from `apps/installer`):
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm test
 pnpm start
+cd apps/installer
 pnpm dist:win
 pnpm dist:mac
 pnpm dist:linux
@@ -148,37 +164,37 @@ pnpm dist:linux
 
 `start` launches the local Electron app, with no development server. Build only the target for the host OS. macOS builds use ad-hoc signing without notarization; other platforms remain unsigned.
 
-Historical Arc screenshots and their source notes live in [`dev/references/`](dev/references/README.md). They are excluded from installer packages. Pull requests run unit tests and build installers on Windows, macOS, and Linux; `pnpm verify:package` checks the resulting ASAR files for complete runtime contents and excluded development files. Pass an output directory to verify a separate build, for example `pnpm verify:package artifacts/pr-build`.
+Historical Arc screenshots and their source notes live in [`apps/installer/dev/references/`](apps/installer/dev/references/README.md). They are excluded from installer packages. Pull requests run unit tests and build installers on Windows, macOS, and Linux; `pnpm verify:package` checks the resulting ASAR files for complete runtime contents and excluded development files. Pass an output directory to verify a separate build, for example `pnpm verify:package ../../artifacts/pr-build`.
 
-`pnpm test:runtime -- <unpatched Zen application folder>` requires a Zen application folder without an installed Zennia theme or another AutoConfig loader. It makes an isolated application copy and fresh profile, uses the production version gates, disables updates only in that copy, runs native browser checks, captures browser chrome on success or failure, and verifies removal. A browser-side watchdog requests graceful shutdown on timeout. It never force-kills Zen or changes the source application or your personal profile. Temporary copies remain under ignored `artifacts/runtime-*`; each run prints its `diagnostics` directory.
+`pnpm test:runtime -- <unpatched Zen application folder>` requires a Zen application folder without an installed Zennia theme or another AutoConfig loader. It makes an isolated application copy and fresh profile, uses the production version gates, disables updates only in that copy, runs native browser checks, captures browser chrome on success or failure, and verifies removal. A browser-side watchdog requests graceful shutdown on timeout. It never force-kills Zen or changes the source application or your personal profile. Temporary copies remain under ignored `zen-instances/runtime-*`. Each run prints its `diagnostics` directory.
 
-On Windows, fetch an exact supported build and run the same checks as CI:
+On Windows, from `apps/installer`, fetch an exact supported build and run the same checks as CI:
 
 ```sh
 pnpm fetch:zen -- 1.22.3b
-python -m pip install --target artifacts/test-python -r tests/runtime-requirements.txt
-pnpm test:runtime -- artifacts/zen-builds/1.22.3b/core --pointer
+python -m pip install --target ../../artifacts/test-python -r tests/runtime-requirements.txt
+pnpm test:runtime -- ../../artifacts/zen-builds/1.22.3b/core --pointer
 ```
 
-`fetch:zen` needs `7z` on PATH. It downloads the official Windows x64 installer, verifies the SHA-256 pinned in that version's `payload/zen-versions/<version>.json`, and extracts it without executing the installer. It refuses to overwrite an existing extracted build. A verified downloaded installer can be reused if extraction needs retrying into an absent destination.
+`fetch:zen` needs `7z` on PATH. It downloads the official Windows x64 installer, verifies the SHA-256 pinned in that version's `apps/installer/payload/zen-versions/<version>.json`, and extracts it without executing the installer. It refuses to overwrite an existing extracted build. A verified downloaded installer can be reused if extraction needs retrying into an absent destination.
 
 `--pointer` adds native Marionette hover/click checks on a dynamically allocated loopback port, including the 1.22.3b menu and actual closed-tab restoration. It requires Python and the optional driver above. Remote system access is enabled only on the disposable child process. Without this flag, no driver is enabled or required. The disposable profile explicitly enables normal motion for animation assertions, then the runtime suite switches to reduced motion and checks that behavior separately, regardless of the host OS setting.
 
-Pull requests and releases run a Windows runtime matrix for every supported version, alongside the existing installer builds. Each job first runs `pnpm check:zen -- <version>`, which reads that build's `omni.ja` archives and fails if Zennia uses a Zen name, global, member, preference or URL the build lacks and the version file does not account for. Adding support means adding a version file; see [dev/ZEN-VERSIONS.md](dev/ZEN-VERSIONS.md). Release publication waits for the complete reusable build workflow, including every runtime job. CI uploads only allowlisted test JSON, logs and screenshots, including on failure, rather than full browser profiles or application copies. macOS/Linux runtime coverage is still pending.
+Pull requests and releases run a Windows runtime matrix for every supported version, alongside the existing installer builds. Each job first runs `pnpm check:zen -- <version>`, which reads that build's `omni.ja` archives and fails if Zennia uses a Zen name, global, member, preference or URL the build lacks and the version file does not account for. Adding support means adding a version file; see [apps/installer/dev/ZEN-VERSIONS.md](apps/installer/dev/ZEN-VERSIONS.md). Release publication waits for the complete reusable build workflow, including every runtime job. CI uploads only allowlisted test JSON, logs and screenshots, including on failure, rather than full browser profiles or application copies. macOS/Linux runtime coverage is still pending.
 
-`tests/installer-smoke.cjs` runs with Electron and tests the actual install/remove UI and renderer isolation against temporary fixture folders. `tests/onboarding-motion.cjs` runs with Electron and checks page geometry throughout navigation, the final position, reversal during motion, and reduced-motion behavior. `pnpm test` covers all platform layouts, conflicts, version checks, preservation and receipt validation.
+`apps/installer/tests/installer-smoke.cjs` runs with Electron and tests the actual install/remove UI and renderer isolation against temporary fixture folders. `apps/installer/tests/onboarding-motion.cjs` runs with Electron and checks page geometry throughout navigation, the final position, reversal during motion, and reduced-motion behavior. `pnpm test` covers all platform layouts, conflicts, version checks, preservation and receipt validation.
 
-`python tests/address-bar-layout.py [port]` checks that opening the command bar preserves the parked address-field height and its gap below navigation controls in a disposable Marionette session.
+`python apps/installer/tests/address-bar-layout.py [port]` checks that opening the command bar preserves the parked address-field height and its gap below navigation controls in a disposable Marionette session.
 
-`tests/interactive.py` adds pointer-input checks through Mozilla's Marionette driver. It exercises library hover/click from docked and peeked sidebars, then records sidebar and child visibility throughout closing. It also moves the pointer along the reveal edge beyond Zen's hover timeout, checks that an intentional exit and return rearms the sidebar, and confirms the peeked panel floats (rounded card with its shadow) over rounded page corners. It attaches only to an explicitly launched test session with `--marionette` and `MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1`. Install its optional Python client into `artifacts/test-python` as described in the script. Close that session and reopen Zen normally afterward; the installer never enables the driver.
+`apps/installer/tests/interactive.py` adds pointer-input checks through Mozilla's Marionette driver. It exercises library hover/click from docked and peeked sidebars, then records sidebar and child visibility throughout closing. It also moves the pointer along the reveal edge beyond Zen's hover timeout, checks that an intentional exit and return rearms the sidebar, and confirms the peeked panel floats (rounded card with its shadow) over rounded page corners. It attaches only to an explicitly launched test session with `--marionette` and `MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1`. Install its optional Python client into `artifacts/test-python` as described in the script. Close that session and reopen Zen normally afterward; the installer never enables the driver.
 
-`python tests/debug-lifecycle.py [port]` uses the same disposable Marionette session to verify restoration of open and closed library views through debug reset/disable, and teardown while activation is paused after creating its first Space. The teardown check destroys that window's debug controller, so restart the test browser afterward.
+`python apps/installer/tests/debug-lifecycle.py [port]` uses the same disposable Marionette session to verify restoration of open and closed library views through debug reset/disable, and teardown while activation is paused after creating its first Space. The teardown check destroys that window's debug controller, so restart the test browser afterward.
 
-`tests/sidebar-motion.py` uses the same Marionette session to pause docking at five points, save chrome screenshots, and verify the actual sidebar corner hit targets, transparent native layers, and control bounds. Docking uses one animated background and a matching clip on the entire sidebar tree so native square backgrounds cannot fill the rounded corners.
+`apps/installer/tests/sidebar-motion.py` uses the same Marionette session to pause docking at five points, save chrome screenshots, and verify the actual sidebar corner hit targets, transparent native layers, and control bounds. Docking uses one animated background and a matching clip on the entire sidebar tree so native square backgrounds cannot fill the rounded corners.
 
 The UI implementation is adapted from [`arc-ui-skeleton`](https://github.com/SpyC0der77/arc-ui-skeleton), a standalone recreation of Arc's interface.
 
-The included Geist fonts retain their license in `payload/content/Geist-LICENSE.txt`.
+The included Geist fonts retain their license in `apps/installer/payload/content/Geist-LICENSE.txt`.
 
 
 ### Release updates

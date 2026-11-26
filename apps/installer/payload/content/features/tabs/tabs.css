@@ -154,7 +154,10 @@
       transition: background-color 120ms ease !important;
     }
   }
-  :root[data-zennia] #tabs-newtab-button:hover {
+  :root[data-zennia] #tabs-newtab-button:hover:not([in-urlbar]) {
     background: color-mix(in srgb, var(--zennia-tab-hover) 50%, transparent) !important;
+  }
+  :root[data-zennia] #tabs-newtab-button[in-urlbar] {
+    background: var(--zennia-tab-active) !important;
   }
 }

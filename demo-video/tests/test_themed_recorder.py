@@ -56,7 +56,7 @@ class OriginalRecorderTests(unittest.TestCase):
 
     def test_current_archive_source_is_used(self):
         tree = module.RecordingPaths(Path('/tmp/out')).visit(ast.parse("source = Path('payload/zennia.uc.js').read_text()"))
-        self.assertIn('payload/content/features/archive/auto-archive.js', ast.unparse(tree))
+        self.assertIn('apps/installer/payload/content/features/archive/auto-archive.js', ast.unparse(tree))
 
 
 if __name__ == '__main__':

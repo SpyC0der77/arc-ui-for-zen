@@ -65,8 +65,11 @@ class RecordingPaths(ast.NodeTransformer):
     def visit_Constant(self, node):
         # Recorder predates the source split. Read the same installed functions
         # from their current source location, without changing their contents.
+        # The payload later moved into the apps/installer workspace package.
         if node.value == 'payload/zennia.uc.js':
-            return ast.Constant('payload/content/features/archive/auto-archive.js')
+            return ast.Constant('apps/installer/payload/content/features/archive/auto-archive.js')
+        if isinstance(node.value, str) and node.value.startswith('payload/'):
+            return ast.Constant('apps/installer/' + node.value)
         return node
 
     def visit_FunctionDef(self, node):

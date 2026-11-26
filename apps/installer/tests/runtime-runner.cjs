@@ -58,7 +58,7 @@ async function copyDiagnostics(profile, diagnostics) {
   }
 }
 async function verify(source, {pointer = false, timeoutMs = 120000} = {}) {
-  const artifacts = path.resolve(__dirname, '../zen-instances');
+  const artifacts = path.resolve(__dirname, '../../../zen-instances');
   const sourceApp = await fs.realpath(source);
   const relative = path.relative(sourceApp, artifacts);
   if (relative === '' || (!relative.startsWith('..' + path.sep) && relative !== '..' && !path.isAbsolute(relative)))

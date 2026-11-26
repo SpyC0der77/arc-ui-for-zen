@@ -12,6 +12,15 @@ var ZenniaLibrary = {
     ["hover", "Hover background", "--zennia-popup-hover", "#e8e3df", "#413b48"],
     ["pressed", "Pressed background", "--zennia-popup-active", "#ded7d2", "#514858"],
   ],
+  /** The browser font recorded in the install receipt, named as the installer names it. */
+  fontLabel(receipt) {
+    if (receipt?.fontPreset === "geist") return "Geist";
+    if (receipt?.fontPreset === "sf-pro") return "SF Pro";
+    if (receipt?.fontPreset === "sf-pro-family") return "SF Pro family";
+    if (typeof receipt?.customFont === "string" && receipt.customFont)
+      return receipt.customFont.replace(/\.(otf|ttf|woff2)$/i, "");
+    return "Default";
+  },
   schema() {
     const fields = [
       { key: "mode", type: "string", fallback: "system", choices: ["light", "dark", "system"] },
@@ -120,7 +129,7 @@ var ZenniaLibrary = {
   },
   install(window, dependencies = {}) {
     const { document, MutationObserver } = window;
-    const { icon, nudge, hideDownloads, report, zen } = dependencies;
+    const { icon, nudge, hideDownloads, report, zen, liquidGlass } = dependencies;
     const toolbox = document.getElementById("navigator-toolbox");
     const library = document.querySelector(zen.name("zen-library"));
     // Zen versions without the native library (features.library "menu") get a menu instead.
@@ -202,10 +211,11 @@ var ZenniaLibrary = {
       }
       const reduceMotion = Services.prefs.getBoolPref(prefBranch + "reduce-motion", false);
       document.documentElement.toggleAttribute("data-zennia-reduced-motion", reduceMotion);
+      settingsWindow?.document?.getElementById("zennia-settings-dialog")?.toggleAttribute("data-zennia-reduced-motion", reduceMotion);
       if (motionInput) motionInput.checked = reduceMotion;
       const glass = Services.prefs.getBoolPref(prefBranch + "liquid-glass", true);
       if (glassInput) glassInput.checked = glass;
-      applyGlass(glass);
+      applyGlass(glass, resolved);
       refreshColorInputs();
       refreshPresets();
       updateColorReset();
@@ -244,26 +254,32 @@ var ZenniaLibrary = {
     modeLabel.id = "zennia-appearance-label";
     const modeGroup = html("div", "");
     modeGroup.id = "zennia-appearance-mode";
+    modeGroup.className = "zennia-segmented";
     modeGroup.setAttribute("role", "radiogroup");
     modeGroup.setAttribute("aria-labelledby", modeLabel.id);
     const modeThumb = html("div", "");
     modeThumb.className = "zennia-segment-thumb";
     modeGroup.append(modeThumb);
-    for (const [value, label] of [["light", "Light"], ["dark", "Dark"], ["system", "System"]]) {
+    function addSegment(group, name, value, label, onSelect) {
       const segment = html("label", "");
       const input = html("input", "");
       input.type = "radio";
-      input.name = "zennia-appearance-mode";
+      input.name = name;
       input.value = value;
-      input.id = "zennia-appearance-" + value;
       input.addEventListener("change", () => {
-        if (input.checked) Services.prefs.setStringPref(prefBranch + "mode", value);
+        if (input.checked) onSelect(value);
       });
-      modeInputs.push(input);
       const content = html("span", label);
       content.prepend(icon({ light: "sun", dark: "moon", system: "automatic" }[value]));
       segment.append(input, content);
-      modeGroup.append(segment);
+      group.append(segment);
+      return input;
+    }
+    for (const [value, label] of [["light", "Light"], ["dark", "Dark"], ["system", "System"]]) {
+      const input = addSegment(modeGroup, modeGroup.id, value, label,
+        next => Services.prefs.setStringPref(prefBranch + "mode", next));
+      input.id = "zennia-appearance-" + value;
+      modeInputs.push(input);
     }
     // Measure the selected segment when the dialog is open; hidden dialogs
     // report zero sizes, so opening re-syncs through the Settings action.
@@ -771,7 +787,41 @@ var ZenniaLibrary = {
     glassToggle.checked = Services.prefs.getBoolPref(prefBranch + "liquid-glass", true);
     glassToggle.addEventListener("change", () => Services.prefs.setBoolPref(prefBranch + "liquid-glass", glassToggle.checked));
     glassRow.append(glassToggle);
-    applyGlass = enabled => settings.toggleAttribute("data-zennia-glass", enabled);
+    // The browser font is chosen in the installer; its receipt in the profile records it.
+    const fontRow = html("div", "");
+    fontRow.className = "zennia-settings-row";
+    const fontValue = html("output", "Default");
+    fontValue.id = "zennia-browser-font";
+    fontRow.append(html("span", "Browser font"), fontValue);
+    async function refreshFont() {
+      try {
+        const receipt = await window.IOUtils.readJSON(window.PathUtils.join(window.PathUtils.profileDir, "chrome", "zennia.install.json"));
+        fontValue.textContent = ZenniaLibrary.fontLabel(receipt);
+      } catch {
+        fontValue.textContent = ZenniaLibrary.fontLabel(null);
+      }
+    }
+    // The native controls keep their CSS appearance when the glass renderer is unavailable.
+    const reducedMotion = () => document.documentElement.hasAttribute("data-zennia-reduced-motion") ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedTransparency = window.matchMedia("(prefers-reduced-transparency: reduce)");
+    let glassKit = null;
+    try {
+      glassKit = liquidGlass?.install(window, { reduced: reducedMotion }) ?? null;
+    } catch (error) {
+      report?.(error);
+    }
+    const glassOn = () => settings.hasAttribute("data-zennia-glass") && !reducedTransparency.matches;
+    applyGlass = (enabled, mode) => {
+      if (settings.hasAttribute("data-zennia-glass") !== enabled) closeSelectMenus(true);
+      settings.toggleAttribute("data-zennia-glass", enabled);
+      glassKit?.sync(glassOn(), mode);
+    };
+    const onTransparencyChange = () => {
+      closeSelectMenus(true);
+      glassKit?.sync(glassOn());
+    };
+    reducedTransparency.addEventListener("change", onTransparencyChange);
     const reset = html("button", "Reset appearance");
     reset.type = "button";
     reset.addEventListener("click", () => {
@@ -792,7 +842,12 @@ var ZenniaLibrary = {
     body.className = "zennia-settings-body";
     const panels = new Map();
     const tabs = [];
+    const selectMenus = [];
+    function closeSelectMenus(immediate = false) {
+      for (const { menu, hide } of selectMenus) if (menu.matches(":popover-open")) hide(immediate);
+    }
     function selectSection(tab, focus = false) {
+      closeSelectMenus(true);
       for (const item of tabs) {
         const selected = item === tab;
         item.setAttribute("aria-selected", String(selected));
@@ -865,29 +920,26 @@ var ZenniaLibrary = {
       describe(settings.querySelector('[data-appearance-key="content-radius"]'), "Rounding of the frame around web pages."),
       describe(motionRow, "Skip motion in the sidebar, menus and dialogs."),
       describe(glassRow, "Glass switches, sliders and segmented controls in this window."),
+      describe(fontRow, "Chosen in the Zennia installer. Install again to change it."),
     );
     // Edit one appearance at a time: each list heading carries a Light/Dark
     // switch, and the rows show only that mode's control.
     const editSwitches = [];
     function setEditMode(mode) {
       settings.dataset.editMode = mode;
-      for (const button of editSwitches) button.setAttribute("aria-pressed", String(button.value === mode));
+      for (const input of editSwitches) input.checked = input.value === mode;
+      glassKit?.sync();
     }
     function editHeading(text) {
       const row = html("div", "");
       row.className = "zennia-palette-heading";
       const switcher = html("div", "");
-      switcher.className = "zennia-edit-mode";
-      switcher.setAttribute("role", "group");
+      switcher.className = "zennia-segmented zennia-edit-mode";
+      switcher.setAttribute("role", "radiogroup");
       switcher.setAttribute("aria-label", `${text}: appearance to edit`);
+      const name = "zennia-edit-" + text.toLowerCase();
       for (const [value, label] of [["light", "Light"], ["dark", "Dark"]]) {
-        const button = html("button", "");
-        button.append(icon(value === "light" ? "sun" : "moon"), html("span", label));
-        button.type = "button";
-        button.value = value;
-        button.addEventListener("click", () => setEditMode(value));
-        editSwitches.push(button);
-        switcher.append(button);
+        editSwitches.push(addSegment(switcher, name, value, label, setEditMode));
       }
       row.append(html("span", text), switcher);
       return row;
@@ -999,53 +1051,93 @@ var ZenniaLibrary = {
     settings.replaceChildren(header, navigation, body);
     selectSection(tabs[0]);
     document.documentElement.append(settings);
+    for (const input of settings.querySelectorAll('input[type="range"]')) glassKit?.slider(input);
+    for (const group of settings.querySelectorAll(".zennia-segmented")) glassKit?.segment(group);
+    glassKit?.sync(glassOn(), document.documentElement.getAttribute("data-zennia-color-mode"));
     for (const select of settings.querySelectorAll("select")) {
       const trigger = html("button", "");
       trigger.type = "button";
       trigger.className = "zennia-select-trigger";
       trigger.setAttribute("aria-haspopup", "menu");
-      trigger.setAttribute("aria-label", select.closest("label")?.querySelector("span")?.textContent || "Choose option");
+      trigger.setAttribute("aria-expanded", "false");
+      const label = select.closest("label")?.querySelector("span")?.textContent || "Choose option";
+      const description = select.getAttribute("aria-describedby");
+      if (description) trigger.setAttribute("aria-describedby", description);
       const menu = html("div", "");
       menu.className = "zennia-select-menu";
-      menu.setAttribute("popover", "auto");
+      // Manual, so closing can play its motion before the list leaves the top layer.
+      menu.setAttribute("popover", glassKit ? "manual" : "auto");
       menu.setAttribute("role", "menu");
       const triggerLabel = html("span", "");
       trigger.append(triggerLabel, icon("chevron"));
+      const motion = glassKit?.popup(trigger, menu, { gap: () => (glassOn() ? 12 : 4), glass: glassOn }) ?? null;
+      const options = () => [...menu.children].filter(item => item.matches("button"));
       const sync = () => {
         triggerLabel.textContent = select.selectedOptions[0]?.textContent || "Choose";
+        trigger.setAttribute("aria-label", `${label}: ${triggerLabel.textContent}`);
         trigger.disabled = select.disabled;
-        for (const item of menu.children) item.setAttribute("aria-checked", String(item.dataset.value === select.value));
+        for (const item of options()) item.setAttribute("aria-checked", String(item.dataset.value === select.value));
       };
+      const isOpen = () => (motion ? motion.open : menu.matches(":popover-open"));
+      const hide = (immediate = false) => {
+        trigger.setAttribute("aria-expanded", "false");
+        if (motion) motion.hide(immediate);
+        else menu.hidePopover();
+      };
+      const show = () => {
+        sync();
+        trigger.setAttribute("aria-expanded", "true");
+        if (motion) motion.show();
+        else {
+          menu.showPopover();
+          menu.setAttribute("data-glass-state", "open");
+          const r = trigger.getBoundingClientRect();
+          const view = settings.ownerDocument.defaultView;
+          menu.style.left = Math.min(r.left, view.innerWidth - menu.offsetWidth - 8) + "px";
+          menu.style.top = Math.min(r.bottom + 4, view.innerHeight - menu.offsetHeight - 8) + "px";
+        }
+        (menu.querySelector('[aria-checked="true"]') || options()[0])?.focus({ preventScroll: true });
+      };
+      selectMenus.push({ menu, hide });
       for (const option of select.options) {
         const item = html("button", option.textContent);
         item.type = "button";
+        item.tabIndex = -1;
         item.dataset.value = option.value;
         item.setAttribute("role", "menuitemradio");
         item.addEventListener("click", () => {
           select.value = option.value;
           select.dispatchEvent(new Event("change", { bubbles: true }));
-          sync(); menu.hidePopover(); trigger.focus();
+          sync(); hide(); trigger.focus();
         });
         menu.append(item);
       }
-      trigger.addEventListener("click", () => {
-        if (menu.matches(":popover-open")) { menu.hidePopover(); return; }
-        sync(); menu.showPopover();
-        const r = trigger.getBoundingClientRect();
-        const view = settings.ownerDocument.defaultView;
-        menu.style.left = Math.min(r.left, view.innerWidth - menu.offsetWidth - 8) + "px";
-        menu.style.top = Math.min(r.bottom + 4, view.innerHeight - menu.offsetHeight - 8) + "px";
-        (menu.querySelector('[aria-checked="true"]') || menu.firstElementChild)?.focus();
-      });
+      trigger.addEventListener("click", () => (isOpen() ? hide() : show()));
       menu.addEventListener("keydown", event => {
-        const items = [...menu.children], index = items.indexOf(settings.ownerDocument.activeElement);
+        const items = options(), index = items.indexOf(settings.ownerDocument.activeElement);
         if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
           event.preventDefault();
           items[event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : (index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus();
         }
-        if (event.key === "Escape") trigger.focus();
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          hide(); trigger.focus();
+        }
       });
-      menu.addEventListener("toggle", () => trigger.setAttribute("aria-expanded", String(menu.matches(":popover-open"))));
+      if (motion) {
+        // A manual popover has no light dismiss of its own: a press outside it, or focus
+        // leaving it, closes it the way an item does.
+        settings.addEventListener("pointerdown", event => {
+          if (isOpen() && !menu.contains(event.target) && !trigger.contains(event.target)) hide();
+        }, true);
+        menu.addEventListener("focusout", event => {
+          if (isOpen() && event.relatedTarget && !menu.contains(event.relatedTarget) && event.relatedTarget !== trigger) hide();
+        });
+      } else menu.addEventListener("toggle", () => {
+        const open = menu.matches(":popover-open");
+        trigger.setAttribute("aria-expanded", String(open));
+        if (!open) menu.removeAttribute("data-glass-state");
+      });
       select.hidden = true;
       select.after(trigger, menu);
       select.addEventListener("change", sync);
@@ -1080,6 +1172,9 @@ var ZenniaLibrary = {
         settings.show();
         host.document.title = title.textContent;
         applyAppearance();
+        void refreshFont();
+        host.addEventListener("blur", () => closeSelectMenus());
+        host.addEventListener("resize", () => closeSelectMenus(true));
         syncModeThumb();
         host.requestAnimationFrame(syncModeThumb);
         host.addEventListener("keydown", event => {
@@ -1087,6 +1182,8 @@ var ZenniaLibrary = {
         });
         // Register after navigation: the initial about:blank unload is not a close.
         host.addEventListener("unload", () => {
+          closeSelectMenus(true);
+          glassKit?.sync(false);
           if (settings.open) settings.close();
           document.documentElement.append(settings);
           if (settingsWindow === host) settingsWindow = null;
@@ -1225,6 +1322,8 @@ var ZenniaLibrary = {
         settingsWindow?.close();
         Services.prefs.removeObserver(prefBranch, appearanceObserver);
         systemScheme.removeEventListener("change", applyAppearance);
+        reducedTransparency.removeEventListener("change", onTransparencyChange);
+        closeSelectMenus(true);
         document.documentElement.removeAttribute("data-zennia-color-mode");
         document.documentElement.removeAttribute("data-zennia-gradient");
         document.documentElement.style.removeProperty("--zennia-shell-gradient");
@@ -1234,6 +1333,7 @@ var ZenniaLibrary = {
         for (const [, , variable] of appearance) document.documentElement.style.removeProperty(variable);
         document.documentElement.removeAttribute("data-zennia-reduced-motion");
         projectMenu.remove();
+        glassKit?.destroy();
         settings.remove();
         updater.listeners.delete(syncTrack);
         gift.remove();

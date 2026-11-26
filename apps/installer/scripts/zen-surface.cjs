@@ -162,7 +162,7 @@ function checkBuild(version, core) {
 module.exports = { collectPayload, checkBuild, indexBuild, readJar, NAME, PREF, isZenUrl };
 
 if (require.main === module) {
-  const [version, core = path.join(__dirname, '..', 'artifacts', 'zen-builds', version || '', 'core')] = process.argv.slice(2).filter(arg => arg !== '--');
+  const [version, core = path.join(__dirname, '..', '..', '..', 'artifacts', 'zen-builds', version || '', 'core')] = process.argv.slice(2).filter(arg => arg !== '--');
   if (!version) { console.error('Usage: node scripts/zen-surface.cjs <version> [extracted core folder]'); process.exit(1); }
   const problems = checkBuild(version, core);
   for (const problem of problems) console.error(problem);

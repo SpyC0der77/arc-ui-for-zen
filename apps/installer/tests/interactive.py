@@ -4,7 +4,7 @@ The browser launch needs MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 for this test only.
 """
 import base64,json,sys,time
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[3]
 sys.path.insert(0,str(ROOT/'artifacts/test-python'))
 from marionette_driver.marionette import Marionette,ActionSequence
 m=Marionette('localhost',port=int(sys.argv[1]) if len(sys.argv)>1 else 2828,socket_timeout=20)

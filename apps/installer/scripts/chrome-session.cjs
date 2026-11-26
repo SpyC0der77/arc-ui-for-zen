@@ -19,7 +19,7 @@ const engine = require('../installer/engine.cjs');
     probe.listen(2828, '127.0.0.1', resolve);
   });
   await new Promise(resolve => probe.close(resolve));
-  const artifacts = path.resolve(__dirname, '../zen-instances');
+  const artifacts = path.resolve(__dirname, '../../../zen-instances');
   await fs.mkdir(artifacts, {recursive:true});
   const folder = await fs.mkdtemp(path.join(artifacts, 'chrome-session-'));
   // macOS signing can fail in cloud-managed workspaces. Keep the disposable

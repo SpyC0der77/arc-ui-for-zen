@@ -3,8 +3,12 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { launch } = require('./launch.cjs');
 const engine = require('./engine.cjs');
+const { readFont, readFamily, previewFace } = require('./custom-font.cjs');
+const sfProRepository = 'https://github.com/sahibjotsaggu/San-Francisco-Pro-Fonts';
+const sfProFile = 'SF-Pro.ttf';
+const sfProSource = `${sfProRepository}/blob/master/${sfProFile}`;
 const page = path.join(__dirname,'ui','index.html');
-let window, busy=false;
+let window, fontFile, busy=false;
 let launchArgs=process.argv,pendingArgs;
 function acceptUpdate(args) {
   if(!Array.isArray(args)||!args.every(arg=>typeof arg==='string'))return;
@@ -30,11 +34,38 @@ async function boot() {
   handle('zennia:discover',()=>engine.discover());
   handle('zennia:inspect',value=>{const choice=selected(value);return engine.inspect(choice.installation,choice.profile);});
   handle('zennia:folder',async()=>{const result=await dialog.showOpenDialog(window,{properties:['openDirectory'],title:'Choose folder'});return result.canceled?null:result.filePaths[0];});
-  handle('zennia:apply',async(action,value)=>{
+  handle('zennia:font-source',preset=>shell.openExternal(preset==='sf-pro-family'?sfProRepository:sfProSource));
+  handle('zennia:font',async(preset)=>{
+    if(preset==='sf-pro-family'){
+      // The whole family: the folder the downloaded SF Pro fonts were unzipped into.
+      const result=await dialog.showOpenDialog(window,{title:'Choose the folder with the SF Pro fonts',properties:['openDirectory'],defaultPath:app.getPath('downloads')});
+      if(result.canceled)return null;
+      const folder=result.filePaths[0];
+      const family=await readFamily(folder);
+      fontFile=folder;
+      return {name:`${family.name} (${family.faces.length} fonts)`,bytes:previewFace(family).bytes};
+    }
+    const options={title:'Choose a font file',properties:['openFile'],filters:[{name:'Fonts',extensions:['otf','ttf','woff2']}]};
+    if(preset==='sf-pro'){
+      options.title='Choose the downloaded SF-Pro.ttf';
+      options.defaultPath=path.join(app.getPath('downloads'),sfProFile);
+    }
+    const result=await dialog.showOpenDialog(window,options);
+    if(result.canceled)return null;
+    const file=result.filePaths[0];
+    const {name,bytes}=await readFont(file);
+    fontFile=file;
+    return {name,bytes};
+  });
+  handle('zennia:apply',async(action,value,fontChoice)=>{
     if(busy)throw new Error('An installation operation is already running.');
     if(!['install','remove'].includes(action))throw new Error('Unknown operation.');
+    const needsFile=['selected','sf-pro','sf-pro-family'].includes(fontChoice);
+    if(![undefined,null,'geist','selected','sf-pro','sf-pro-family'].includes(fontChoice)||needsFile&&!fontFile)throw new Error('Choose a browser font first.');
     const choice=selected(value);busy=true;
-    try{return await require('./elevation.cjs').apply(action,choice.installation,choice.profile,{engine,appPath:app.getAppPath(),packaged:app.isPackaged});}
+    const customFont=needsFile?fontFile:fontChoice;
+    const fontPreset=['sf-pro','sf-pro-family'].includes(fontChoice)?fontChoice:undefined;
+    try{return await require('./elevation.cjs').apply(action,choice.installation,choice.profile,{engine,customFont,fontPreset,appPath:app.getAppPath(),packaged:app.isPackaged});}
     finally{busy=false;if(pendingArgs){const args=pendingArgs;pendingArgs=null;acceptUpdate(args);}}
   });
   handle('zennia:launch',async value=>{

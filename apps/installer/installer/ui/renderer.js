@@ -5,6 +5,8 @@ const steps=['welcome','setup','profile-step','review','complete'];
 let busy=false,currentStep='welcome',focusPending=false,pageTransition;
 let errorSelection=null;
 let discoveredInstances=[];
+let installedFont, installedFontChoice='default', fontChoice, pickedFont, previewFace, platform;
+const reviewTabs=[$('installation-tab'),$('appearance-tab')];
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const track=$('page-track');
 const screens=[...document.querySelectorAll('.screen')];
@@ -41,6 +43,9 @@ async function refreshVersions(){
  try{
   const info=unwrap(await api.inspect(choice));
   if(JSON.stringify(choice)!==JSON.stringify(selection()))return;
+  installedFont=info.customFont;
+  installedFontChoice=info.fontPreset||(installedFont?'custom':'default');
+  renderFont();
   $('review-versions').textContent=info.installedVersion
    ? 'Zennia installed: '+info.installedVersion+'. '+(info.installedVersion===info.targetVersion?'Reinstall version: ':'Install version: ')+info.targetVersion+'.'
    : 'Zennia is not installed in this profile. Install version: '+info.targetVersion+'.';
@@ -49,6 +54,11 @@ async function refreshVersions(){
 function status(text,error=false){errorSelection=error?selection():null;$('status').textContent=text;$('review-error').textContent=error?text:'';$('review-error').hidden=!error;for(const copy of document.querySelectorAll('.status-copy')){copy.textContent=error&&currentStep==='review'?'Review the error above and try again.':text;copy.dataset.error=String(error);}}
 function selectionChanged(key){
  $(key).setCustomValidity('');
+ installedFont=undefined;
+ installedFontChoice='default';
+ resetFontChoice();
+ activateReviewTab(reviewTabs[0]);
+ renderFont();
  const value=selection();
  if(key==='installation')$('applications').value=value.installation;
  if(errorSelection&&(value.installation!==errorSelection.installation||value.profile!==errorSelection.profile))status('Review the selected folders before installing.');
@@ -90,13 +100,102 @@ function selectDetectedApplication(){
 }
 $('applications').addEventListener('change',selectDetectedApplication);
 $('search-again').addEventListener('click',()=>void execute(searchForZen));
+function activateReviewTab(tab){
+ for(const button of reviewTabs){
+  const selected=button===tab;
+  button.setAttribute('aria-selected',String(selected));
+  button.tabIndex=selected?0:-1;
+  $(button.getAttribute('aria-controls')).hidden=!selected;
+ }
+}
+for(const [index,tab] of reviewTabs.entries()){
+ tab.addEventListener('click',()=>activateReviewTab(tab));
+ tab.addEventListener('keydown',event=>{
+  const next={ArrowLeft:1-index,ArrowRight:1-index,Home:0,End:1}[event.key];
+  if(next===undefined)return;
+  event.preventDefault();
+  activateReviewTab(reviewTabs[next]);
+  reviewTabs[next].focus();
+ });
+}
+function clearFontPreview(){
+ if(previewFace)document.fonts.delete(previewFace);
+ previewFace=undefined;
+}
+function resetFontChoice(){
+ fontChoice=undefined;
+ pickedFont=undefined;
+ clearFontPreview();
+}
+// Text for the choices that import files; the custom file needs no download help.
+const FONT_IMPORTS={
+ 'sf-pro':{help:'Download SF-Pro.ttf from GitHub, then choose the file here.',source:'Open SF-Pro.ttf on GitHub',choose:'Choose file…',missing:'Choose the downloaded SF-Pro.ttf before installing.',empty:'No file selected'},
+ 'sf-pro-family':{help:'On GitHub, choose Code › Download ZIP and unzip it. Then choose that folder here: Zennia loads every SF Pro Text and Display weight from it.',source:'Open the SF Pro fonts on GitHub',choose:'Choose folder…',missing:'Choose the folder with the SF Pro fonts before installing.',empty:'No folder selected'},
+ custom:{choose:'Choose file…',missing:'Choose a font file before installing.',empty:'No file selected'},
+};
+function renderFont(){
+ const choice=fontChoice??installedFontChoice;
+ const imports=FONT_IMPORTS[choice];
+ const name=pickedFont||(choice===installedFontChoice?installedFont:undefined);
+ // macOS already draws its interface in SF Pro, so Default is SF Pro there and the
+ // import choices are only offered elsewhere (or kept visible while one is installed).
+ const mac=platform==='darwin';
+ for(const option of $('font-preset').options){
+  if(option.value==='default')option.textContent=mac?'Default (SF Pro)':'Default';
+  if(FONT_IMPORTS[option.value]?.help)option.hidden=mac&&option.value!==choice;
+ }
+ $('font-preset').value=choice;
+ $('font-import').hidden=!imports;
+ $('sf-pro-help').hidden=!imports?.help||!!name;
+ $('sf-pro-help').textContent=imports?.help||'';
+ $('font-source').hidden=!imports?.source;
+ $('font-source').textContent=imports?.source||'';
+ $('choose-font').textContent=imports?.choose||'Choose file…';
+ $('font-name').textContent=$('font-name').title=name||imports?.empty||'No file selected';
+ $('font-preview').hidden=choice!=='geist'&&!previewFace;
+}
+$('font-preset').addEventListener('change',()=>{
+ resetFontChoice();
+ fontChoice=$('font-preset').value;
+ renderFont();
+ status('Review the selected folders before installing.');
+});
+$('font-source').addEventListener('click',()=>void execute(async()=>unwrap(await api.openFontSource($('font-preset').value))));
+$('choose-font').addEventListener('click',()=>void execute(async()=>{
+ const font=unwrap(await api.chooseFont($('font-preset').value));
+ if(!font)return;
+ clearFontPreview();
+ pickedFont=undefined;
+ renderFont();
+ const face=new FontFace('Zennia Font Preview',new Uint8Array(font.bytes));
+ try{await face.load();}catch{throw new Error('This font could not be loaded. Choose another OTF, TTF, or WOFF2 file.');}
+ document.fonts.add(face);
+ previewFace=face;
+ pickedFont=font.name;
+ renderFont();
+ status(fontChoice==='sf-pro-family'?'SF Pro fonts selected for this installation.':'Font selected for this installation.');
+}));
 $('installer').addEventListener('submit',event=>{
  event.preventDefault();
  const missing=!selection().installation?'installation':!selection().profile?'profile':null;
  if(missing){showStep(missing==='installation'?'setup':'profile-step');validFolder(missing);return;}
- void execute(async()=>{status('Installing...');const result=unwrap(await api.apply('install',selection()));status(result.message);showStep('complete');});
+ const choice=fontChoice??installedFontChoice;
+ if(FONT_IMPORTS[choice]&&!pickedFont&&!(choice===installedFontChoice&&installedFont)){
+  activateReviewTab($('appearance-tab'));
+  $('choose-font').focus();
+  status(FONT_IMPORTS[choice].missing,true);
+  return;
+ }
+ const request=pickedFont?(choice==='custom'?'selected':choice):fontChoice==='default'?null:fontChoice==='geist'?'geist':undefined;
+ void execute(async()=>{
+  status('Installing...');
+  const result=unwrap(await api.apply('install',selection(),request));
+  resetFontChoice();
+  status(result.message);
+  showStep('complete');
+ });
 });
-$('remove').addEventListener('click',()=>void execute(async()=>{status('Removing...');status(unwrap(await api.apply('remove',selection())).message);await refreshVersions();}));
+$('remove').addEventListener('click',()=>void execute(async()=>{status('Removing...');status(unwrap(await api.apply('remove',selection())).message);resetFontChoice();await refreshVersions();}));
 const openZen=()=>void execute(async()=>{unwrap(await api.launch(selection()));status('Zen opened.');});
 $('launch').addEventListener('click',openZen);
 $('finish').addEventListener('click',openZen);
@@ -104,6 +203,8 @@ async function searchForZen(){
  status('Looking for Zen...');
  const info=unwrap(await api.discover());
  await Promise.all([imagesReady,document.fonts.ready]);
+ platform=info.platform;
+ renderFont();
  $('version').textContent=`Installer ${info.version} / Zen ${info.supportedZen} / ${info.platform}`;
  for(const copy of document.querySelectorAll('.version-copy'))copy.textContent=$('version').textContent;
  discoveredInstances=info.instances||[];

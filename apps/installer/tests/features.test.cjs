@@ -426,3 +426,13 @@ test("tab hover re-syncs only when a tab closes under a still pointer with stale
   feature.destroy();
   assert.equal(Object.keys(listeners).length, 0);
 });
+
+test("settings name the browser font the installer recorded", () => {
+  const library = load("features/library/library.js", "ZenniaLibrary");
+  assert.equal(library.fontLabel(null), "Default");
+  assert.equal(library.fontLabel({}), "Default");
+  assert.equal(library.fontLabel({ fontPreset: "geist" }), "Geist");
+  assert.equal(library.fontLabel({ fontPreset: "sf-pro", customFont: "SF-Pro.ttf" }), "SF Pro");
+  assert.equal(library.fontLabel({ customFont: "Inter Variable.woff2" }), "Inter Variable");
+  assert.equal(library.fontLabel({ fontPreset: "sf-pro-family", customFont: "San-Francisco-Pro-Fonts-master" }), "SF Pro family");
+});

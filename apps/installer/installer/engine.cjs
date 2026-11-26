@@ -5,6 +5,7 @@ const crypto = require('node:crypto');
 const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const run = promisify(execFile);
+const font = require('./custom-font.cjs');
 const VERSION = '0.1.8-beta.10';
 // Supported Zen versions are the data files in payload/zen-versions.
 const versions = require('./versions.cjs');
@@ -115,10 +116,27 @@ async function inspect(installation,profile) {
   const found=await findReceipt(target.profile);
   const receipt=found?JSON.parse(await fs.readFile(found.file,'utf8')):null;
   if(receipt&&(!eq(receipt.profile,target.profile)||!eq(receipt.resources,target.resources)))throw new Error('The receipt belongs to a different installation or profile.');
-  return {installedVersion:receipt?receipt.version||'Unknown':null,targetVersion:VERSION};
+  return {installedVersion:receipt?receipt.version||'Unknown':null,targetVersion:VERSION,
+    ...(receipt?.customFont?{customFont:receipt.customFont}:{}),
+    ...(font.PRESETS.has(receipt?.fontPreset)?{fontPreset:receipt.fontPreset}:{})};
 }
-async function install(installation,profile,{payload=path.join(__dirname,'..','payload'),...options}={}) {
+async function install(installation,profile,{payload=path.join(__dirname,'..','payload'),customFont,fontPreset,...options}={}) {
   const target=await validate(installation,profile,options);
+  const root=path.join(target.profile,'chrome','zennia');
+  let picked;
+  const imported=typeof customFont==='string'&&customFont!=='geist';
+  if(fontPreset==='sf-pro-family') {
+    if(!imported)throw new Error('Choose the folder with the SF Pro fonts.');
+    try{picked=await font.readFamily(customFont);}
+    catch(error){throw new Error(`Could not import the SF Pro fonts. ${error.message}`,{cause:error});}
+  }
+  else if(fontPreset!==undefined&&(fontPreset!=='sf-pro'||!imported))throw new Error('Choose a font file for SF Pro.');
+  else if(customFont==='geist') picked={preset:'geist'};
+  else if(customFont) {
+    try{picked=await font.readFont(customFont);}
+    catch(error){throw new Error(`Could not import the selected font. ${error.message}`,{cause:error});}
+    picked.preset=fontPreset;
+  }
   // Check protected folders before an upgrade removes the existing theme.
   for(const folder of [target.resources,path.join(target.resources,'defaults','pref'),target.profile])await writable(folder);
   const manifest=receiptFile(target.profile);
@@ -127,6 +145,22 @@ async function install(installation,profile,{payload=path.join(__dirname,'..','p
     const previous=JSON.parse(await fs.readFile(found.file,'utf8'));
     const same=eq(previous.profile,target.profile)&&eq(previous.resources,target.resources);
     if(!same)throw new Error('Zennia is already installed in this profile. Remove it before reinstalling.');
+    const face=path.join(root,font.FACE);
+    const family=path.join(root,font.FAMILY);
+    if(customFont===undefined) {
+      if(previous.fontPreset==='geist') picked={preset:'geist'};
+      else if(previous.fontPreset==='sf-pro-family') {
+        // Keep the imported family: read the owned faces back before the old theme is removed.
+        const owned=previous.files.filter(file=>path.dirname(file.path)===family);
+        for(const file of owned)await assertRealPath(file.path);
+        if(owned.length&&await exists(family))picked=await font.readFamily(family,previous.customFont);
+      }
+      else if(typeof previous.customFont==='string'&&previous.files.some(file=>file.path===face)&&await exists(face)) {
+        await assertRealPath(face);
+        picked=await font.readFont(face,previous.customFont);
+        if(previous.fontPreset==='sf-pro')picked.preset='sf-pro';
+      }
+    }
     await remove(target.app,target.profile,options);
   }
   const prefDir=path.join(target.resources,'defaults','pref');
@@ -149,11 +183,18 @@ async function install(installation,profile,{payload=path.join(__dirname,'..','p
   writes.set(path.join(target.resources,'zennia-owner.json'),Buffer.from(JSON.stringify({profile:target.profile,version:VERSION})));
   for(const relative of await walk(payload)) {
     if(['zennia.cfg','zennia-autoconfig.js'].includes(relative))continue;
-    writes.set(path.join(target.profile,'chrome','zennia',relative),await fs.readFile(path.join(payload,relative)));
+    writes.set(path.join(root,relative),await fs.readFile(path.join(payload,relative)));
+  }
+  if(picked) {
+    if(picked.bytes)writes.set(path.join(root,font.FACE),picked.bytes);
+    for(const face of picked.faces??[])writes.set(path.join(root,font.FAMILY,face.file),face.bytes);
+    writes.set(path.join(root,font.STYLES),font.stylesheet(picked,options.platform||process.platform));
   }
   writes.set(userPath,Buffer.from(user+(user&&!user.endsWith('\n')?'\n':'')+block+'\n'));
   const prefs=await fs.readFile(path.join(target.profile,'prefs.js'),'utf8');
   const receipt={version:VERSION,resources:target.resources,installation:target.app,profile:target.profile,settings,originalPrefs:Object.fromEntries(Object.keys(settings).map(key=>[key,prefLine(prefs,key)])),files:[]};
+  if(picked?.name)receipt.customFont=picked.name;
+  if(picked?.preset)receipt.fontPreset=picked.preset;
   for(const [file,bytes] of writes) {
     await assertRealPath(file);await writable(path.dirname(file));
     if(await exists(file)&&file!==userPath)throw new Error('An existing file would be overwritten: '+file);

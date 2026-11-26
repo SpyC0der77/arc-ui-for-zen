@@ -90,12 +90,12 @@ function body(release, results = {}) {
     `1. Add the file above, with notes on what is different about ${release.version}.`,
   );
   if (result !== 'unchanged') lines.push(
-    `2. On Windows: \`pnpm fetch:zen -- ${release.version}\`, then \`pnpm check:zen -- ${release.version}\` until it passes.`,
-    `3. Run \`pnpm test\` and \`pnpm test:runtime -- artifacts/zen-builds/${release.version}/core --pointer\`.`,
+    `2. On Windows, in \`apps/installer\`:\`pnpm fetch:zen -- ${release.version}\`, then \`pnpm check:zen -- ${release.version}\` until it passes.`,
+    `3. Run \`pnpm test\` and \`pnpm test:runtime -- ../../artifacts/zen-builds/${release.version}/core --pointer\`.`,
     '4. Update the supported range in the README.',
   );
   else lines.push('2. Update the supported range in the README and run `pnpm test`.');
-  lines.push('', 'See [dev/ZEN-VERSIONS.md](../blob/main/dev/ZEN-VERSIONS.md). This issue was opened by the daily Zen release check.');
+  lines.push('', 'See [apps/installer/dev/ZEN-VERSIONS.md](../blob/main/apps/installer/dev/ZEN-VERSIONS.md). This issue was opened by the daily Zen release check.');
   return lines.join('\n') + '\n';
 }
 

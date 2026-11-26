@@ -157,7 +157,7 @@
   /* Content */
   #zennia-settings-dialog .zennia-settings-body {
     grid-row: 3;
-    overflow: auto;
+    overflow: hidden auto;
     min-height: 0;
     padding: 18px 20px 22px;
     scrollbar-width: thin;
@@ -209,12 +209,6 @@
     padding-inline: 4px 2px;
   }
   #zennia-settings-panel-colors .zennia-palette-heading { margin-top: 0; }
-  /* The Light/Dark editing switch shares the segmented-pill look below. */
-  #zennia-settings-dialog .zennia-edit-mode button[aria-pressed="true"] {
-    background: var(--set-segment);
-    box-shadow: var(--set-segment-shadow);
-    color: var(--set-text);
-  }
   /* Only the edited appearance's control is shown in each row. */
   #zennia-settings-dialog[data-edit-mode="light"] :is(.zennia-color-pair, .zennia-gradient-pair) > :nth-child(2),
   #zennia-settings-dialog[data-edit-mode="dark"] :is(.zennia-color-pair, .zennia-gradient-pair) > :nth-child(1) {
@@ -293,9 +287,11 @@
   #zennia-settings-dialog .zennia-range-control output {
     width: 36px;
     text-align: right;
+    white-space: nowrap;
     color: var(--set-muted);
     font-variant-numeric: tabular-nums;
   }
+  #zennia-settings-dialog #zennia-browser-font { flex: none; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--set-muted); }
   #zennia-settings-dialog .zennia-angle-control { display: flex; align-items: center; gap: 10px; min-width: 0; width: 200px; }
   #zennia-settings-dialog .zennia-angle-control input[type="range"] { flex: 1; min-width: 0; }
   /* Text and number fields: a filled, slightly sunken well that reads as a
@@ -370,14 +366,15 @@
     --set-segment: light-dark(#ffffff, #5c5c60);
     --set-segment-shadow: 0 1px 2px light-dark(#0000002e, #00000059), 0 0 0 0.5px light-dark(#00000014, #ffffff0f);
   }
-  #zennia-appearance-mode,
-  #zennia-settings-dialog .zennia-edit-mode {
+  #zennia-settings-dialog .zennia-segmented {
     position: relative;
     display: flex;
     flex: none;
     padding: 2px;
     border-radius: 999px;
     background: light-dark(#00000012, #ffffff12);
+    isolation: isolate;
+    user-select: none;
   }
   #zennia-appearance-mode .zennia-segment-thumb {
     position: absolute;
@@ -388,12 +385,21 @@
     border-radius: 999px;
     background: var(--set-segment);
     box-shadow: var(--set-segment-shadow);
-    transition: transform 160ms cubic-bezier(0.2, 0.7, 0.3, 1), width 160ms cubic-bezier(0.2, 0.7, 0.3, 1);
+    transition: transform 160ms cubic-bezier(0.2, 0.7, 0.3, 1);
   }
-  #zennia-appearance-mode label { position: relative; cursor: pointer; flex: 1 1 0; }
-  #zennia-appearance-mode input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-  #zennia-appearance-mode span,
-  #zennia-settings-dialog .zennia-edit-mode button {
+  #zennia-settings-dialog[data-zennia-reduced-motion] .zennia-segment-thumb { transition: none; }
+  #zennia-settings-dialog .zennia-segment-lens { display: none; }
+  #zennia-settings-dialog [data-glass-traveling]:not([data-glass-sampling]) > .zennia-segment-lens {
+    display: block;
+    position: absolute;
+    pointer-events: none;
+  }
+  #zennia-settings-dialog [data-glass-refraction] > .zennia-segment-lens { z-index: 2; }
+  #zennia-appearance-mode:is([data-glass-traveling], [data-glass-sampling]) .zennia-segment-thumb { visibility: hidden; }
+  #zennia-settings-dialog .zennia-segmented[data-glass-dragging] label { cursor: grabbing; }
+  #zennia-settings-dialog .zennia-segmented label { position: relative; cursor: pointer; flex: 1 1 0; }
+  #zennia-settings-dialog .zennia-segmented input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  #zennia-settings-dialog .zennia-segmented label > span {
     position: relative;
     z-index: 1;
     display: flex;
@@ -411,19 +417,28 @@
     box-shadow: none;
     color: var(--set-muted);
     font-size: 12px;
-    font-weight: 400;
+    font-weight: 500;
     line-height: 1;
   }
-  #zennia-settings-dialog .zennia-edit-mode button { flex: 1 1 0; }
-  #zennia-appearance-mode :is(span, svg),
-  #zennia-settings-dialog .zennia-edit-mode :is(span, svg) { pointer-events: none; }
-  #zennia-appearance-mode svg,
-  #zennia-settings-dialog .zennia-edit-mode svg { width: 13px; height: 13px; flex: none; }
-  #zennia-appearance-mode label:hover input:not(:checked) + span,
-  #zennia-settings-dialog .zennia-edit-mode button:not([aria-pressed="true"]):hover { background: transparent; color: var(--set-text); }
-  #zennia-appearance-mode input:checked + span { color: var(--set-text); }
-  #zennia-appearance-mode input:focus-visible + span,
-  #zennia-settings-dialog .zennia-edit-mode button:focus-visible { box-shadow: 0 0 0 3px var(--set-focus); }
+  #zennia-settings-dialog .zennia-segmented :is(span, svg) { pointer-events: none; }
+  #zennia-settings-dialog .zennia-segmented svg { width: 13px; height: 13px; flex: none; }
+  #zennia-settings-dialog .zennia-segmented:not([data-glass-traveling]) :is(label:hover > input, input:checked) + span {
+    color: var(--set-text);
+  }
+  #zennia-settings-dialog .zennia-edit-mode:not([data-glass-traveling], [data-glass-sampling]) input:checked + span {
+    background: var(--set-segment);
+    box-shadow: var(--set-segment-shadow);
+  }
+  #zennia-settings-dialog .zennia-segmented input:focus-visible + span {
+    outline: 2px solid var(--set-focus);
+    outline-offset: -1px;
+    z-index: 3;
+  }
+  #zennia-settings-dialog .zennia-segmented[data-glass-sampling] label > span {
+    color: var(--set-text);
+    outline: none;
+    transition: none;
+  }
 
   /* macOS pop-up button */
   #zennia-settings-dialog .zennia-select-trigger {
@@ -546,11 +561,19 @@
     }
   }
 
-  /* Liquid Glass controls (on by default; Appearance > Liquid Glass). Visual
-     reference: onemorethink.dev's MIT Liquid Glass UI, which renders with a
-     WebGL shader. Here it is CSS and limited to the switches, sliders and
-     segmented pills: recessed tracks with raised, glossy glass thumbs.
-     Everything else keeps the flat style, as do reduced-transparency systems. */
+  /* Liquid Glass UI (MIT; liquid-glass-LICENSE.txt). The canvas sits over the native
+     track when glass is enabled. Without WebGL2 these controls use the CSS appearance. */
+  #zennia-settings-dialog .zennia-glass-slider {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+  }
+  #zennia-settings-dialog .zennia-glass-slider > canvas { display: none; }
+  #zennia-settings-dialog .zennia-glass-slider > input { flex: 1; min-width: 0; }
+  #zennia-settings-dialog .zennia-select-menu > .zennia-glass-goo { display: none; }
+
   @media not (prefers-reduced-transparency) {
     #zennia-settings-dialog[data-zennia-glass] {
       --glass-edge: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.16));
@@ -559,14 +582,17 @@
       --glass-lift: 0 3px 10px -3px light-dark(rgb(30 20 45 / 0.25), rgb(0 0 0 / 0.6));
       --glass: inset 0 1px 0 var(--glass-shine), inset 0 -1px 1px light-dark(rgb(255 255 255 / 0.45), rgb(255 255 255 / 0.05)),
         0 0 0 0.5px var(--glass-rim), 0 0 0 1px var(--glass-edge), var(--glass-lift);
+      --glass-blue: #3291ff;
       --set-segment: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.2));
       --set-segment-shadow: var(--glass);
     }
     /* Segmented pills: a recessed glass track with a raised glass thumb. */
-    #zennia-settings-dialog[data-zennia-glass] :is(#zennia-appearance-mode, .zennia-edit-mode) {
-      background: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.06));
+    #zennia-settings-dialog[data-zennia-glass] .zennia-segmented {
+      background: light-dark(#0000000d, #ffffff14);
       box-shadow: inset 0 1px 3px light-dark(rgb(30 20 45 / 0.14), rgb(0 0 0 / 0.45)), 0 0 0 0.5px var(--glass-edge);
+      touch-action: pan-y;
     }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-segment-thumb { transition: none; }
     /* Switches: recessed track, glossy thumb; the accent glows when on. */
     #zennia-settings-dialog[data-zennia-glass] input[type="checkbox"] {
       background-image: radial-gradient(circle closest-side, #fff 80%, rgb(255 255 255 / 0.6) 92%, #fff0 100%);
@@ -575,16 +601,127 @@
     #zennia-settings-dialog[data-zennia-glass] input[type="checkbox"]:checked {
       box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -1px 2px rgb(0 0 0 / 0.15), 0 2px 10px -2px var(--set-accent);
     }
-    /* Sliders: a glass bead on a recessed track. */
-    #zennia-settings-dialog[data-zennia-glass] input[type="range"]::-moz-range-track {
-      box-shadow: inset 0 1px 2px light-dark(rgb(30 20 45 / 0.18), rgb(0 0 0 / 0.5));
-    }
-    #zennia-settings-dialog[data-zennia-glass] input[type="range"]::-moz-range-thumb {
-      width: 22px;
-      height: 16px;
+
+    /* The resting pill and track are sized to fit the compact settings rows. */
+    #zennia-settings-dialog[data-zennia-glass] :is(.zennia-range-control, .zennia-angle-control) { width: 236px; gap: 14px; }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-glass-slider[data-glass] {
+      height: 33.5px;
       border-radius: 999px;
-      background: light-dark(rgb(255 255 255 / 0.92), rgb(255 255 255 / 0.88));
-      box-shadow: inset 0 1px 0 #fff, inset 0 -1px 1px rgb(0 0 0 / 0.08), 0 0 0 0.5px var(--glass-rim), 0 3px 8px light-dark(rgb(30 20 45 / 0.3), rgb(0 0 0 / 0.6));
     }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-glass-slider[data-glass] > canvas {
+      display: block;
+      position: absolute;
+      pointer-events: none;
+    }
+    /* The native input stays on top, unseen, for the pointer and the keyboard. Its thumb
+       is the resting pill's size, so a press on the pill drags it from where it is. */
+    #zennia-settings-dialog[data-zennia-glass] .zennia-glass-slider[data-glass] > input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: default;
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-glass-slider[data-glass] > input::-moz-range-thumb {
+      width: var(--glass-thumb-width);
+      height: var(--glass-thumb-height);
+      border-radius: 999px;
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-glass-slider[data-glass]:has(> input:focus-visible) {
+      outline: 2px solid var(--glass-blue);
+      outline-offset: 4px;
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-glass-slider[data-glass]:has(> input:disabled) { opacity: 0.4; }
+    /* Without WebGL2: the same track and pill in CSS. */
+    #zennia-settings-dialog[data-zennia-glass] .zennia-glass-slider:not([data-glass]) > input {
+      height: 26px;
+      cursor: default;
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-glass-slider:not([data-glass]) > input::-moz-range-track {
+      height: 8px;
+      border-radius: 4px;
+      background: light-dark(#c6c5c9, #34353b);
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-glass-slider:not([data-glass]) > input::-moz-range-progress {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--glass-blue);
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-glass-slider:not([data-glass]) > input::-moz-range-thumb {
+      width: var(--glass-thumb-width);
+      height: var(--glass-thumb-height);
+      border-radius: 999px;
+      background: radial-gradient(ellipse at 50% 45%, #fff 55%, #e9ebef);
+      box-shadow: 0 2px 6px light-dark(rgb(30 30 60 / 0.18), rgb(0 0 0 / 0.5)), 0 0 0 0.5px rgb(0 0 0 / 0.06);
+    }
+
+    /* Pop-up button: a glass pill (GlassSelect's trigger). */
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-trigger {
+      height: 36px;
+      min-width: 156px;
+      padding: 0 12px 0 16px;
+      border: 1px solid light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.15));
+      border-radius: 999px;
+      background: light-dark(linear-gradient(rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.55)), rgb(255 255 255 / 0.1));
+      backdrop-filter: blur(6px) saturate(1.6);
+      box-shadow: inset 0 1px 0 light-dark(#fff, rgb(255 255 255 / 0.28)), inset 0 -2px 4px light-dark(rgb(0 0 0 / 0.035), rgb(0 0 0 / 0.25)),
+        0 0 0 0.5px light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.06)), 0 6px 16px -8px light-dark(rgb(30 30 60 / 0.35), rgb(0 0 0 / 0.7));
+      font-size: 14px;
+      font-weight: 500;
+      transition: transform 380ms cubic-bezier(0.3, 1.6, 0.5, 1), box-shadow 160ms;
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-trigger:not(:disabled):hover { transform: scale(1.03); }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-trigger:not(:disabled):active { transform: scale(1.06); transition-duration: 160ms; }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-trigger svg { width: 14px; height: 14px; color: currentColor; opacity: 0.6; }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-trigger:focus-visible {
+      outline: 2px solid var(--glass-blue);
+      outline-offset: 2px;
+    }
+
+    /* The list: Card's frost with a thin white edge and a soft shadow, no light of its own.
+       While it opens or closes liquid-glass.js draws it on .zennia-glass-goo instead. */
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-menu {
+      padding: 6px;
+      border: 0;
+      border-radius: 24px;
+      overflow: visible;
+      background: transparent;
+      box-shadow: none;
+      font-size: 14px;
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-menu[data-glass-state="open"] {
+      background: light-dark(rgb(250 250 252 / 0.9), rgb(46 46 50 / 0.9));
+      backdrop-filter: blur(22px) saturate(1.8);
+      box-shadow: inset 0 0 0 1.3px light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.25)),
+        0 14px 34px light-dark(rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.6));
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-menu[data-glass-state="moving"] > .zennia-glass-goo {
+      display: block;
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+      /* Read by liquid-glass.js: the frost, its edge line and its shadow. */
+      color: light-dark(rgb(250 250 252 / 0.97), rgb(46 46 50 / 0.97));
+      text-decoration-color: light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.25));
+      outline-color: light-dark(rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.6));
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-menu button {
+      position: relative;
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 16px;
+      font-weight: 500;
+      transition: background-color 100ms;
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-menu button:is(:hover, :focus) {
+      background: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.12));
+      color: inherit;
+    }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-menu button[aria-checked="true"] { font-weight: 650; }
+    #zennia-settings-dialog[data-zennia-glass] .zennia-select-menu button[aria-checked="true"]::after { content: none; }
   }
 }

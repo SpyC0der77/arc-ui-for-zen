@@ -5,6 +5,8 @@ export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode,
   const receiptPath = join(profile, 'chrome', 'zennia.install.json');
   const ownerPath = join(resources, 'zennia-owner.json');
   const journalPath = join(profile, 'chrome', 'zennia-update-journal.json');
+  const localFont = new Set(['content/custom-font/face', 'content/custom-font/style.css']);
+  const localFontPaths = new Set([...localFont].map(file => join(root,...file.split('/'))));
   if (await io.exists(journalPath)) throw new Error('An interrupted update needs recovery before another update.');
   if (bundle.format !== 1 || bundle.version !== version || !bundle.supported?.includes(browserVersion)) throw new Error('This update does not support this Zen version.');
   const receipt = await io.readJSON(receiptPath), owner = await io.readJSON(ownerPath);
@@ -13,7 +15,7 @@ export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode,
   if (!files || typeof files !== 'object' || !files['zennia.uc.js'] || !files['chrome.manifest'] || Object.keys(files).length > 2000) throw new Error('Incomplete update bundle.');
   const data = new Map();
   for (const [relative, value] of Object.entries(files)) {
-    if (!/^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/.test(relative) || relative.split('/').some(s => s === '.' || s === '..') || typeof value !== 'string') throw new Error('Invalid update payload path.');
+    if (localFont.has(relative) || !/^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/.test(relative) || relative.split('/').some(s => s === '.' || s === '..') || typeof value !== 'string') throw new Error('Invalid update payload path.');
     data.set(relative, decode(value));
   }
   // This bundle format updates the theme without changing the startup loader or
@@ -43,7 +45,8 @@ export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode,
   }
   // settings*.json are only in bundles for updaters that predate zen-versions/.
   const skip = new Set(['zennia.cfg','zennia-autoconfig.js','settings.json','settings.windows.json']);
-  const writes = new Map(), nextFiles = receipt.files.filter(file => !underRoot(file.path));
+  const isThemeFile = file => underRoot(file) && !localFontPaths.has(file);
+  const writes = new Map(), nextFiles = receipt.files.filter(file => !isThemeFile(file.path));
   for (const [relative, bytes] of data) {
     if (skip.has(relative)) continue;
     const target = join(root,...relative.split('/'));
@@ -52,7 +55,7 @@ export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode,
     writes.set(target,bytes);
     nextFiles.push({path:target,before:null,installedHash:await hash(bytes)});
   }
-  for (const file of receipt.files) if (underRoot(file.path) && !writes.has(file.path)) writes.set(file.path,null);
+  for (const file of receipt.files) if (isThemeFile(file.path) && !writes.has(file.path)) writes.set(file.path,null);
   const ownerBytes = encode(JSON.stringify({...owner,version}));
   writes.set(ownerPath,ownerBytes);
   nextFiles.find(file => file.path === ownerPath).installedHash = await hash(ownerBytes);

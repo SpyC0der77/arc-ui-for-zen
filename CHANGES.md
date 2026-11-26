@@ -1,5 +1,8 @@
 ## Unreleased
 
+- Turn the repository into a pnpm workspace: the installer, theme payload, tests and developer notes move to `apps/installer`; local `zen-instances/` and `artifacts/` stay at the repository root.
+- Add the project website in `apps/website`, built with Next.js from the installer's own version data, changelog and screenshots.
+- Make Liquid Glass sliders widen into a refracting lens while held, and make dropdown lists stretch out of their trigger before opening.
 - Describe each supported Zen version in its own file under `payload/zen-versions/`. The installer, startup loader, updater, CI and release notes read supported versions, managed preferences and feature switches from these files instead of separate hard-coded lists.
 - Let theme updates add support for new Zen versions without reinstalling, when the new version uses the same managed preferences.
 - Check every Zen name, global, member, preference and URL Zennia uses against each supported Zen build in CI, and remove references to five Zen names that no supported version has.

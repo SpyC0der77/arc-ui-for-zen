@@ -1,7 +1,7 @@
 """Attach only to a disposable Marionette session, as described in AGENTS.md."""
 import sys,time
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[3]
 sys.path.insert(0,str(ROOT/'artifacts/test-python'))
 from marionette_driver.marionette import Marionette
 m=Marionette('localhost',port=int(sys.argv[1]) if len(sys.argv)>1 else 2828,socket_timeout=25)

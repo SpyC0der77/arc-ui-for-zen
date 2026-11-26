@@ -8,7 +8,7 @@ import base64
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'artifacts/test-python'))
 from marionette_driver.marionette import Marionette
 

@@ -101,7 +101,7 @@ test('versions turn off the features their browser cannot support', () => {
 });
 
 test('the README names the supported range of Zen versions', () => {
-  const intro = fs.readFileSync(path.join(__dirname, '..', 'README.md'), 'utf8').split('\n').find(line => line.startsWith('Zennia '));
+  const intro = fs.readFileSync(path.join(__dirname, '..', '..', '..', 'README.md'), 'utf8').split('\n').find(line => line.startsWith('Zennia '));
   const [first, last] = intro.match(/\*\*(\S+) to (\S+)\*\*/).slice(1);
   assert.deepEqual([first, last], [versions.SUPPORTED_VERSIONS[0], versions.SUPPORTED_VERSIONS.at(-1)]);
 });

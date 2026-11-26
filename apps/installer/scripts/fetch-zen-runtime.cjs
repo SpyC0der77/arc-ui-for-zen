@@ -56,7 +56,7 @@ async function download(entry, destination) {
 async function fetchRuntime(version) {
   const entry = selectBuild(version);
   if (process.platform !== 'win32') throw new Error('Runtime extraction requires Windows and 7z.');
-  const folder = path.resolve(__dirname, '..', 'artifacts', 'zen-builds', version);
+  const folder = path.resolve(__dirname, '..', '..', '..', 'artifacts', 'zen-builds', version);
   await assertNoLinks(folder);
   await fs.mkdir(folder, { recursive: true });
   const installer = path.join(folder, 'zen.installer.exe');

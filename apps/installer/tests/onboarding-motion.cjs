@@ -20,7 +20,7 @@ app.whenReady().then(async()=>{
   assert.equal(sample.scroll,0,'Focus does not scroll the viewport');assert.equal(sample.height,sample.viewport,'Page height stays fixed');
   if(samples.length)assert.ok(sample.x<=samples.at(-1).x,'Forward movement stays monotonic');samples.push(sample);
  }
- const artifacts=path.resolve(__dirname,'../artifacts');
+ const artifacts=path.resolve(__dirname,'../../../artifacts');
  await run('document.getElementById("page-track").getAnimations()[0].currentTime=260');await delay(80);
  await fs.writeFile(path.join(artifacts,'track-after.png'),(await window.webContents.capturePage()).toPNG());
  await run('document.getElementById("page-track").getAnimations()[0].finish()');await delay(40);

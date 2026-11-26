@@ -30,6 +30,17 @@
     window.windowUtils.USER_SHEET,
   );
   root.setAttribute("data-zennia", "0.1.0");
+  try {
+    const customFont = Services.dirsvc.get("ProfD", Ci.nsIFile);
+    for (const part of ["chrome", "zennia", "content", "custom-font", "style.css"]) customFont.append(part);
+    if (customFont.exists()) {
+      const sheets = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsIStyleSheetService);
+      const uri = Services.io.newURI("chrome://zennia/content/custom-font/style.css");
+      if (!sheets.sheetRegistered(uri, sheets.USER_SHEET)) sheets.loadAndRegisterSheet(uri, sheets.USER_SHEET);
+    }
+  } catch (error) {
+    console.error("[Zennia] Could not load the custom browser font", error);
+  }
 
   // Each subscript gets a separate scope. Pass browser objects explicitly so
   // feature state stays local to this window, including private windows.
@@ -93,6 +104,15 @@
     toggleDock: () => sidebar?.toggleDock(),
   });
   const library = install("features/library/library", "ZenniaLibrary", {
+    // Optional: without it the settings sliders and lists keep their CSS look.
+    liquidGlass: (() => {
+      try {
+        return load("features/library/liquid-glass", "ZenniaLiquidGlass");
+      } catch (error) {
+        console.error("[Zennia] Liquid Glass unavailable", error);
+        return null;
+      }
+    })(),
     icon,
     nudge,
     report,

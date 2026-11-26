@@ -10,3 +10,17 @@ html,body{height:100%;overflow:hidden}main.viewport{display:block;max-width:none
 
 .screen .pages{flex-shrink:0}.screen footer{margin-top:auto}.screen-content{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .review-error{font-size:13px;line-height:1.5;color:#8b3030;overflow-wrap:anywhere;margin:16px 0 0}@media(max-width:640px){.screen-content{grid-template-columns:minmax(0,1fr)}}
+
+.review-screen{scrollbar-gutter:stable}
+.review-screen .pages{align-items:flex-start;padding-block:16px}
+#review{margin-block:0}
+.review-tabs{display:flex;gap:20px;border-bottom:1px solid #ded7e2;margin-bottom:12px}
+.review-tabs button{min-height:34px;margin-bottom:-1px;padding:4px 0;background:none;border:0;border-bottom:2px solid transparent;border-radius:0;font-size:13px;color:#54455d}
+.review-tabs button:hover,.review-tabs button[aria-selected=true]{color:#25202a}
+.review-tabs button[aria-selected=true]{border-bottom-color:#65556f;font-weight:500}
+#installation-panel:focus-visible{outline:2px solid #65556f;outline-offset:4px}
+#appearance-panel label{margin-top:0}
+.font-actions{display:flex;flex-wrap:wrap;gap:8px}
+.font-actions button{min-height:34px;padding:5px 10px;font-size:13px}
+#font-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.font-preview{margin:0 0 10px;border:1px solid #ded7e2;border-radius:6px;padding:6px 10px;font:13px/1.5 "Zennia Font Preview",Geist,sans-serif}
