@@ -54,10 +54,10 @@ async function refreshVersions(){
 function status(text,error=false){errorSelection=error?selection():null;$('status').textContent=text;$('review-error').textContent=error?text:'';$('review-error').hidden=!error;for(const copy of document.querySelectorAll('.status-copy')){copy.textContent=error&&currentStep==='review'?'Review the error above and try again.':text;copy.dataset.error=String(error);}}
 function selectionChanged(key){
  $(key).setCustomValidity('');
+ // The pending font choice is not tied to a profile, so it survives the change; only the
+ // installed font, which belongs to the old profile, is forgotten until review reads it again.
  installedFont=undefined;
  installedFontChoice='default';
- resetFontChoice();
- activateReviewTab(reviewTabs[0]);
  renderFont();
  const value=selection();
  if(key==='installation')$('applications').value=value.installation;
@@ -158,7 +158,7 @@ $('font-preset').addEventListener('change',()=>{
  resetFontChoice();
  fontChoice=$('font-preset').value;
  renderFont();
- status('Review the selected folders before installing.');
+ status('Font choice updated. Install to apply it.');
 });
 $('font-source').addEventListener('click',()=>void execute(async()=>unwrap(await api.openFontSource($('font-preset').value))));
 $('choose-font').addEventListener('click',()=>void execute(async()=>{

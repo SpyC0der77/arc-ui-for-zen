@@ -86,10 +86,15 @@ app.whenReady().then(async()=>{
  await choosePreset('custom');
  assert.equal(await run('document.getElementById("font-source").hidden'),true);
  await choosePreset('sf-pro');
+ assert.equal(await run('document.getElementById("status").textContent'),'Font choice updated. Install to apply it.');
  await window.webContents.executeJavaScript('document.getElementById("choose-font").click()');
  for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('!document.getElementById("font-preview").hidden'))break;await delay(20);}
  assert.equal(await window.webContents.executeJavaScript('document.getElementById("font-name").textContent'),'Example Font.woff2');
  assert.equal(await window.webContents.executeJavaScript('document.getElementById("font-preview").hidden'),false);
+ // Changing the folder keeps the picked font, so the review still installs it.
+ await window.webContents.executeJavaScript(`document.querySelector("[data-back=profile-step]").click();{const e=document.getElementById("installation");e.value=${JSON.stringify(zen)};e.dispatchEvent(new Event('input',{bubbles:true}));}document.getElementById("browser-next").click();document.getElementById("profile-next").click()`);
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("font-preset").value'),'sf-pro');
+ assert.equal(await window.webContents.executeJavaScript('document.getElementById("font-name").textContent'),'Example Font.woff2','Changing a folder keeps the picked font');
  await window.webContents.executeJavaScript('document.getElementById("install").click()');
  for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('document.getElementById("status").textContent.startsWith("Installed.")'))break;await delay(50);}
  assert.ok(await fs.stat(engine.receiptFile(profile)));
