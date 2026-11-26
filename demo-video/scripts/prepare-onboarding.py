@@ -44,7 +44,7 @@ def main():
     metadata={'complete':True,'source_script':evidence['source_script'],'source_sha256':evidence['source_sha256'],
         'installation':evidence['installation'],'profile':evidence['profile'],
         'shots':[{'name':'Onboarding','file':'recordings/onboarding.mp4','start':0,'end':19,'ready':19,
-          'cursor_track':str(cursor),'caption':'Arc UI setup',
+          'cursor_track':str(cursor),'caption':'Zennia setup',
           'camera':[{'time':0,'rect':[600,0,720,1080]},{'time':2.5,'rect':[600,0,720,1080]},
                     {'time':3.8,'rect':[276,0,720,1080]}],
           'notes':'Full original installer take, with a genuine successful disposable installation. Other native lanes wait at their baseline before the common pause.'}]}

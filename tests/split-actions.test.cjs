@@ -16,7 +16,7 @@ function fixture(platform) {
     gBrowser:{tabContainer:{}},gZenViewSplitter:{removeTabFromSplit:(event,target)=>{assert.equal(target,container);detached++;}},
     MutationObserver:class {observe(){} disconnect(){}},
     addEventListener:(type,fn)=>listeners.set(type,fn),removeEventListener:type=>listeners.delete(type)};
-  const stop=context.ArcSplitActions.install(win);
+  const stop=context.ZenniaSplitActions.install(win);
   function emit(type,extra={}) {
     const event={target:win,ctrlKey:false,metaKey:false,button:0,preventDefault(){this.prevented=true;},stopImmediatePropagation(){this.stopped=true;},...extra,type};
     listeners.get(type)?.(event);return event;

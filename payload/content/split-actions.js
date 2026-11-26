@@ -1,5 +1,5 @@
 /* Hold the platform accelerator to detach split tabs without closing them. */
-var ArcSplitActions = {
+var ZenniaSplitActions = {
   install(win) {
     const {document, gBrowser, gZenViewSplitter} = win;
     const root = document.documentElement;
@@ -28,7 +28,7 @@ var ArcSplitActions = {
     }
     function setActive(value) {
       active = value;
-      root.toggleAttribute("data-arc-unsplit-tabs", active);
+      root.toggleAttribute("data-zennia-unsplit-tabs", active);
       refresh();
     }
     function key(event) { setActive(mac ? event.metaKey : event.ctrlKey); }

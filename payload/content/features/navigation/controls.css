@@ -1,6 +1,6 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
-  #arc-top-controls {
+  #zennia-top-controls {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -8,61 +8,61 @@
     min-height: 44px;
     -moz-window-dragging: drag;
   }
-  #arc-top-controls button {
+  #zennia-top-controls button {
     -moz-window-dragging: no-drag;
   }
   @media (-moz-platform: macos) {
     /* Zen's native button box remains in its own toolbar. Put it in the
        replacement row and leave room for it instead of stacking two rows. */
-    :root[data-arc-ui] #zen-sidebar-top-buttons > .titlebar-buttonbox-container {
+    :root[data-zennia] #zen-sidebar-top-buttons > .titlebar-buttonbox-container {
       position: absolute !important;
       top: 14px !important;
       left: 6px !important;
       z-index: 4 !important;
     }
-    :root[data-arc-ui][zen-compact-mode="true"]
+    :root[data-zennia][zen-compact-mode="true"]
       #zen-sidebar-top-buttons > .titlebar-buttonbox-container {
-      top: calc(14px - var(--arc-top-controls-height, 44px)) !important;
+      top: calc(14px - var(--zennia-top-controls-height, 44px)) !important;
     }
-    :root[data-arc-ui] #arc-top-controls {
+    :root[data-zennia] #zennia-top-controls {
       padding-inline-start: 70px;
     }
     /* Native macOS fullscreen hides the traffic lights, so reclaim their
        reserved space while keeping it in a normal or maximized window. */
-    :root[data-arc-ui][sizemode="fullscreen"] #arc-top-controls {
+    :root[data-zennia][sizemode="fullscreen"] #zennia-top-controls {
       padding-inline-start: 10px;
     }
-    :root[data-arc-ui] #arc-sidebar-toggle {
+    :root[data-zennia] #zennia-sidebar-toggle {
       inset-inline-start: 0;
       min-width: 24px;
     }
-    :root[data-arc-ui][sizemode="fullscreen"]:not([zen-right-side="true"])
-      #arc-sidebar-toggle {
+    :root[data-zennia][sizemode="fullscreen"]:not([zen-right-side="true"])
+      #zennia-sidebar-toggle {
       inset-inline-start: -8px;
     }
-    :root[data-arc-ui] #arc-navigation-controls {
+    :root[data-zennia] #zennia-navigation-controls {
       gap: 0;
       min-width: 0;
     }
-    :root[data-arc-ui] #arc-navigation-controls > :is(button, #PanelUI-menu-button, #zen-appmenu-button) {
+    :root[data-zennia] #zennia-navigation-controls > :is(button, #PanelUI-menu-button, #zen-appmenu-button) {
       width: 28px !important;
       min-width: 24px !important;
     }
   }
   /* Move only the toggle toward the frame edge, preserving its hit area. */
-  #arc-sidebar-toggle {
+  #zennia-sidebar-toggle {
     position: relative;
     inset-inline-start: -8px;
   }
-  :root[data-arc-ui][zen-right-side="true"] #arc-sidebar-toggle {
+  :root[data-zennia][zen-right-side="true"] #zennia-sidebar-toggle {
     inset-inline-start: 8px;
   }
-  #arc-navigation-controls {
+  #zennia-navigation-controls {
     display: flex;
     gap: 4px;
   }
-  #arc-navigation-controls > #PanelUI-menu-button,
-  #arc-navigation-controls > #zen-appmenu-button {
+  #zennia-navigation-controls > #PanelUI-menu-button,
+  #zennia-navigation-controls > #zen-appmenu-button {
     appearance: none !important;
     background: transparent !important;
     border: 0 !important;
@@ -79,12 +79,12 @@
     border-radius: 6px !important;
     -moz-window-dragging: no-drag !important;
   }
-  #arc-navigation-controls
+  #zennia-navigation-controls
     > :is(#PanelUI-menu-button, #zen-appmenu-button)
     .toolbarbutton-text {
     display: none !important;
   }
-  #arc-navigation-controls
+  #zennia-navigation-controls
     > :is(#PanelUI-menu-button, #zen-appmenu-button)
     .toolbarbutton-icon {
     width: 18px !important;
@@ -92,7 +92,7 @@
     margin: 0 !important;
   }
   /* Native toolbar hover surfaces must not paint over the shared row hover. */
-  #arc-navigation-controls
+  #zennia-navigation-controls
     > :is(#PanelUI-menu-button, #zen-appmenu-button)
     :is(.toolbarbutton-badge-stack, .toolbarbutton-icon) {
     appearance: none !important;
@@ -101,16 +101,16 @@
     box-shadow: none !important;
     padding: 0 !important;
   }
-  #arc-navigation-controls
+  #zennia-navigation-controls
     > :is(#PanelUI-menu-button, #zen-appmenu-button):hover {
     background: #14141418 !important;
   }
-  #arc-navigation-controls
+  #zennia-navigation-controls
     > :is(#PanelUI-menu-button, #zen-appmenu-button):focus-visible {
     outline: 2px solid light-dark(#65556f, #e4d2f5) !important;
     outline-offset: -2px;
   }
-  .arc-icon-button {
+  .zennia-icon-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;

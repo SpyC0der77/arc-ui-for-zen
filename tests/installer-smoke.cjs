@@ -10,7 +10,7 @@ const originalInstall=engine.install,originalRemove=engine.remove;
 engine.install=(installation,profile)=>originalInstall(installation,profile,{checkClosed:async()=>{}});
 engine.remove=(installation,profile)=>originalRemove(installation,profile,{checkClosed:async()=>{}});
 app.whenReady().then(async()=>{
- fixture=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'arc-ui-ui-')));
+ fixture=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'zennia-ui-')));
  const zen=path.join(fixture,process.platform==='darwin'?'Zen.app':'Zen'),profile=path.join(fixture,'Profile'),layout=engine.layout(zen);await fs.mkdir(path.dirname(layout.exe),{recursive:true});await fs.mkdir(layout.resources,{recursive:true});await fs.mkdir(profile);
  await fs.writeFile(layout.exe,'fixture');await fs.writeFile(path.join(layout.resources,'application.ini'),'[App]\nVersion=1.23.4b\n');await fs.writeFile(path.join(profile,'prefs.js'),'user_pref("untouched", true);\n');
  const discovery={platform:process.platform,version:engine.VERSION,supportedZen:engine.SUPPORTED,apps:[zen],profiles:[{name:'Verification profile',path:profile,installed:false}],instances:[{app:zen,profile}]};

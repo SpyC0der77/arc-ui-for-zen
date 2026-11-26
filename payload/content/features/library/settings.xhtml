@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
-<!-- Arc UI settings host. Like Zen's browser window it uses a custom title bar
+<!-- Zennia settings host. Like Zen's browser window it uses a custom title bar
      (customtitlebar): the section toolbar is the draggable title bar, and the
      window buttons are Firefox's own platform controls, styled by the browser
      skin (Segoe Fluent glyphs on Windows, native traffic lights on macOS, GTK
      buttons on Linux). library.js moves the settings UI in and wires them up. -->
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns:html="http://www.w3.org/1999/xhtml"
-        windowtype="Arc:Settings" class="arc-settings-window" title="Arc UI settings"
+        windowtype="Zennia:Settings" class="zennia-settings-window" title="Zennia settings"
         customtitlebar="true">
   <html:head>
-    <html:title>Arc UI settings</html:title>
+    <html:title>Zennia settings</html:title>
     <html:link rel="stylesheet" href="chrome://browser/skin/browser.css"/>
-    <html:link rel="stylesheet" href="chrome://arc-ui/content/shared/fonts.css"/>
-    <html:link rel="stylesheet" href="chrome://arc-ui/content/features/library/settings.css"/>
+    <html:link rel="stylesheet" href="chrome://zennia/content/shared/fonts.css"/>
+    <html:link rel="stylesheet" href="chrome://zennia/content/features/library/settings.css"/>
   </html:head>
-  <hbox class="titlebar-buttonbox-container" id="arc-settings-window-controls">
+  <hbox class="titlebar-buttonbox-container" id="zennia-settings-window-controls">
     <hbox class="titlebar-buttonbox titlebar-color">
       <toolbarbutton class="titlebar-button titlebar-min" tooltiptext="Minimize"/>
       <toolbarbutton class="titlebar-button titlebar-max" tooltiptext="Maximize"/>

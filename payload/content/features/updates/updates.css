@@ -1,34 +1,34 @@
 @-moz-document url-prefix("chrome://browser/content/browser.xhtml") {
-  :root[data-arc-ui] #arc-update-button {
+  :root[data-zennia] #zennia-update-button {
     display: flex; align-items: center; justify-content: center; flex: 0 0 32px;
     width: 32px; min-width: 32px; height: 32px; margin: 0; margin-inline-end: auto; order: -1 !important;
     padding: 0; border: 0; border-radius: 50%;
-    background: var(--arc-tab-hover); color: var(--arc-text); font: inherit; font-size: 12px;
+    background: var(--zennia-tab-hover); color: var(--zennia-text); font: inherit; font-size: 12px;
     cursor: pointer;
   }
-  :root[data-arc-ui] #arc-update-button[hidden],
-  :root[data-arc-ui] #arc-update-popup progress[hidden] { display: none; }
-  :root[data-arc-ui] #arc-update-button svg { width: 16px; height: 16px; }
-  :root[data-arc-ui] #arc-update-button:hover { background: var(--arc-tab-hover); }
-  :root[data-arc-ui] #arc-update-popup {
+  :root[data-zennia] #zennia-update-button[hidden],
+  :root[data-zennia] #zennia-update-popup progress[hidden] { display: none; }
+  :root[data-zennia] #zennia-update-button svg { width: 16px; height: 16px; }
+  :root[data-zennia] #zennia-update-button:hover { background: var(--zennia-tab-hover); }
+  :root[data-zennia] #zennia-update-popup {
     position: fixed; inset: auto; margin: 0; box-sizing: border-box;
     width: min(390px, calc(100vw - 16px)); max-height: min(520px, calc(100vh - 70px));
-    padding: 16px; overflow-y: auto; overflow-wrap: anywhere; border: 1px solid color-mix(in srgb, var(--arc-text) 20%, transparent);
-    border-radius: 8px; background: var(--arc-popup-surface); color: var(--arc-text);
+    padding: 16px; overflow-y: auto; overflow-wrap: anywhere; border: 1px solid color-mix(in srgb, var(--zennia-text) 20%, transparent);
+    border-radius: 8px; background: var(--zennia-popup-surface); color: var(--zennia-text);
     font-family: Geist, sans-serif; font-size: 13px; line-height: 1.5;
     box-shadow: 0 2px 8px #0002;
   }
-  :root[data-arc-ui] #arc-update-popup p { margin: 0 0 10px; }
-  :root[data-arc-ui] #arc-update-popup .arc-update-title { font-weight: 600; }
-  :root[data-arc-ui] #arc-update-popup progress { box-sizing: border-box; min-width: 0; width: 100%; max-width: 100%; accent-color: var(--arc-muted); margin-bottom: 12px; }
-  :root[data-arc-ui] #arc-update-popup button {
-    padding: 6px 10px; border: 1px solid color-mix(in srgb, var(--arc-text) 25%, transparent);
-    border-radius: 6px; background: var(--arc-tab-active); color: inherit; font: inherit; cursor: pointer;
+  :root[data-zennia] #zennia-update-popup p { margin: 0 0 10px; }
+  :root[data-zennia] #zennia-update-popup .zennia-update-title { font-weight: 600; }
+  :root[data-zennia] #zennia-update-popup progress { box-sizing: border-box; min-width: 0; width: 100%; max-width: 100%; accent-color: var(--zennia-muted); margin-bottom: 12px; }
+  :root[data-zennia] #zennia-update-popup button {
+    padding: 6px 10px; border: 1px solid color-mix(in srgb, var(--zennia-text) 25%, transparent);
+    border-radius: 6px; background: var(--zennia-tab-active); color: inherit; font: inherit; cursor: pointer;
   }
-  :root[data-arc-ui] #arc-update-popup button:disabled { opacity: .65; cursor: default; }
-  :root[data-arc-ui] #arc-update-popup button:hover:enabled { background: var(--arc-popup-hover); }
-  :root[data-arc-ui] #arc-update-popup a { display: block; color: inherit; margin-top: 12px; text-underline-offset: 3px; }
-  :root[data-arc-ui] #arc-update-popup :is(button,a):focus-visible,
-  :root[data-arc-ui] #arc-update-button:focus-visible { outline: 2px solid var(--arc-muted); outline-offset: 2px; }
+  :root[data-zennia] #zennia-update-popup button:disabled { opacity: .65; cursor: default; }
+  :root[data-zennia] #zennia-update-popup button:hover:enabled { background: var(--zennia-popup-hover); }
+  :root[data-zennia] #zennia-update-popup a { display: block; color: inherit; margin-top: 12px; text-underline-offset: 3px; }
+  :root[data-zennia] #zennia-update-popup :is(button,a):focus-visible,
+  :root[data-zennia] #zennia-update-button:focus-visible { outline: 2px solid var(--zennia-muted); outline-offset: 2px; }
 }
 

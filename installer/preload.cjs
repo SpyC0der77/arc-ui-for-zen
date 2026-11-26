@@ -1,9 +1,9 @@
 ﻿const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('zenInstaller',Object.freeze({
-  discover:()=>ipcRenderer.invoke('arc:discover'),
-  updateSelection:()=>ipcRenderer.invoke('arc:update-selection'),
-  inspect:selection=>ipcRenderer.invoke('arc:inspect',selection),
-  chooseFolder:()=>ipcRenderer.invoke('arc:folder'),
-  apply:(action,selection)=>ipcRenderer.invoke('arc:apply',action,selection),
-  launch:selection=>ipcRenderer.invoke('arc:launch',selection),
+  discover:()=>ipcRenderer.invoke('zennia:discover'),
+  updateSelection:()=>ipcRenderer.invoke('zennia:update-selection'),
+  inspect:selection=>ipcRenderer.invoke('zennia:inspect',selection),
+  chooseFolder:()=>ipcRenderer.invoke('zennia:folder'),
+  apply:(action,selection)=>ipcRenderer.invoke('zennia:apply',action,selection),
+  launch:selection=>ipcRenderer.invoke('zennia:launch',selection),
 }));

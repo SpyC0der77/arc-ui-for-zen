@@ -28,8 +28,8 @@ async function create(source) {
   const layout = engine.layout(source);
   await fs.access(layout.exe);
   // Validate conflicts before copying hundreds of megabytes.
-  if (await fs.access(path.join(layout.resources, 'arc-ui-owner.json')).then(() => true, () => false))
-    throw new Error('Source already has Arc UI installed. Choose an unpatched application.');
+  if (await fs.access(path.join(layout.resources, 'zennia-owner.json')).then(() => true, () => false))
+    throw new Error('Source already has Zennia installed. Choose an unpatched application.');
   for (const name of await fs.readdir(path.join(layout.resources, 'defaults/pref')).catch(e => {
     if (e.code === 'ENOENT') return []; throw e;
   })) {
@@ -48,7 +48,7 @@ async function create(source) {
     const prefs = {
       'marionette.port':port, 'zen.welcome-screen.seen':true,
       'browser.shell.checkDefaultBrowser':false,
-      'browser.startup.homepage_override.mstone':'ignore', 'arc-ui.demo-seen':true,
+      'browser.startup.homepage_override.mstone':'ignore', 'zennia.demo-seen':true,
       'browser.aboutwelcome.enabled':false, 'browser.startup.page':0,
       'browser.tabs.warnOnClose':false, 'browser.sessionstore.resume_from_crash':false,
       'zen.updates.show-update-notification':false,

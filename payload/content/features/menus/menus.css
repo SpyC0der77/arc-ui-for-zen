@@ -2,240 +2,240 @@
 {
   /* One popup language for every chrome menu: a soft floating card with
      rounded rows, quiet separators and muted shortcuts, like Arc's menus. */
-  :root[data-arc-ui] :is(panel, menupopup) {
-    --arc-menu-surface: var(--arc-popup-surface);
-    --arc-menu-border: light-dark(#2b20361a, #ffffff17);
-    --arc-menu-separator: light-dark(#2b203617, #ffffff14);
-    --arc-menu-shortcut: light-dark(#8b8390, #a59dae);
-    --arc-menu-radius: 12px;
-    --arc-menu-item-radius: 8px;
-    --arc-menu-shadow:
+  :root[data-zennia] :is(panel, menupopup) {
+    --zennia-menu-surface: var(--zennia-popup-surface);
+    --zennia-menu-border: light-dark(#2b20361a, #ffffff17);
+    --zennia-menu-separator: light-dark(#2b203617, #ffffff14);
+    --zennia-menu-shortcut: light-dark(#8b8390, #a59dae);
+    --zennia-menu-radius: 12px;
+    --zennia-menu-item-radius: 8px;
+    --zennia-menu-shadow:
       0 12px 28px -8px light-dark(#2b203640, #00000099),
       0 2px 6px light-dark(#2b20361a, #00000059);
-    --arrowpanel-background: var(--arc-menu-surface) !important;
-    --arrowpanel-color: var(--arc-text);
-    --arrowpanel-border-color: var(--arc-menu-border);
-    --arrowpanel-border-radius: var(--arc-menu-radius);
+    --arrowpanel-background: var(--zennia-menu-surface) !important;
+    --arrowpanel-color: var(--zennia-text);
+    --arrowpanel-border-color: var(--zennia-menu-border);
+    --arrowpanel-border-radius: var(--zennia-menu-radius);
     --arrowpanel-padding: 6px;
-    --arrowpanel-menuitem-border-radius: var(--arc-menu-item-radius);
+    --arrowpanel-menuitem-border-radius: var(--zennia-menu-item-radius);
     --arrowpanel-menuitem-padding: 6px 10px;
     --arrowpanel-menuitem-margin-inline: 0px;
     --panel-menuitem-margin-inline: 6px;
-    --panel-separator-color: var(--arc-menu-separator);
-    --panel-shadow: var(--arc-menu-shadow);
-    --panel-background: var(--arc-menu-surface) !important;
-    --panel-background-color: var(--arc-menu-surface) !important;
-    --panel-color: var(--arc-text);
-    --panel-text-color: var(--arc-text);
-    --panel-border-color: var(--arc-menu-border);
-    --panel-border-radius: var(--arc-menu-radius);
+    --panel-separator-color: var(--zennia-menu-separator);
+    --panel-shadow: var(--zennia-menu-shadow);
+    --panel-background: var(--zennia-menu-surface) !important;
+    --panel-background-color: var(--zennia-menu-surface) !important;
+    --panel-color: var(--zennia-text);
+    --panel-text-color: var(--zennia-text);
+    --panel-border-color: var(--zennia-menu-border);
+    --panel-border-radius: var(--zennia-menu-radius);
     --panel-padding: 6px;
-    --panel-item-hover-bgcolor: var(--arc-popup-hover);
-    --panel-item-active-bgcolor: var(--arc-popup-active);
-    --button-background-color: var(--arc-popup-control);
-    --button-background-color-hover: var(--arc-popup-hover);
-    --button-background-color-active: var(--arc-popup-active);
-    --button-border-radius: var(--arc-menu-item-radius);
+    --panel-item-hover-bgcolor: var(--zennia-popup-hover);
+    --panel-item-active-bgcolor: var(--zennia-popup-active);
+    --button-background-color: var(--zennia-popup-control);
+    --button-background-color-hover: var(--zennia-popup-hover);
+    --button-background-color-active: var(--zennia-popup-active);
+    --button-border-radius: var(--zennia-menu-item-radius);
     --input-background-color: light-dark(white, #39333f);
-    --input-color: var(--arc-text);
-    --input-border-color: var(--arc-menu-border);
+    --input-color: var(--zennia-text);
+    --input-border-color: var(--zennia-menu-border);
     --focus-outline-color: light-dark(#65556f, #e4d2f5);
-    --menu-background-color: var(--arc-menu-surface);
-    --menu-color: var(--arc-text);
-    --menuitem-hover-background-color: var(--arc-popup-hover);
-    --menuitem-hover-color: var(--arc-text);
-    --menuitem-disabled-color: var(--arc-muted);
-    font-family: var(--arc-font) !important;
+    --menu-background-color: var(--zennia-menu-surface);
+    --menu-color: var(--zennia-text);
+    --menuitem-hover-background-color: var(--zennia-popup-hover);
+    --menuitem-hover-color: var(--zennia-text);
+    --menuitem-disabled-color: var(--zennia-muted);
+    font-family: var(--zennia-font) !important;
     color-scheme: light dark !important;
   }
   /* No shadow margin: on Windows 11 it hands the popup to DWM, which squares
      the corners off to its own small radius and drops the CSS rounding. */
-  :root[data-arc-ui] menupopup {
+  :root[data-zennia] menupopup {
     appearance: none !important;
     background: transparent !important;
-    color: var(--arc-text) !important;
+    color: var(--zennia-text) !important;
     border: 0 !important;
     padding: 0 !important;
   }
 
   /* Rows */
-  :root[data-arc-ui] menupopup :is(menu, menuitem) {
+  :root[data-zennia] menupopup :is(menu, menuitem) {
     appearance: none !important;
     min-height: 30px !important;
     margin: 0 !important;
     padding: 0 10px !important;
-    border-radius: var(--arc-menu-item-radius) !important;
+    border-radius: var(--zennia-menu-item-radius) !important;
     corner-shape: round !important;
-    color: var(--arc-text) !important;
-    font: 13px var(--arc-font) !important;
+    color: var(--zennia-text) !important;
+    font: 13px var(--zennia-font) !important;
     &[_moz-menuactive="true"]:not([disabled]:not([disabled="false"])) {
-      background: var(--arc-popup-hover) !important;
+      background: var(--zennia-popup-hover) !important;
     }
     &[_moz-menuactive="true"]:not([disabled]:not([disabled="false"])):active {
-      background: var(--arc-popup-active) !important;
+      background: var(--zennia-popup-active) !important;
     }
     &[disabled]:not([disabled="false"]) {
-      color: var(--arc-muted) !important;
+      color: var(--zennia-muted) !important;
       opacity: 0.55;
     }
   }
-  :root[data-arc-ui] menupopup .menu-accel {
-    color: var(--arc-menu-shortcut) !important;
+  :root[data-zennia] menupopup .menu-accel {
+    color: var(--zennia-menu-shortcut) !important;
     font-size: 12px !important;
     margin-inline: 24px 0 !important;
   }
-  :root[data-arc-ui] menupopup :not(#context-navigation) > :is(menu, menuitem) > .menu-icon {
+  :root[data-zennia] menupopup :not(#context-navigation) > :is(menu, menuitem) > .menu-icon {
     -moz-context-properties: fill, fill-opacity, stroke;
     fill: currentColor !important;
     width: 16px !important;
     height: 16px !important;
     margin-inline-end: 10px !important;
   }
-  :root[data-arc-ui] menupopup > menu::after {
+  :root[data-zennia] menupopup > menu::after {
     --menu-arrow-opacity: 0.55;
     margin-inline: 16px -2px !important;
   }
-  :root[data-arc-ui] menupopup menuseparator {
+  :root[data-zennia] menupopup menuseparator {
     appearance: none !important;
     margin: 5px 10px !important;
     padding: 0 !important;
     border: 0 !important;
-    border-top: 1px solid var(--arc-menu-separator) !important;
+    border-top: 1px solid var(--zennia-menu-separator) !important;
   }
-  :root[data-arc-ui] menupopup menucaption {
-    color: var(--arc-menu-shortcut) !important;
-    font: 600 11px var(--arc-font) !important;
+  :root[data-zennia] menupopup menucaption {
+    color: var(--zennia-menu-shortcut) !important;
+    font: 600 11px var(--zennia-font) !important;
     padding: 6px 10px 2px !important;
   }
   /* Back / forward / reload / bookmark strip on the page menu keeps its
      native icon-button layout; only the shape follows the menu rows. */
-  :root[data-arc-ui] menupopup #context-navigation > menuitem {
+  :root[data-zennia] menupopup #context-navigation > menuitem {
     padding: 0 !important;
     justify-content: center !important;
   }
 
   /* Panels share the same card and rows. */
-  :root[data-arc-ui]
+  :root[data-zennia]
     panel
     :is(panelview, .panel-viewstack, .panel-subview-body) {
     background-color: var(--arrowpanel-background) !important;
-    color: var(--arc-text) !important;
+    color: var(--zennia-text) !important;
   }
-  :root[data-arc-ui] panel .subviewbutton:not([disabled="true"]) {
-    border-radius: var(--arc-menu-item-radius) !important;
+  :root[data-zennia] panel .subviewbutton:not([disabled="true"]) {
+    border-radius: var(--zennia-menu-item-radius) !important;
     corner-shape: round !important;
     &:is(:hover, :focus-visible) {
-      background-color: var(--arc-popup-hover) !important;
+      background-color: var(--zennia-popup-hover) !important;
     }
     &:hover:active {
-      background-color: var(--arc-popup-active) !important;
+      background-color: var(--zennia-popup-active) !important;
     }
   }
-  :root[data-arc-ui] panel toolbarseparator {
+  :root[data-zennia] panel toolbarseparator {
     appearance: none !important;
     margin: 5px 10px !important;
     padding: 0 !important;
     border: 0 !important;
-    border-top: 1px solid var(--arc-menu-separator) !important;
+    border-top: 1px solid var(--zennia-menu-separator) !important;
     background: none !important;
   }
-  :root[data-arc-ui] .translations-panel :is(menulist, button, toolbarbutton) {
-    border-radius: var(--arc-menu-item-radius) !important;
+  :root[data-zennia] .translations-panel :is(menulist, button, toolbarbutton) {
+    border-radius: var(--zennia-menu-item-radius) !important;
     corner-shape: round !important;
   }
 
   /* More menu (application menu) */
   /* The panel element itself carries the card: Windows takes the popup's
      shape from it, so rounding an inner box leaves square window corners. */
-  :root[data-arc-ui] #appMenu-popup {
+  :root[data-zennia] #appMenu-popup {
     appearance: none !important;
-    background: var(--arc-menu-surface) !important;
-    border: 1px solid var(--arc-menu-border) !important;
-    border-radius: var(--arc-menu-radius) !important;
+    background: var(--zennia-menu-surface) !important;
+    border: 1px solid var(--zennia-menu-border) !important;
+    border-radius: var(--zennia-menu-radius) !important;
     corner-shape: round !important;
     overflow: hidden !important;
     padding: 0 !important;
-    --panel-color: var(--arc-text) !important;
-    --arrowpanel-color: var(--arc-text) !important;
+    --panel-color: var(--zennia-text) !important;
+    --arrowpanel-color: var(--zennia-text) !important;
     --menu-panel-width-wide: 300px !important;
     --menu-panel-width: 300px !important;
     --panel-width: 300px !important;
   }
-  :root[data-arc-ui] #appMenu-mainView {
+  :root[data-zennia] #appMenu-mainView {
     width: 300px !important;
     min-width: 300px !important;
   }
-  :root[data-arc-ui] #appMenu-popup :is(#appMenu-mainView, .panel-viewstack) {
-    background: var(--arc-menu-surface) !important;
-    border-radius: var(--arc-menu-radius) !important;
+  :root[data-zennia] #appMenu-popup :is(#appMenu-mainView, .panel-viewstack) {
+    background: var(--zennia-menu-surface) !important;
+    border-radius: var(--zennia-menu-radius) !important;
   }
-  :root[data-arc-ui] #appMenu-popup .panel-subview-body {
+  :root[data-zennia] #appMenu-popup .panel-subview-body {
     background: transparent !important;
     padding: 6px !important;
   }
-  :root[data-arc-ui] #appMenu-popup .subviewbutton {
+  :root[data-zennia] #appMenu-popup .subviewbutton {
     min-height: 30px !important;
     margin: 0 !important;
     padding: 5px 10px !important;
-    color: var(--arc-text) !important;
-    border-radius: var(--arc-menu-item-radius) !important;
+    color: var(--zennia-text) !important;
+    border-radius: var(--zennia-menu-item-radius) !important;
   }
-  :root[data-arc-ui]
+  :root[data-zennia]
     #appMenu-popup
     :is(.subviewbutton, .toolbarbutton-text, label) {
-    font-family: var(--arc-font) !important;
+    font-family: var(--zennia-font) !important;
     font-size: 13px !important;
   }
-  :root[data-arc-ui] #appMenu-popup .subviewbutton > .toolbarbutton-icon {
+  :root[data-zennia] #appMenu-popup .subviewbutton > .toolbarbutton-icon {
     width: 16px !important;
     height: 16px !important;
     margin-inline: 0 12px !important;
     opacity: 0.9;
   }
-  :root[data-arc-ui] #appMenu-popup .subviewbutton[shortcut]::after {
-    color: var(--arc-menu-shortcut) !important;
+  :root[data-zennia] #appMenu-popup .subviewbutton[shortcut]::after {
+    color: var(--zennia-menu-shortcut) !important;
     font-size: 12px !important;
     opacity: 1;
     margin-inline-start: 16px !important;
   }
-  :root[data-arc-ui] #appMenu-popup .subview-subheader {
-    color: var(--arc-menu-shortcut) !important;
+  :root[data-zennia] #appMenu-popup .subview-subheader {
+    color: var(--zennia-menu-shortcut) !important;
     font-size: 11px !important;
     font-weight: 600 !important;
     padding: 6px 10px 2px !important;
   }
-  :root[data-arc-ui] #appMenu-popup .panel-header {
+  :root[data-zennia] #appMenu-popup .panel-header {
     min-height: 40px !important;
     padding: 6px !important;
   }
-  :root[data-arc-ui] #appMenu-popup .panel-header > h1 {
+  :root[data-zennia] #appMenu-popup .panel-header > h1 {
     font-size: 13px !important;
     font-weight: 600 !important;
   }
 
   /* Account row */
-  :root[data-arc-ui] #appMenu-popup #appMenu-fxa-status2 {
+  :root[data-zennia] #appMenu-popup #appMenu-fxa-status2 {
     min-height: 44px !important;
     padding: 0 !important;
     margin: 2px 6px 0 !important;
     gap: 10px;
     background: transparent !important;
   }
-  :root[data-arc-ui] #appMenu-fxa-sign-in-promo {
-    background: var(--arc-popup-group) !important;
-    color: var(--arc-text) !important;
-    border-radius: var(--arc-menu-item-radius) !important;
+  :root[data-zennia] #appMenu-fxa-sign-in-promo {
+    background: var(--zennia-popup-group) !important;
+    color: var(--zennia-text) !important;
+    border-radius: var(--zennia-menu-item-radius) !important;
     margin: 4px 6px !important;
     & a {
-      color: var(--arc-text) !important;
+      color: var(--zennia-text) !important;
     }
   }
-  :root[data-arc-ui] #appMenu-fxa-text {
+  :root[data-zennia] #appMenu-fxa-text {
     font-size: 13px !important;
     font-weight: 600 !important;
-    color: var(--arc-text) !important;
+    color: var(--zennia-text) !important;
   }
-  :root[data-arc-ui] #appMenu-fxa-text::before {
+  :root[data-zennia] #appMenu-fxa-text::before {
     content: "";
     display: inline-block;
     vertical-align: middle;
@@ -243,44 +243,44 @@
     height: 28px;
     margin-inline-end: 10px;
     border-radius: 50%;
-    background: var(--arc-popup-control) url("chrome://arc-ui/content/menu-icons/cloud.svg") center / 18px no-repeat;
+    background: var(--zennia-popup-control) url("chrome://zennia/content/menu-icons/cloud.svg") center / 18px no-repeat;
     -moz-context-properties: fill;
-    fill: var(--arc-text);
+    fill: var(--zennia-text);
   }
-  :root[data-arc-ui] #appMenu-nova-fxa-label {
-    --button-background-color: var(--arc-popup-control);
-    --button-background-color-hover: var(--arc-popup-hover);
-    --button-text-color: var(--arc-text);
+  :root[data-zennia] #appMenu-nova-fxa-label {
+    --button-background-color: var(--zennia-popup-control);
+    --button-background-color-hover: var(--zennia-popup-hover);
+    --button-text-color: var(--zennia-text);
     --button-border-radius: 999px;
     border-radius: 999px !important;
   }
-  :root[data-arc-ui] #appMenu-popup #appMenu-fxa-label2 {
-    background: var(--arc-popup-control) !important;
+  :root[data-zennia] #appMenu-popup #appMenu-fxa-label2 {
+    background: var(--zennia-popup-control) !important;
     border-radius: 999px !important;
     padding: 5px 14px !important;
     min-height: 28px !important;
-    color: var(--arc-text) !important;
+    color: var(--zennia-text) !important;
     &:hover {
-      background: var(--arc-popup-hover) !important;
+      background: var(--zennia-popup-hover) !important;
     }
   }
   /* Sync promo cards follow the neutral popup palette instead of violet. */
-  :root[data-arc-ui] #appMenu-popup sync-promo {
+  :root[data-zennia] #appMenu-popup sync-promo {
     /* violet-0 is the light background and the dark-mode text. */
-    --color-violet-0: light-dark(var(--arc-popup-group), var(--arc-text));
-    --color-violet-90: var(--arc-popup-group);
-    --color-violet-desaturated-10: var(--arc-popup-group);
-    --color-violet-desaturated-70: var(--arc-popup-group);
-    --color-violet-30: var(--arc-menu-border);
-    --color-violet-80: var(--arc-text);
-    --link-color: var(--arc-text);
-    --link-color-hover: var(--arc-text);
+    --color-violet-0: light-dark(var(--zennia-popup-group), var(--zennia-text));
+    --color-violet-90: var(--zennia-popup-group);
+    --color-violet-desaturated-10: var(--zennia-popup-group);
+    --color-violet-desaturated-70: var(--zennia-popup-group);
+    --color-violet-30: var(--zennia-menu-border);
+    --color-violet-80: var(--zennia-text);
+    --link-color: var(--zennia-text);
+    --link-color-hover: var(--zennia-text);
     --promo-border-radius: 10px;
     margin: 0 6px 6px !important;
   }
 
   /* Zoom row: a regular row with pill controls. */
-  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls {
+  :root[data-zennia] #appMenu-popup #appMenu-zoom-controls {
     box-sizing: border-box !important;
     height: 34px !important;
     min-height: 34px !important;
@@ -288,14 +288,14 @@
     padding: 3px 3px 3px 10px !important;
     border: 0 !important;
     background: transparent !important;
-    border-radius: var(--arc-menu-item-radius) !important;
+    border-radius: var(--zennia-menu-item-radius) !important;
   }
-  :root[data-arc-ui] #appMenu-zoom-controls > .toolbarbutton-text {
+  :root[data-zennia] #appMenu-zoom-controls > .toolbarbutton-text {
     flex: 1 !important;
     min-width: 48px !important;
     padding-inline: 0 !important;
   }
-  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls > toolbarbutton {
+  :root[data-zennia] #appMenu-popup #appMenu-zoom-controls > toolbarbutton {
     appearance: none !important;
     display: flex !important;
     align-items: center !important;
@@ -309,18 +309,18 @@
     min-height: 28px !important;
     padding: 0 !important;
     margin-inline: 2px !important;
-    background: var(--arc-popup-control) !important;
+    background: var(--zennia-popup-control) !important;
     border: 0 !important;
     border-radius: 999px !important;
     corner-shape: round !important;
     &:not([disabled]):hover {
-      background: var(--arc-popup-hover) !important;
+      background: var(--zennia-popup-hover) !important;
     }
     &:not([disabled]):hover:active {
-      background: var(--arc-popup-active) !important;
+      background: var(--zennia-popup-active) !important;
     }
   }
-  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls .toolbarbutton-icon {
+  :root[data-zennia] #appMenu-popup #appMenu-zoom-controls .toolbarbutton-icon {
     width: 14px !important;
     height: 14px !important;
     margin: 0 !important;
@@ -331,23 +331,23 @@
     flex: 0 0 14px !important;
   }
   /* Native combined-button styling adds a divider before fullscreen. */
-  :root[data-arc-ui] #appMenu-fullscreen-button2::before {
+  :root[data-zennia] #appMenu-fullscreen-button2::before {
     content: none !important;
     display: none !important;
   }
   /* Paint zoom feedback on the fixed button, not its native inner label. */
-  :root[data-arc-ui] #appMenu-popup #appMenu-zoom-controls > #appMenu-zoomReset-button2 {
+  :root[data-zennia] #appMenu-popup #appMenu-zoom-controls > #appMenu-zoomReset-button2 {
     width: 52px !important;
     min-width: 52px !important;
     max-height: 28px !important;
     overflow: hidden !important;
     clip-path: inset(0 round 14px) !important;
     &:focus-visible {
-      outline: 2px solid var(--arc-text) !important;
+      outline: 2px solid var(--zennia-text) !important;
       outline-offset: -3px !important;
     }
   }
-  :root[data-arc-ui] #appMenu-popup #appMenu-zoomReset-button2 > .toolbarbutton-text {
+  :root[data-zennia] #appMenu-popup #appMenu-zoomReset-button2 > .toolbarbutton-text {
     background: transparent !important;
     border: 0 !important;
     border-radius: inherit !important;
@@ -359,7 +359,7 @@
   }
 
   /* Header navigation is an icon button, not a full menu row. */
-  :root[data-arc-ui] #appMenu-popup .panel-header > .subviewbutton-back {
+  :root[data-zennia] #appMenu-popup .panel-header > .subviewbutton-back {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -371,39 +371,39 @@
     height: 28px !important;
     min-height: 28px !important;
     padding: 0 !important;
-    border-radius: var(--arc-menu-item-radius) !important;
+    border-radius: var(--zennia-menu-item-radius) !important;
   }
-  :root[data-arc-ui] #appMenu-popup .subviewbutton-back > .toolbarbutton-icon {
+  :root[data-zennia] #appMenu-popup .subviewbutton-back > .toolbarbutton-icon {
     width: 16px !important;
     height: 16px !important;
     padding: 0 !important;
     margin: 0 !important;
   }
   /* Footer actions sit outside the padded body; align them with its rows. */
-  :root[data-arc-ui] #appMenu-popup .panel-subview-footer-button {
+  :root[data-zennia] #appMenu-popup .panel-subview-footer-button {
     box-sizing: border-box !important;
     margin: 0 6px 6px !important;
     padding: 5px 10px !important;
     min-height: 30px !important;
-    border-radius: var(--arc-menu-item-radius) !important;
+    border-radius: var(--zennia-menu-item-radius) !important;
   }
-  :root[data-arc-ui] #appMenu-popup .panel-subview-footer-button > .toolbarbutton-icon {
+  :root[data-zennia] #appMenu-popup .panel-subview-footer-button > .toolbarbutton-icon {
     margin-inline: 0 12px !important;
   }
 
   /* Create menu: Arc's roomier "New" menu, on the shared card. */
-  :root[data-arc-ui] #zenCreateNewPopup {
+  :root[data-zennia] #zenCreateNewPopup {
     min-width: 232px !important;
   }
-  :root[data-arc-ui] #zenCreateNewPopup > menuitem {
+  :root[data-zennia] #zenCreateNewPopup > menuitem {
     min-height: 36px !important;
     padding: 0 10px !important;
-    font: 500 13px var(--arc-font) !important;
+    font: 500 13px var(--zennia-font) !important;
     &:not([_moz-menuactive="true"]) {
       background: transparent !important;
     }
   }
-  :root[data-arc-ui] #zenCreateNewPopup .menu-icon {
+  :root[data-zennia] #zenCreateNewPopup .menu-icon {
     -moz-context-properties: fill, stroke;
     fill: currentColor;
     stroke: currentColor;
@@ -411,7 +411,7 @@
     height: 18px !important;
     margin-inline-end: 12px !important;
   }
-  :root[data-arc-ui] #zenCreateNewPopup .menu-text {
+  :root[data-zennia] #zenCreateNewPopup .menu-text {
     font-weight: 500 !important;
   }
 }

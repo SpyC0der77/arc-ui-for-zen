@@ -1,7 +1,7 @@
 # Browser UI code
 
-Paths below are relative to `payload/content/`. Start at `payload/arc.uc.js`. It loads the stylesheet, installs the features in order,
-connects their callbacks, and preserves the `window.ZenArc` API used by commands,
+Paths below are relative to `payload/content/`. Start at `payload/zennia.uc.js`. It loads the stylesheet, installs the features in order,
+connects their callbacks, and preserves the `window.Zennia` API used by commands,
 debug mode, and browser tests. Keep UI implementations out of that file.
 
 ## Where to make a change
@@ -16,7 +16,7 @@ debug mode, and browser tests. Keep UI implementations out of that file.
 | Recent files, hover, download services, and arrival motion | `features/downloads/downloads.js` | `features/downloads/*.css` |
 | Download row icons, labels, and action buttons | `features/downloads/rows.js` | `features/downloads/popup.css` |
 | Library trigger, opening position, and footer | `features/library/library.js` | `features/library/*.css` |
-| Arc UI settings window (appearance, colors, presets, updates) | `features/library/library.js`, hosted in `features/library/settings.xhtml` | `features/library/settings.css` |
+| Zennia settings window (appearance, colors, presets, updates) | `features/library/library.js`, hosted in `features/library/settings.xhtml` | `features/library/settings.css` |
 | Tab hover re-sync after a tab closes under the pointer | `features/tabs/hover-sync.js` | `features/tabs/tabs.css` |
 | Idle-tab archiving and native history integration | `features/archive/auto-archive.js`, `archive.js` | Native library styles |
 | GitHub live-folder setup | `features/github/live-folders.js`, `github.js` | `features/menus/provider-actions.css` |
@@ -55,7 +55,7 @@ window unload; it is not a promise of live theme uninstallation or hot reload.
 
 ## CSS order
 
-`../arc.css` is the import list. Its order preserves the original cascade. Several
+`../zennia.css` is the import list. Its order preserves the original cascade. Several
 features have more than one stylesheet because their later overrides originally
 followed other features. Keep that ordering unless the behavior change calls for
 changing it. Each imported file preserves its original document scope, including

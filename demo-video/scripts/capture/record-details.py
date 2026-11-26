@@ -40,11 +40,11 @@ try:
  source=Path('payload/content/features/archive/auto-archive.js').read_text(encoding='utf-8')
  info=source[source.index('  function archiveTabInfo'):source.index('  // Zen keeps the table')]
  announce=source[source.index('  function announceArchive'):source.index('  if (!PrivateBrowsingUtils.isWindowPrivate(window))',source.index('  function announceArchive'))]
- js("const fixture={};Services.scriptloader.loadSubScript('chrome://arc-ui/content/archive.js',fixture,'UTF-8');const later=(fn,ms)=>window.setTimeout(fn,ms);const animate=(node,frames,options)=>node.animate(frames,options).finished;"+info+announce+"window.demoIdleTab._lastAccessed=Date.now()-13*3600000;window.demoArchiveStop=fixture.ArcArchive.start({tabs:()=>[archiveTabInfo(window.demoIdleTab)],close:row=>gBrowser.removeTab(row.tab,{animate:false}),announce:announceArchive,getHours:()=>12,schedule:later,cancel:clearTimeout,delay:600,interval:3600000});")
+ js("const fixture={};Services.scriptloader.loadSubScript('chrome://zennia/content/archive.js',fixture,'UTF-8');const later=(fn,ms)=>window.setTimeout(fn,ms);const animate=(node,frames,options)=>node.animate(frames,options).finished;"+info+announce+"window.demoIdleTab._lastAccessed=Date.now()-13*3600000;window.demoArchiveStop=fixture.ZenniaArchive.start({tabs:()=>[archiveTabInfo(window.demoIdleTab)],close:row=>gBrowser.removeTab(row.tab,{animate:false}),announce:announceArchive,getHours:()=>12,schedule:later,cancel:clearTimeout,delay:600,interval:3600000});")
  shot('Auto archive idle tab',duration=4)
- shot('Archive holds the idle tab',"document.querySelector('zen-library').activeTab='history';ZenArc.setRail(true)",4)
+ shot('Archive holds the idle tab',"document.querySelector('zen-library').activeTab='history';Zennia.setRail(true)",4)
  shot('Boosts library',"document.querySelector('zen-library').activeTab='boosts'",3.5)
- shot('Finish on the workspace',"ZenArc.setRail(false)",3.5)
+ shot('Finish on the workspace',"Zennia.setRail(false)",3.5)
 finally:
  ff.stdin.close();ff.wait();(DEMO/'timeline'/'details-shots.json').write_text(json.dumps(shots,indent=2));m.delete_session()
 print('Recorded',frame/20,'seconds')

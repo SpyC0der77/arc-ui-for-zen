@@ -1,46 +1,46 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
-  :root[data-arc-ui] #urlbar:not([breakout-extend]) .urlbar-background {
+  :root[data-zennia] #urlbar:not([breakout-extend]) .urlbar-background {
     background: var(--zen-toolbar-element-bg) !important;
     border: 0 !important;
     border-radius: 10px !important;
     box-shadow: none !important;
   }
-  :root[data-arc-ui] #urlbar-input {
+  :root[data-zennia] #urlbar-input {
     color: light-dark(#141414, #f0edf3) !important;
     font-size: 13px !important;
     font-weight: 500 !important;
   }
-  :root[data-arc-ui] #urlbar:not([zen-floating-urlbar="true"]) #urlbar-input {
+  :root[data-zennia] #urlbar:not([zen-floating-urlbar="true"]) #urlbar-input {
     caret-color: transparent !important;
   }
-  :root[data-arc-ui]
+  :root[data-zennia]
     #urlbar:not([zen-floating-urlbar="true"])
     #urlbar-input::selection {
     background: transparent !important;
     color: inherit !important;
   }
-  :root[data-arc-ui] #urlbar[zen-floating-urlbar="true"] #urlbar-input {
+  :root[data-zennia] #urlbar[zen-floating-urlbar="true"] #urlbar-input {
     caret-color: auto !important;
   }
-  :root[data-arc-ui] #urlbar-container {
+  :root[data-zennia] #urlbar-container {
     position: relative !important;
   }
   /* Zen's inherited superellipse makes small radii look almost square. */
-  :root[data-arc-ui] #urlbar:not([zen-floating-urlbar="true"]),
-  :root[data-arc-ui]
+  :root[data-zennia] #urlbar:not([zen-floating-urlbar="true"]),
+  :root[data-zennia]
     #urlbar:not([zen-floating-urlbar="true"])
     :is(.urlbar-background, .urlbar-input-container),
-  :root[data-arc-ui] #arc-sidebar-address-label {
+  :root[data-zennia] #zennia-sidebar-address-label {
     border-radius: 10px !important;
     corner-shape: round !important;
   }
 
-  :root[data-arc-ui]
+  :root[data-zennia]
     #urlbar-container:has(#urlbar[open][zen-floating-urlbar="true"]) {
     background: transparent !important;
   }
-  #arc-sidebar-address-label {
+  #zennia-sidebar-address-label {
     display: none;
     position: absolute;
     inset: 0;
@@ -52,10 +52,10 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     pointer-events: none;
-    font: 500 13px var(--arc-font);
-    color: var(--arc-text);
+    font: 500 13px var(--zennia-font);
+    color: var(--zennia-text);
   }
-  .arc-sidebar-address-icon {
+  .zennia-sidebar-address-icon {
     position: absolute;
     top: 50%;
     translate: 0 -50%;
@@ -66,10 +66,10 @@
     background-position: center;
     -moz-context-properties: fill, fill-opacity;
   }
-  .arc-sidebar-address-icon[hidden] {
+  .zennia-sidebar-address-icon[hidden] {
     display: none;
   }
-  .arc-sidebar-address-text {
+  .zennia-sidebar-address-text {
     position: absolute;
     top: 0;
     height: 100%;
@@ -79,17 +79,17 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  :root[data-arc-ui]
+  :root[data-zennia]
     #urlbar-container:has(#urlbar[open][zen-floating-urlbar="true"])
-    > #arc-sidebar-address-label {
+    > #zennia-sidebar-address-label {
     display: flex;
   }
-  :root[data-arc-ui] #urlbar[breakout-extend] .urlbar-background {
+  :root[data-zennia] #urlbar[breakout-extend] .urlbar-background {
     background: light-dark(white, #39333f) !important;
     border-radius: 10px !important;
     box-shadow: 0 2px 8px #44375030 !important;
   }
-  :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] {
+  :root[data-zennia] #urlbar[open][zen-floating-urlbar="true"] {
     position: fixed !important;
     top: 24vh !important;
     left: 50% !important;
@@ -103,23 +103,23 @@
     --urlbar-inner-border-radius: 12px !important;
     --urlbar-container-height: 56px !important;
     transform-origin: 50% 28px;
-    animation: arc-search-open 180ms cubic-bezier(0.2, 0.7, 0.3, 1) both !important;
+    animation: zennia-search-open 180ms cubic-bezier(0.2, 0.7, 0.3, 1) both !important;
   }
-  :root[data-arc-ui]
+  :root[data-zennia]
     #urlbar[open][zen-floating-urlbar="true"]
     .urlbar-background {
     border-radius: 16px !important;
     background: light-dark(white, #39333f) !important;
   }
-  :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] #urlbar-input {
+  :root[data-zennia] #urlbar[open][zen-floating-urlbar="true"] #urlbar-input {
     font-size: 18px !important;
   }
-  :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] .urlbarView {
+  :root[data-zennia] #urlbar[open][zen-floating-urlbar="true"] .urlbarView {
     max-height: calc(70vh - 72px);
     overflow-y: auto;
     border-radius: 0 0 12px 12px;
   }
-  @keyframes arc-search-open {
+  @keyframes zennia-search-open {
     from {
       opacity: 0;
       transform: scale(0.97);
@@ -130,11 +130,11 @@
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    :root[data-arc-ui] #urlbar[open][zen-floating-urlbar="true"] {
+    :root[data-zennia] #urlbar[open][zen-floating-urlbar="true"] {
       animation: none !important;
     }
   }
-  :root[data-arc-ui] .urlbarView-row[selected] .urlbarView-row-inner {
+  :root[data-zennia] .urlbarView-row[selected] .urlbarView-row-inner {
     background: light-dark(#bcb3c5, #494052) !important;
     color: light-dark(#141414, #f0edf3) !important;
     border-radius: 6px !important;

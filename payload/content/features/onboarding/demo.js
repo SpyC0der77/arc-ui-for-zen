@@ -1,5 +1,5 @@
 /* Open the bundled demo once, after Zen has completed its own onboarding. */
-var ArcDemo = {
+var ZenniaDemo = {
   install(window, dependencies = {}) {
     const { Services, PrivateBrowsingUtils, createMotion } = dependencies;
     const motion = createMotion(window);
@@ -7,13 +7,13 @@ var ArcDemo = {
     // Only open the demo once, after the browser's own onboarding has completed.
     if (
       !PrivateBrowsingUtils.isWindowPrivate(window) &&
-      !Services.prefs.getBoolPref("arc-ui.demo-seen", false) &&
+      !Services.prefs.getBoolPref("zennia.demo-seen", false) &&
       Services.prefs.getBoolPref("zen.welcome-screen.seen", false)
     ) {
-      Services.prefs.setBoolPref("arc-ui.demo-seen", true);
+      Services.prefs.setBoolPref("zennia.demo-seen", true);
       later(
         () =>
-          window.openTrustedLinkIn("chrome://arc-ui/content/home.xhtml", "tab"),
+          window.openTrustedLinkIn("chrome://zennia/content/home.xhtml", "tab"),
         500,
       );
     }

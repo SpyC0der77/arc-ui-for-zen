@@ -1,5 +1,5 @@
 /* Connect the GitHub provider to native live folders; never run in private windows. */
-var ArcGitHubFolders = {
+var ZenniaGitHubFolders = {
   install(window, dependencies = {}) {
     const { ChromeUtils } = window;
     const { Services, PrivateBrowsingUtils, createMotion } = dependencies;
@@ -13,11 +13,11 @@ var ArcGitHubFolders = {
         );
         const github = {};
         Services.scriptloader.loadSubScript(
-          "chrome://arc-ui/content/github.js",
+          "chrome://zennia/content/github.js",
           github,
           "UTF-8",
         );
-        stopGithubSetup = github.ArcGitHub.start({
+        stopGithubSetup = github.ZenniaGitHub.start({
           manager: ZenLiveFoldersManager,
           prefs: Services.prefs,
           isPrivateWindow: (win) => PrivateBrowsingUtils.isWindowPrivate(win),
@@ -26,12 +26,12 @@ var ArcGitHubFolders = {
           cancel: clear,
           onError: (error) =>
             window.console.error(
-              "[Arc UI] GitHub Live Folders setup failed; retrying",
+              "[Zennia] GitHub Live Folders setup failed; retrying",
               error,
             ),
         });
       } catch (error) {
-        window.console.error("[Arc UI] GitHub Live Folders unavailable", error);
+        window.console.error("[Zennia] GitHub Live Folders unavailable", error);
       }
     }
 

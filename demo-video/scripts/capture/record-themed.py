@@ -65,7 +65,7 @@ class RecordingPaths(ast.NodeTransformer):
     def visit_Constant(self, node):
         # Recorder predates the source split. Read the same installed functions
         # from their current source location, without changing their contents.
-        if node.value == 'payload/arc.uc.js':
+        if node.value == 'payload/zennia.uc.js':
             return ast.Constant('payload/content/features/archive/auto-archive.js')
         return node
 

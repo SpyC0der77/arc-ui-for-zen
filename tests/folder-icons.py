@@ -48,7 +48,7 @@ def capture():
 
 try:
     for _ in range(50):
-        if script("return !!window.ZenArc && !!document.querySelector('zen-folder .icon image') && !document.documentElement.hasAttribute('data-arc-sidebar-animating');"):
+        if script("return !!window.Zennia && !!document.querySelector('zen-folder .icon image') && !document.documentElement.hasAttribute('data-zennia-sidebar-animating');"):
             break
         time.sleep(.1)
     # Let the native workspace restore finish before changing compact mode.
@@ -57,14 +57,14 @@ try:
     # Start from the docked raster, which remains correct even when the
     # floating SVG-filter surface has already cached a clipped image.
     if script('return gZenCompactModeManager.preference;'):
-        script('ZenArc.toggleDock();')
+        script('Zennia.toggleDock();')
         time.sleep(.6)
     script("const f=document.querySelector('zen-folder');f.collapsed=true;gZenFolders.updateFolderIcon(f);")
     time.sleep(.5)
     rect = script("const r=document.querySelector('zen-folder .tab-group-label').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2];")
     move(*rect)
     before = capture()
-    script('ZenArc.toggleDock();')
+    script('Zennia.toggleDock();')
     time.sleep(.6)
     move(600, 300)
     move(1, 300)

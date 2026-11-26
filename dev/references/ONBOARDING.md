@@ -8,3 +8,5 @@ The installer borrows the focused welcome, single primary action, and sequential
 The installer mark uses the Arc logo geometry from https://commons.wikimedia.org/wiki/File:Arc_(browser)_logo.svg, by Arc / The Browser Company, recolored to the existing plum/lavender palette. Commons identifies the simple geometric logo as PD-textlogo.
 
 The revised installer mark combines Arc geometry with Zen's three concentric rings from the official branding archive. See installer/ui/NOTICE.md for sources, changes and licensing.
+
+On 2026-11-25 the mark was replaced with original artwork for the rename to Zennia: a petal-shaped trefoil ribbon knot in coral, cobalt and light pink. It no longer uses Arc or Zen logo geometry. See installer/ui/NOTICE.md.

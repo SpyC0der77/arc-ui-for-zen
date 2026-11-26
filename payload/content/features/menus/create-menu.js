@@ -1,5 +1,5 @@
 /* Create-menu labels and commands, plus styles inside native popup shadow roots. */
-var ArcMenus = {
+var ZenniaMenus = {
   install(window, dependencies = {}) {
     const { document, gBrowser, ChromeUtils } = window;
     const HTML = "http://www.w3.org/1999/xhtml";
@@ -61,7 +61,7 @@ var ArcMenus = {
         item.setAttribute("label", label);
         item.setAttribute(
           "image",
-          `chrome://arc-ui/content/menu-icons/${image}.svg`,
+          `chrome://zennia/content/menu-icons/${image}.svg`,
         );
         item.classList.add("menuitem-iconic");
         if (command === "cmd_newNavigatorTab")
@@ -87,12 +87,12 @@ var ArcMenus = {
         });
       }
       const boost = document.createXULElement("menuitem");
-      boost.id = "arc-new-boost";
+      boost.id = "zennia-new-boost";
       boost.classList.add("menuitem-iconic");
       boost.setAttribute("label", "New Boost");
       boost.setAttribute(
         "image",
-        "chrome://arc-ui/content/menu-icons/new-boost.svg",
+        "chrome://zennia/content/menu-icons/new-boost.svg",
       );
       function createBoost() {
         const uri = gBrowser.currentURI;
@@ -134,13 +134,13 @@ var ArcMenus = {
       if (
         !popup.matches?.("panel, menupopup") ||
         !popup.shadowRoot ||
-        popup.shadowRoot.querySelector("[data-arc-menu-style]")
+        popup.shadowRoot.querySelector("[data-zennia-menu-style]")
       )
         return;
       const link = document.createElementNS(HTML, "link");
       link.rel = "stylesheet";
-      link.href = "chrome://arc-ui/content/menu-popup.css";
-      link.setAttribute("data-arc-menu-style", "");
+      link.href = "chrome://zennia/content/menu-popup.css";
+      link.setAttribute("data-zennia-menu-style", "");
       popup.shadowRoot.append(link);
       styledPopups.add(link);
     }

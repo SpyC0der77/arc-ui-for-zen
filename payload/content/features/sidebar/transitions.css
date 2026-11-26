@@ -1,6 +1,6 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
-  :root[data-arc-ui]
+  :root[data-zennia]
     :is(
       #zen-toggle-compact-mode,
       toolbarbutton[command="cmd_toggleCompactModeIgnoreHover"],
@@ -8,7 +8,7 @@
     ) {
     display: none !important;
   }
-  :root[data-arc-ui][data-arc-sidebar-animating] #browser {
+  :root[data-zennia][data-zennia-sidebar-animating] #browser {
     overflow: clip !important;
   }
 }

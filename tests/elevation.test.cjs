@@ -16,7 +16,7 @@ test('conflicts and non-Windows failures never elevate',async()=>{
  for(const [platform,code] of [['win32',undefined],['linux','EPERM']])await assert.rejects(apply('install','a','p',{platform,engine:{install:async()=>{throw Object.assign(new Error('conflict'),{code});}},elevate:()=>assert.fail('unexpected elevation')}),/conflict/);
 });
 test('elevated worker uses supplied paths and reports failure without retrying',async t=>{
- const root=await fs.mkdtemp(path.join(os.tmpdir(),'arc-worker-test-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));
+ const root=await fs.mkdtemp(path.join(os.tmpdir(),'zennia-worker-test-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));
  const result=path.join(root,'result.json'),calls=[];
  assert.equal(await worker(['install',root,root,result],{install:async(...args)=>{calls.push(args);throw new Error('receipt mismatch');}}),1);
  assert.deepEqual(calls,[[root,root]]);assert.deepEqual(JSON.parse(await fs.readFile(result,'utf8')),{ok:false,error:'receipt mismatch'});

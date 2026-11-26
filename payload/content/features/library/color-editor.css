@@ -13,9 +13,9 @@ body {
   padding: 18px;
   border-radius: 12px;
   overflow: hidden;
-  background: var(--arc-surface, light-dark(#cec7d4, #23202a));
+  background: var(--zennia-surface, light-dark(#cec7d4, #23202a));
 }
-#arc-color-editor { display: grid; gap: 20px; }
+#zennia-color-editor { display: grid; gap: 20px; }
 h3 {
   margin: 0;
   padding: 10px 12px;
@@ -58,6 +58,6 @@ button {
 }
 button:hover { background: light-dark(#d5bfe8, #5a3d6c); }
 
-.arc-picker-actions { display: flex; justify-content: space-between; gap: 8px; }
-.arc-picker-actions button { padding: 8px 10px; border-radius: 8px; }
-.arc-picker-actions button:disabled { opacity: .45; cursor: default; }
+.zennia-picker-actions { display: flex; justify-content: space-between; gap: 8px; }
+.zennia-picker-actions button { padding: 8px 10px; border-radius: 8px; }
+.zennia-picker-actions button:disabled { opacity: .45; cursor: default; }

@@ -26,9 +26,9 @@ def shot(name,s=None,duration=3.5):
   if delay>0:time.sleep(delay)
  print(name,flush=True)
 try:
- js("document.querySelector('zen-library').activeTab='history';ZenArc.setRail(true)")
+ js("document.querySelector('zen-library').activeTab='history';Zennia.setRail(true)")
  shot('Real auto archived tab in library',duration=3.5)
- shot('Restore archived website',"const row=[...document.querySelectorAll('zen-library .zen-library-row')].find(e=>e.textContent.includes('Example Domain'));if(row)row.click();window.setTimeout(()=>ZenArc.setRail(false),450)",4)
+ shot('Restore archived website',"const row=[...document.querySelectorAll('zen-library .zen-library-row')].find(e=>e.textContent.includes('Example Domain'));if(row)row.click();window.setTimeout(()=>Zennia.setRail(false),450)",4)
  shot('Finish on Work',"gBrowser.selectedTab=window.demoTabs.find(t=>t.title==='CSS').tab",3.5)
 finally:
  ff.stdin.close();ff.wait();(DEMO/'timeline'/'restore-shots.json').write_text(json.dumps(shots,indent=2));m.delete_session()

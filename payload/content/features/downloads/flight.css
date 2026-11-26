@@ -1,13 +1,13 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
-  #arc-file-layer {
+  #zennia-file-layer {
     position: fixed;
     inset: 0;
     z-index: 100001;
     pointer-events: none;
     overflow: clip;
   }
-  .arc-flying-file {
+  .zennia-flying-file {
     position: absolute;
     left: 0;
     top: 0;
@@ -18,12 +18,12 @@
     color: light-dark(#65556f, #e4d2f5);
     filter: drop-shadow(0 2px 3px #44375030);
   }
-  .arc-flying-file svg {
+  .zennia-flying-file svg {
     width: 36px;
     height: 36px;
     fill: light-dark(white, #39333f);
   }
-  .arc-fallback-gift {
+  .zennia-fallback-gift {
     position: absolute;
     color: light-dark(#65556f, #e4d2f5);
   }

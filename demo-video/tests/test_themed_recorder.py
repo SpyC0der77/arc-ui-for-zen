@@ -55,7 +55,7 @@ class OriginalRecorderTests(unittest.TestCase):
             self.assertNotIn("DEMO / 'timeline'", transformed)
 
     def test_current_archive_source_is_used(self):
-        tree = module.RecordingPaths(Path('/tmp/out')).visit(ast.parse("source = Path('payload/arc.uc.js').read_text()"))
+        tree = module.RecordingPaths(Path('/tmp/out')).visit(ast.parse("source = Path('payload/zennia.uc.js').read_text()"))
         self.assertIn('payload/content/features/archive/auto-archive.js', ast.unparse(tree))
 
 

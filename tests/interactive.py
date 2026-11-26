@@ -10,8 +10,8 @@ from marionette_driver.marionette import Marionette,ActionSequence
 m=Marionette('localhost',port=int(sys.argv[1]) if len(sys.argv)>1 else 2828,socket_timeout=20)
 m.start_session();m.set_context('chrome')
 checks=[]
-def state():return m.execute_script('return window.ZenArc.diagnostics()')
-def pointer():return ActionSequence(m,'pointer','arc-mouse',{'pointerType':'mouse'})
+def state():return m.execute_script('return window.Zennia.diagnostics()')
+def pointer():return ActionSequence(m,'pointer','zennia-mouse',{'pointerType':'mouse'})
 def click(id):pointer().click(m.find_element('id',id)).perform()
 def move(x,y):pointer().pointer_move(x,y,origin='viewport').perform()
 
@@ -23,34 +23,34 @@ def close_library():
  pointer().click(m.find_element('css selector','[data-l10n-id="library-footer-close-button"]')).perform();time.sleep(.6)
 def dock():
  if state()['compact']:
-  move(600,300);move(1,300);time.sleep(.45);click('arc-sidebar-toggle');time.sleep(.6)
+  move(600,300);move(1,300);time.sleep(.45);click('zennia-sidebar-toggle');time.sleep(.6)
 
 def hover_downloads(label):
- pointer().pointer_move(0,0,origin=m.find_element('id','arc-gift-button')).perform();time.sleep(.25)
- visible=m.execute_script("""const p=document.getElementById('arc-download-popup'),r=p.getBoundingClientRect(),native=document.getElementById('zen-library-download-list');return {custom:p.dataset.arcDownloadDesign==='arc'&&p.matches(':popover-open')&&p.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)),nativeHidden:!native||getComputedStyle(native).display==='none',x:r.x+r.width/2,y:r.bottom-16};""")
- check(state()['popup'] and visible['custom'] and visible['nativeHidden'],f'only Arc popup paints on hover {label}')
+ pointer().pointer_move(0,0,origin=m.find_element('id','zennia-gift-button')).perform();time.sleep(.25)
+ visible=m.execute_script("""const p=document.getElementById('zennia-download-popup'),r=p.getBoundingClientRect(),native=document.getElementById('zen-library-download-list');return {custom:p.dataset.zenniaDownloadDesign==='zennia'&&p.matches(':popover-open')&&p.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)),nativeHidden:!native||getComputedStyle(native).display==='none',x:r.x+r.width/2,y:r.bottom-16};""")
+ check(state()['popup'] and visible['custom'] and visible['nativeHidden'],f'only Zennia popup paints on hover {label}')
  move(visible['x'],visible['y']);time.sleep(.5)
  check(state()['popup'],f'popup remains open after pointer enters its content {label}')
  if state()['compact']:check(sidebar()['right']>200,f'popup hover keeps undocked sidebar visible {label}')
  if label=='docked 1':(ROOT/'artifacts/interactive-download-empty.png').write_bytes(base64.b64decode(m.screenshot()))
- pointer().pointer_move(0,0,origin=m.find_element('id','arc-gift-button')).perform()
+ pointer().pointer_move(0,0,origin=m.find_element('id','zennia-gift-button')).perform()
 try:
  if state()['rail']:close_library()
  dock()
  for cycle in range(3):
   move(600,300)
   hover_downloads(f'docked {cycle+1}')
-  click('arc-gift-button');time.sleep(.7)
+  click('zennia-gift-button');time.sleep(.7)
   check(state()['rail'] and not state()['popup'],f'trusted gift click opens library {cycle+1}')
   if cycle==0:(ROOT/'artifacts/interactive-library.png').write_bytes(base64.b64decode(m.screenshot()))
   close_library();check(not state()['rail'],f'library back closes {cycle+1}')
-  m.execute_script("""window.arcMotionFrames=[];window.arcMotionImage=null;
-  document.getElementById('arc-sidebar-toggle').addEventListener('pointerdown',()=>{
-   const start=performance.now();function tick(){const e=document.getElementById('navigator-toolbox'),g=document.getElementById('arc-sidebar-transition');arcMotionFrames.push({t:performance.now()-start,right:e.getBoundingClientRect().right,visible:getComputedStyle(e).visibility,childVisible:[...e.querySelectorAll('*')].some(n=>{const r=n.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(n).visibility==='visible'}),hover:e.hasAttribute('zen-has-hover'),ghost:!!g});if(performance.now()-start<650)requestAnimationFrame(tick)}tick();
-   setTimeout(async()=>{const snap=await browsingContext.currentWindowGlobal.drawSnapshot(new DOMRect(0,0,innerWidth,innerHeight),1,'white');const c=document.createElementNS('http://www.w3.org/1999/xhtml','canvas');c.width=innerWidth;c.height=innerHeight;c.getContext('2d').drawImage(snap,0,0);snap.close();window.arcMotionImage=c.toDataURL('image/png').split(',')[1]},110)
+  m.execute_script("""window.zenniaMotionFrames=[];window.zenniaMotionImage=null;
+  document.getElementById('zennia-sidebar-toggle').addEventListener('pointerdown',()=>{
+   const start=performance.now();function tick(){const e=document.getElementById('navigator-toolbox'),g=document.getElementById('zennia-sidebar-transition');zenniaMotionFrames.push({t:performance.now()-start,right:e.getBoundingClientRect().right,visible:getComputedStyle(e).visibility,childVisible:[...e.querySelectorAll('*')].some(n=>{const r=n.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(n).visibility==='visible'}),hover:e.hasAttribute('zen-has-hover'),ghost:!!g});if(performance.now()-start<650)requestAnimationFrame(tick)}tick();
+   setTimeout(async()=>{const snap=await browsingContext.currentWindowGlobal.drawSnapshot(new DOMRect(0,0,innerWidth,innerHeight),1,'white');const c=document.createElementNS('http://www.w3.org/1999/xhtml','canvas');c.width=innerWidth;c.height=innerHeight;c.getContext('2d').drawImage(snap,0,0);snap.close();window.zenniaMotionImage=c.toDataURL('image/png').split(',')[1]},110)
   },{once:true});""")
-  click('arc-sidebar-toggle');time.sleep(.75)
-  frames=m.execute_script('return arcMotionFrames')
+  click('zennia-sidebar-toggle');time.sleep(.75)
+  frames=m.execute_script('return zenniaMotionFrames')
   check(state()['compact'],f'pointer click hides sidebar {cycle+1}')
   check(any(f['ghost'] for f in frames),f'closing animation runs {cycle+1}')
   check(not any(f['ghost'] and f['visible']=='visible' and f['right']>1 for f in frames),f'no live sidebar behind closing layer {cycle+1}')
@@ -63,7 +63,7 @@ try:
   time.sleep(.6)
   check(state()['sidebarHoverBlocked'] and not sidebar()['hover'] and sidebar()['right']<=10,f'edge jitter cannot reopen dismissed sidebar {cycle+1}')
   if cycle==0:
-   image=m.execute_script('return arcMotionImage')
+   image=m.execute_script('return zenniaMotionImage')
    (ROOT/'artifacts/interactive-closing.png').write_bytes(base64.b64decode(image))
    (ROOT/'artifacts/interactive-hidden.png').write_bytes(base64.b64decode(m.screenshot()))
   # Exercise library from compact-mode hover peek too.
@@ -73,13 +73,13 @@ try:
   surface=m.execute_script("""const c=getComputedStyle(document.getElementById('zen-toolbar-background')),p=getComputedStyle(document.querySelector('.browserSidebarContainer:not(.zen-glance-overlay)'));return {shadow:c.boxShadow,radius:c.borderRadius,pageRadius:p.borderRadius}""")
   check(surface['shadow']!='none' and surface['radius']=='12px' and surface['pageRadius']=='10px',f'peek floats over rounded content {cycle+1}')
   hover_downloads(f'undocked {cycle+1}')
-  click('arc-gift-button');time.sleep(.7)
+  click('zennia-gift-button');time.sleep(.7)
   check(state()['rail'],f'gift click opens library from hover peek {cycle+1}')
   close_library();dock()
  # Escape must stay closed even when returning keyboard focus to the trigger.
  move(600,300);hover_downloads('before Escape')
  from marionette_driver.keys import Keys
- ActionSequence(m,'key','arc-keyboard').key_down(Keys.ESCAPE).key_up(Keys.ESCAPE).perform();time.sleep(.3)
+ ActionSequence(m,'key','zennia-keyboard').key_down(Keys.ESCAPE).key_up(Keys.ESCAPE).perform();time.sleep(.3)
  check(not state()['popup'],'Escape closes popup without focus reopening it')
  print(json.dumps({'checks':checks,'final':state()},indent=2))
  (ROOT/'artifacts/interactive-results.json').write_text(json.dumps(checks,indent=2))

@@ -1,7 +1,7 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
   /* Cover native chrome as well as the added controls. Preserve icon fonts. */
-  :root[data-arc-ui]
+  :root[data-zennia]
     :is(
       .tab-label,
       .toolbarbutton-text,
@@ -19,12 +19,12 @@
       select,
       button
     ) {
-    font-family: var(--arc-font) !important;
+    font-family: var(--zennia-font) !important;
   }
-  :root[data-arc-ui] .tab-label {
+  :root[data-zennia] .tab-label {
     font-weight: 500 !important;
   }
-  :root[data-arc-ui] .tabbrowser-tab[selected] .tab-label {
+  :root[data-zennia] .tabbrowser-tab[selected] .tab-label {
     font-weight: 500 !important;
   }
 }

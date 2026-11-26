@@ -23,7 +23,7 @@ export function updateContext() {
       remove: path => IOUtils.remove(path, {ignoreAbsent:true}),
       write: async (path, bytes) => {
         await IOUtils.makeDirectory(PathUtils.parent(path), {ignoreExisting:true, createAncestors:true});
-        await IOUtils.write(path, bytes, {tmpPath:path + '.arc-update-writing'});
+        await IOUtils.write(path, bytes, {tmpPath:path + '.zennia-update-writing'});
       },
       assertPath: async path => {
         const file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsIFile);
@@ -44,25 +44,25 @@ export function updateContext() {
 }
 
 // One coordinator per browser process, including when several windows are open.
-export const ArcUpdater = {
+export const ZenniaUpdater = {
   state: 'idle', release: null, progress: null, error: '', listeners: new Set(),
   revision: 0,
   emit() { for (const listener of this.listeners) listener(); },
   async getTrack() {
-    const value = Services.prefs.getStringPref('arc-ui.updates.track', '');
+    const value = Services.prefs.getStringPref('zennia.updates.track', '');
     if (['stable', 'beta'].includes(value)) return value;
-    const receipt = await IOUtils.readJSON(PathUtils.join(PathUtils.profileDir, 'chrome', 'arc-ui.install.json'));
-    return releaseTrack(Services.prefs.getStringPref('arc-ui.updates.track', ''), receipt.version);
+    const receipt = await IOUtils.readJSON(PathUtils.join(PathUtils.profileDir, 'chrome', 'zennia.install.json'));
+    return releaseTrack(Services.prefs.getStringPref('zennia.updates.track', ''), receipt.version);
   },
   setTrack(track, { check = true } = {}) {
     if (!['stable', 'beta'].includes(track)) throw new Error('Choose Beta or Stable.');
     if (['downloading', 'applying', 'ready', 'restarting'].includes(this.state)) throw new Error('Wait for the current update operation to finish.');
-    Services.prefs.setStringPref('arc-ui.updates.track', track);
+    Services.prefs.setStringPref('zennia.updates.track', track);
     this.checkAfterTrackChange = check;
     this.revision++;
     const directory = this.stagedDirectory;
     this.stagedDirectory = null;
-    if (directory) void IOUtils.remove(directory, { recursive: true }).catch(error => console.warn('[Arc UI updates]', error));
+    if (directory) void IOUtils.remove(directory, { recursive: true }).catch(error => console.warn('[Zennia updates]', error));
     this.release = null; this.target = null; this.state = 'idle'; this.error = ''; this.progress = null;
     this.emit();
     if (check) void this.check({ force: true });
@@ -73,9 +73,9 @@ export const ArcUpdater = {
     const revision = this.revision;
     try {
       await recoverThemeUpdate(updateContext());
-      const receipt = await IOUtils.readJSON(PathUtils.join(PathUtils.profileDir, 'chrome', 'arc-ui.install.json'));
-      const track = releaseTrack(Services.prefs.getStringPref('arc-ui.updates.track', ''), receipt.version);
-      const key = 'arc-ui.updates.last-check.' + track;
+      const receipt = await IOUtils.readJSON(PathUtils.join(PathUtils.profileDir, 'chrome', 'zennia.install.json'));
+      const track = releaseTrack(Services.prefs.getStringPref('zennia.updates.track', ''), receipt.version);
+      const key = 'zennia.updates.last-check.' + track;
       const last = Number(Services.prefs.getStringPref(key, '0'));
       if (!force && Date.now() - last < 6 * 60 * 60 * 1000) return;
       Services.prefs.setStringPref(key, String(Date.now()));
@@ -85,7 +85,7 @@ export const ArcUpdater = {
       if (['downloading', 'applying', 'ready', 'restarting'].includes(this.state)) return;
       const release = selectRelease(releases, receipt.version, Services.appinfo.OS, Services.appinfo.XPCOMABI, track);
       this.release = release || null; this.state = release ? 'available' : 'idle'; this.error = ''; this.emit();
-    } catch (error) { console.warn('[Arc UI updates]', error); }
+    } catch (error) { console.warn('[Zennia updates]', error); }
     finally {
       this.checking = false;
       if (revision !== this.revision && this.checkAfterTrackChange) void this.check({ force: true });
@@ -101,7 +101,7 @@ export const ArcUpdater = {
       const sums = await request(checksum.browser_download_url, 'text');
       const expected = sums.split(/\r?\n/).map(line => /^([a-f0-9]{64})\s+\*?(.+)$/.exec(line)).find(line => line?.[2] === asset.name)?.[1];
       if (!expected) throw new Error('The release has no checksum for this update.');
-      directory = await IOUtils.createUniqueDirectory(PathUtils.tempDir, 'arc-ui-update');
+      directory = await IOUtils.createUniqueDirectory(PathUtils.tempDir, 'zennia-update');
       const target = PathUtils.join(directory, asset.name);
       const download = await Downloads.createDownload({ source: { url: asset.browser_download_url }, target });
       download.onchange = () => { this.progress = download.hasProgress ? download.progress : null; this.emit(); };

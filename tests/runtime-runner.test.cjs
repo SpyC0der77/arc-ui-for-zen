@@ -19,7 +19,7 @@ test('browser checks fail closed on empty results, failed assertions and uncaugh
     assert.throws(() => assertResult(result));
 });
 test('failure diagnostics copy only known test outputs, never profile databases or preferences', async t => {
-  const folder = await fs.mkdtemp(path.join(os.tmpdir(), 'arc-diagnostics-'));
+  const folder = await fs.mkdtemp(path.join(os.tmpdir(), 'zennia-diagnostics-'));
   t.after(() => fs.rm(folder, {recursive: true, force: true}));
   const profile = path.join(folder, 'profile'), output = path.join(folder, 'diagnostics');
   await fs.mkdir(profile); await fs.mkdir(output);
@@ -60,7 +60,7 @@ for (const pointer of [false, true]) test(`failed startup preserves results and 
   });
   const result = writes.get('/disposable/profile/verification.json');
   assert.equal(result.checks[0].pass, false);
-  assert.match(result.errors[0], /ZenArc did not initialize/);
+  assert.match(result.errors[0], /Zennia did not initialize/);
   assert(writes.has('/disposable/profile/verified.png'));
   assert.equal(quit, !pointer);
 });

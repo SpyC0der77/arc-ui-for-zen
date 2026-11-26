@@ -12,7 +12,7 @@ function fixture() {
   const document={getElementById:id=>id===folder.id?folder:tabs,
     addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)};
   let selection=[];
-  const stop=scope.ArcNativeActions.install({document,contextTabs:()=>selection});
+  const stop=scope.ZenniaNativeActions.install({document,contextTabs:()=>selection});
   return {folder,tabs,listeners,stop,select:rows=>selection=rows,
     show:target=>listeners.get('popupshowing')({target}),
     blocked(menu,id){let blocked=false;listeners.get('command')({target:{id,closest:()=>menu},preventDefault(){blocked=true;},stopImmediatePropagation(){}});return blocked;}};
@@ -20,7 +20,7 @@ function fixture() {
 test('live folders block structural edits, ordinary folders recover their actions',()=>{
   const f=fixture();
   f.folder.triggerNode={closest:()=>({isLiveFolder:true})};f.show(f.folder);
-  for(const id of scope.ArcNativeActions.folderActions)assert.ok(f.blocked(f.folder,id));
+  for(const id of scope.ZenniaNativeActions.folderActions)assert.ok(f.blocked(f.folder,id));
   for(const id of ['context_zenFolderRename','context_zenFolderDelete','context_zenFolderUnloadAll','context_zenShareFolder','context_zenChangeFolderSpace'])assert.equal(f.blocked(f.folder,id),false);
   f.folder.triggerNode={closest:()=>({isLiveFolder:false})};f.show(f.folder);
   assert.equal(f.blocked(f.folder,'context_zenFolderUnpack'),false);
@@ -28,7 +28,7 @@ test('live folders block structural edits, ordinary folders recover their action
 test('provider-owned tabs suppress source edits, including mixed selections, but detached tabs do not',()=>{
   const f=fixture();const live={group:{isLiveFolder:true},hasAttribute:()=>true};
   f.select([{},live]);f.show(f.tabs);
-  for(const id of scope.ArcNativeActions.tabActions)assert.ok(f.blocked(f.tabs,id));
+  for(const id of scope.ZenniaNativeActions.tabActions)assert.ok(f.blocked(f.tabs,id));
   for(const id of ['context_closeTab','context_zenMoveToFolder','context_zen-reset-pinned-tab'])assert.equal(f.blocked(f.tabs,id),false);
   live.group=null;f.show(f.tabs);assert.equal(f.blocked(f.tabs,'context_zen-edit-tab-title'),false);
 });

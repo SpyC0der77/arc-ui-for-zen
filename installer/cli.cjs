@@ -2,7 +2,7 @@
 'use strict';
 const engine=require('./engine.cjs');
 const {launch}=require('./launch.cjs');
-const HELP=`Arc UI for Zen
+const HELP=`Zennia
 Usage: node installer/cli.cjs <discover|install|remove|open> [options]
 
   --installation <folder>  Zen application folder
@@ -11,7 +11,7 @@ Usage: node installer/cli.cjs <discover|install|remove|open> [options]
   --help                   Show this help
 
 Close Zen before install or remove. Existing installations must be removed
-before reinstalling. This CLI installs Arc UI into an existing Zen browser.
+before reinstalling. This CLI installs Zennia into an existing Zen browser.
 Omitted folders are selected automatically only when discovery is unambiguous.`;
 function parse(args){
  const options={};let command;

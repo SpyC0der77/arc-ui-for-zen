@@ -36,19 +36,19 @@ test('release requires an existing matching tag',()=>{
  assert.throws(()=>validate({GITHUB_REF_TYPE:'tag',GITHUB_REF_NAME:'v9.9.9'}),/matching package.json/);
 });
 test('release fails without every distribution and hashes actual file contents',t=>{
- const dir=fs.mkdtempSync(path.join(os.tmpdir(),'arc-release-'));
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'zennia-release-'));
  t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
  const notes=path.join(dir,'notes.md');
  assert.throws(()=>prepare(dir,notes),/Missing release asset/);
- const names=['Windows.exe','macOS-arm64.dmg','macOS-arm64.zip','Linux-x64.AppImage'].map(s=>`Arc-UI-Zen-${version}-${s}`);
+ const names=['Windows.exe','macOS-arm64.dmg','macOS-arm64.zip','Linux-x64.AppImage'].map(s=>`Zennia-${version}-${s}`);
  for(const name of names)fs.writeFileSync(path.join(dir,name),'example installer');
  prepare(dir,notes);
  const hash=crypto.createHash('sha256').update('example installer').digest('hex');
- const updateName = `Arc-UI-Zen-${version}-Update.json`;
+ const updateName = `Zennia-${version}-Update.json`;
  const update = fs.readFileSync(path.join(dir, updateName));
  const bundle = JSON.parse(update);
  assert.equal(bundle.version, version);
- assert.equal(Buffer.from(bundle.files['arc.uc.js'],'base64').toString(), fs.readFileSync(path.join(__dirname,'../payload/arc.uc.js'),'utf8'));
+ assert.equal(Buffer.from(bundle.files['zennia.uc.js'],'base64').toString(), fs.readFileSync(path.join(__dirname,'../payload/zennia.uc.js'),'utf8'));
  const expected = [...names,updateName].sort().map(n=>`${n===updateName ? crypto.createHash('sha256').update(update).digest('hex') : hash}  ${n}\n`).join('');
  assert.equal(fs.readFileSync(path.join(dir,'SHA256SUMS.txt'),'utf8'),expected);
  assert.match(fs.readFileSync(notes,'utf8'),new RegExp(require('../installer/engine.cjs').SUPPORTED.replaceAll('.','\\.')));

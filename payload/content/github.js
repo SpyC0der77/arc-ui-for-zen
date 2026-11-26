@@ -1,13 +1,13 @@
 /* Use Zen's session-backed Live Folders; no separate credentials or tab store. */
-var ArcGitHub = {
+var ZenniaGitHub = {
   async setup({ manager, prefs, isPrivate = false, isPrivateWindow = () => false }) {
-    const key = "arc-ui.github-folders-initialized";
+    const key = "zennia.github-folders-initialized";
     if (isPrivate) return false;
     if (prefs.getBoolPref(key, false)) return true;
     const canCreate = () => manager.window && !manager.window.closed && !isPrivateWindow(manager.window);
     // The native manager is shared across browser windows.
-    if (manager.arcGitHubSetup) return manager.arcGitHubSetup;
-    manager.arcGitHubSetup = (async () => {
+    if (manager.zenniaGitHubSetup) return manager.zenniaGitHubSetup;
+    manager.zenniaGitHubSetup = (async () => {
       await manager.stateRestored.promise;
       if (prefs.getBoolPref(key, false)) return true;
       if (!canCreate()) return false;
@@ -28,8 +28,8 @@ var ArcGitHub = {
       prefs.setBoolPref(key, true);
       return true;
     })();
-    try { return await manager.arcGitHubSetup; }
-    finally { delete manager.arcGitHubSetup; }
+    try { return await manager.zenniaGitHubSetup; }
+    finally { delete manager.zenniaGitHubSetup; }
   },
   start({ schedule, cancel, isClosed, onError, ...options }) {
     let stopped = false, timer = null, failures = 0;
@@ -37,7 +37,7 @@ var ArcGitHub = {
       timer = null;
       if (stopped || isClosed() || options.isPrivate) return;
       try {
-        if (await ArcGitHub.setup(options)) return;
+        if (await ZenniaGitHub.setup(options)) return;
       } catch (error) { onError(error); }
       // Retry partial setup in this session. The shared task prevents duplicates
       // across windows, and setup always rechecks Zen's current target window.

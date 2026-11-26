@@ -1,5 +1,5 @@
 /* Connect idle-tab archiving to Zen tabs, preferences, and native library history. */
-var ArcAutoArchive = {
+var ZenniaAutoArchive = {
   install(window, dependencies = {}) {
     const { document, gBrowser } = window;
     const { Services, PrivateBrowsingUtils, createMotion } = dependencies;
@@ -66,16 +66,16 @@ var ArcAutoArchive = {
       try {
         const archive = {};
         Services.scriptloader.loadSubScript(
-          "chrome://arc-ui/content/archive.js",
+          "chrome://zennia/content/archive.js",
           archive,
           "UTF-8",
         );
-        archiveAPI = archive.ArcArchive;
+        archiveAPI = archive.ZenniaArchive;
         // Show the Archive view by default once; switching the library back to
         // History is the user's choice and survives the next start.
-        if (!Services.prefs.getBoolPref("arc-ui.archive-initialized", false)) {
+        if (!Services.prefs.getBoolPref("zennia.archive-initialized", false)) {
           Services.prefs.setBoolPref("zen.library.history.closed-tabs", true);
-          Services.prefs.setBoolPref("arc-ui.archive-initialized", true);
+          Services.prefs.setBoolPref("zennia.archive-initialized", true);
         }
         stopArchive = archiveAPI.start({
           getHours: () => archiveAPI.hours(Services.prefs),
@@ -89,10 +89,10 @@ var ArcAutoArchive = {
           schedule: later,
           cancel: clear,
           onError: (error) =>
-            window.console.error("[Arc UI] Auto-Archive failed", error),
+            window.console.error("[Zennia] Auto-Archive failed", error),
         });
       } catch (error) {
-        window.console.error("[Arc UI] Auto-Archive unavailable", error);
+        window.console.error("[Zennia] Auto-Archive unavailable", error);
       }
     }
 

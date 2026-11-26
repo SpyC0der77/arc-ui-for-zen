@@ -20,7 +20,7 @@ import tempfile
 
 FPS = 30
 LANES = ("arc", "themed", "zen")
-LABELS = ("Arc", "Arc UI for Zen", "Vanilla Zen")
+LABELS = ("Arc", "Zennia", "Vanilla Zen")
 PANEL_W, PANEL_H = 600, 900
 
 

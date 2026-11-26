@@ -1,0 +1,31 @@
+/* Load in this order: later feature rules intentionally override earlier ones.
+ * Each file keeps its original browser-document scope. See dev/CODE-STRUCTURE.md in the source checkout. */
+@import url("chrome://zennia/content/shared/palette.css");
+@import url("chrome://zennia/content/features/menus/menus.css");
+@import url("chrome://zennia/content/features/address-bar/site-controls.css");
+@import url("chrome://zennia/content/features/navigation/native-row.css");
+@import url("chrome://zennia/content/features/sidebar/transitions.css");
+@import url("chrome://zennia/content/features/tabs/split-selection.css");
+@import url("chrome://zennia/content/features/sidebar/visibility.css");
+@import url("chrome://zennia/content/features/address-bar/address-bar.css");
+@import url("chrome://zennia/content/features/tabs/tabs.css");
+@import url("chrome://zennia/content/features/menus/provider-actions.css");
+@import url("chrome://zennia/content/features/library/native-controls.css");
+@import url("chrome://zennia/content/features/sidebar/surface.css");
+@import url("chrome://zennia/content/shared/typography.css");
+@import url("chrome://zennia/content/features/library/toggles.css");
+@import url("chrome://zennia/content/shared/controls.css");
+@import url("chrome://zennia/content/features/navigation/controls.css");
+@import url("chrome://zennia/content/features/library/trigger.css");
+@import url("chrome://zennia/content/features/downloads/popup.css");
+@import url("chrome://zennia/content/features/debug/controls.css");
+@import url("chrome://zennia/content/features/downloads/library-icons.css");
+@import url("chrome://zennia/content/features/downloads/flight.css");
+@import url("chrome://zennia/content/shared/accessibility.css");
+@import url("chrome://zennia/content/shared/fonts.css");
+@import url("chrome://zennia/content/features/commands/commands.css");
+@import url("chrome://zennia/content/features/library/footer.css");
+@import url("chrome://zennia/content/features/library/settings.css");
+@import url("chrome://zennia/content/features/address-bar/spacing.css");
+@import url("chrome://zennia/content/features/library/spaces.css");
+@import url("chrome://zennia/content/features/updates/updates.css");

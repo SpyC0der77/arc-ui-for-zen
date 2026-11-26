@@ -8,14 +8,23 @@ const run = promisify(execFile);
 const VERSION = '0.1.8-beta.10';
 const SUPPORTED_VERSIONS = Object.freeze(['1.22.3b', '1.23.3b', '1.23.4b', '1.24b', '1.24.1b']);
 const SUPPORTED = SUPPORTED_VERSIONS.join(', ');
-const BEGIN = '// BEGIN Arc UI for Zen';
-const END = '// END Arc UI for Zen';
+const BEGIN = '// BEGIN Zennia';
+const END = '// END Zennia';
 const utf8 = bytes => new TextDecoder('utf-8', { fatal: true }).decode(bytes);
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const exists = file => fs.access(file).then(() => true, () => false);
 const eq = (a,b,platform=process.platform) => platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b;
 const escape = value => value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-const receiptFile = profile => path.join(profile,'chrome','arc-ui.install.json');
+// File names written by an installation. Installs made before the project was
+// renamed from Arc UI to Zennia use LEGACY; they stay removable and upgradable.
+const NAMES = Object.freeze({receipt:'zennia.install.json',owner:'zennia-owner.json',cfg:'zennia.cfg',autoconfig:'zennia-autoconfig.js',root:'zennia',begin:BEGIN,end:END});
+const LEGACY = Object.freeze({receipt:'arc-ui.install.json',owner:'arc-ui-owner.json',cfg:'arc-ui.cfg',autoconfig:'arc-ui-autoconfig.js',root:'arc-ui',begin:'// BEGIN Arc UI for Zen',end:'// END Arc UI for Zen'});
+const LAYOUTS = Object.freeze([NAMES,LEGACY]);
+const receiptFile = (profile,names=NAMES) => path.join(profile,'chrome',names.receipt);
+async function findReceipt(profile) {
+  for(const names of LAYOUTS){const file=receiptFile(profile,names);if(await exists(file))return {file,names};}
+  return null;
+}
 function parseIni(text) {
   const sections = {}; let current = null;
   for(const line of text.split(/\r?\n/)) {
@@ -34,7 +43,7 @@ async function assertRealPath(file) {
 }
 async function atomicWrite(file,bytes) {
   await assertRealPath(file);await fs.mkdir(path.dirname(file),{recursive:true});
-  const temp=file+'.arc-writing-'+crypto.randomUUID();
+  const temp=file+'.zennia-writing-'+crypto.randomUUID();
   try {await fs.writeFile(temp,bytes,{mode:0o600,flag:'wx'});await fs.rename(temp,file);}
   catch(error){throw writeError(error,file);}
   finally {await fs.rm(temp,{force:true}).catch(error=>{if(!['EACCES','EPERM'].includes(error.code))throw error;});}
@@ -82,7 +91,7 @@ async function walk(folder,prefix='') {
 function prefLine(text,key) {return text.match(new RegExp('^user_pref\\("'+escape(key)+'",.*\\);\\r?$','m'))?.[0].replace(/\r$/,'')||'';}
 function writeError(error,file) {
   if(!['EACCES','EPERM'].includes(error.code))return error;
-  const result=new Error(`Permission denied while writing to ${path.dirname(file)}. Arc UI must write startup files into the Zen application folder. On Windows, close this installer and use Run as administrator, then select the same Zen installation and your original profile, or use a user-writable Zen installation. If access is still denied, check folder permissions and security software.`,{cause:error});
+  const result=new Error(`Permission denied while writing to ${path.dirname(file)}. Zennia must write startup files into the Zen application folder. On Windows, close this installer and use Run as administrator, then select the same Zen installation and your original profile, or use a user-writable Zen installation. If access is still denied, check folder permissions and security software.`,{cause:error});
   result.code=error.code;
   return result;
 }
@@ -93,7 +102,7 @@ async function writable(folder) {
     try {await fs.stat(existing);break;}
     catch(error){if(error.code!=='ENOENT')throw writeError(error,path.join(existing,'probe'));const parent=path.dirname(existing);if(parent===existing)throw error;existing=parent;}
   }
-  const probe=path.join(existing,'.arc-write-probe-'+crypto.randomUUID());
+  const probe=path.join(existing,'.zennia-write-probe-'+crypto.randomUUID());
   let created=false;
   try {await fs.writeFile(probe,'',{flag:'wx',mode:0o600});created=true;}
   catch(error){throw writeError(error,probe);}
@@ -101,7 +110,8 @@ async function writable(folder) {
 }
 async function inspect(installation,profile) {
   const target=await validate(installation,profile,{requireVersion:false,checkClosed:async()=>{}});
-  const receipt=await fs.readFile(receiptFile(target.profile),'utf8').then(JSON.parse,error=>{if(error.code==='ENOENT')return null;throw error;});
+  const found=await findReceipt(target.profile);
+  const receipt=found?JSON.parse(await fs.readFile(found.file,'utf8')):null;
   if(receipt&&(!eq(receipt.profile,target.profile)||!eq(receipt.resources,target.resources)))throw new Error('The receipt belongs to a different installation or profile.');
   return {installedVersion:receipt?receipt.version||'Unknown':null,targetVersion:VERSION};
 }
@@ -110,11 +120,11 @@ async function install(installation,profile,{payload=path.join(__dirname,'..','p
   // Check protected folders before an upgrade removes the existing theme.
   for(const folder of [target.resources,path.join(target.resources,'defaults','pref'),target.profile])await writable(folder);
   const manifest=receiptFile(target.profile);
-  if(await exists(manifest)) {
+  for(let found;(found=await findReceipt(target.profile));) {
     // Same installation and profile: treat the install as an upgrade and remove the previous version first.
-    const previous=JSON.parse(await fs.readFile(manifest,'utf8'));
+    const previous=JSON.parse(await fs.readFile(found.file,'utf8'));
     const same=eq(previous.profile,target.profile)&&eq(previous.resources,target.resources);
-    if(!same)throw new Error('Arc UI is already installed in this profile. Remove it before reinstalling.');
+    if(!same)throw new Error('Zennia is already installed in this profile. Remove it before reinstalling.');
     await remove(target.app,target.profile,options);
   }
   const prefDir=path.join(target.resources,'defaults','pref');
@@ -123,22 +133,22 @@ async function install(installation,profile,{payload=path.join(__dirname,'..','p
     if(/(?:pref|defaultPref|lockPref)\s*\(\s*["']general\.config\.filename/.test(await fs.readFile(path.join(prefDir,file),'utf8')))
       throw new Error('Another AutoConfig loader is installed. It will not be overwritten: '+file);
   }
-  if(await exists(path.join(target.resources,'arc-ui-owner.json')))throw new Error('This Zen installation is attached to another Arc UI profile.');
+  for(const names of LAYOUTS)if(await exists(path.join(target.resources,names.owner)))throw new Error('This Zen installation is attached to another Zennia profile.');
   const userPath=path.join(target.profile,'user.js');
   const userBytes=await fs.readFile(userPath).catch(e=>{if(e.code==='ENOENT')return null;throw e;});
   const user=userBytes?utf8(userBytes):'';
-  if(user.includes(BEGIN)||user.includes(END))throw new Error('An existing Arc UI settings block has no installation receipt. Restore that installation before continuing.');
+  if(LAYOUTS.some(names=>user.includes(names.begin)||user.includes(names.end)))throw new Error('An existing Zennia settings block has no installation receipt. Restore that installation before continuing.');
   const settings=JSON.parse(await fs.readFile(path.join(payload,'settings.json'),'utf8'));
   // DirectWrite tuning is Windows-only. Keep CoreText/FreeType native elsewhere.
   if((options.platform||process.platform)==='win32')Object.assign(settings,JSON.parse(await fs.readFile(path.join(payload,'settings.windows.json'),'utf8')));
   const block=BEGIN+'\n'+Object.entries(settings).map(([k,v])=>`user_pref(${JSON.stringify(k)}, ${JSON.stringify(v)});`).join('\n')+'\n'+END;
   const writes=new Map();
-  writes.set(path.join(prefDir,'arc-ui-autoconfig.js'),await fs.readFile(path.join(payload,'arc-ui-autoconfig.js')));
-  writes.set(path.join(target.resources,'arc-ui.cfg'),await fs.readFile(path.join(payload,'arc-ui.cfg')));
-  writes.set(path.join(target.resources,'arc-ui-owner.json'),Buffer.from(JSON.stringify({profile:target.profile,version:VERSION})));
+  writes.set(path.join(prefDir,'zennia-autoconfig.js'),await fs.readFile(path.join(payload,'zennia-autoconfig.js')));
+  writes.set(path.join(target.resources,'zennia.cfg'),await fs.readFile(path.join(payload,'zennia.cfg')));
+  writes.set(path.join(target.resources,'zennia-owner.json'),Buffer.from(JSON.stringify({profile:target.profile,version:VERSION})));
   for(const relative of await walk(payload)) {
-    if(['settings.json','settings.windows.json','arc-ui.cfg','arc-ui-autoconfig.js'].includes(relative))continue;
-    writes.set(path.join(target.profile,'chrome','arc-ui',relative),await fs.readFile(path.join(payload,relative)));
+    if(['settings.json','settings.windows.json','zennia.cfg','zennia-autoconfig.js'].includes(relative))continue;
+    writes.set(path.join(target.profile,'chrome','zennia',relative),await fs.readFile(path.join(payload,relative)));
   }
   writes.set(userPath,Buffer.from(user+(user&&!user.endsWith('\n')?'\n':'')+block+'\n'));
   const prefs=await fs.readFile(path.join(target.profile,'prefs.js'),'utf8');
@@ -159,18 +169,20 @@ async function install(installation,profile,{payload=path.join(__dirname,'..','p
     if(!failures.length)failure.code=error.code;
     throw failure;
   }
-  return {message:'Installed. Open Zen to load Arc UI.',version:VERSION,profile:target.profile};
+  return {message:'Installed. Open Zen to load Zennia.',version:VERSION,profile:target.profile};
 }
 async function restore(file) {if(file.before===null)await fs.rm(file.path,{force:true});else await atomicWrite(file.path,Buffer.from(file.before,'base64'));}
 async function remove(installation,profile,options={}) {
   const target=await validate(installation,profile,{...options,requireVersion:false});
   for(const folder of [target.resources,path.join(target.resources,'defaults','pref'),target.profile])await writable(folder);
-  const manifest=receiptFile(target.profile);
-  const receipt=JSON.parse(await fs.readFile(manifest,'utf8').catch(e=>{if(e.code==='ENOENT')throw new Error('Arc UI is not installed in this profile.');throw e;}));
+  const found=await findReceipt(target.profile);
+  if(!found)throw new Error('Zennia is not installed in this profile.');
+  const {file:manifest,names}=found;
+  const receipt=JSON.parse(await fs.readFile(manifest,'utf8'));
   if(receipt.profile!==target.profile||receipt.resources!==target.resources)throw new Error('The receipt belongs to a different installation or profile.');
-  const ownRoot=path.join(target.profile,'chrome','arc-ui');
+  const ownRoot=path.join(target.profile,'chrome',names.root);
   const userPath=path.join(target.profile,'user.js');
-  const appFiles=[path.join(target.resources,'defaults','pref','arc-ui-autoconfig.js'),path.join(target.resources,'arc-ui.cfg'),path.join(target.resources,'arc-ui-owner.json')];
+  const appFiles=[path.join(target.resources,'defaults','pref',names.autoconfig),path.join(target.resources,names.cfg),path.join(target.resources,names.owner)];
   const valid=file=>appFiles.includes(file)||file===userPath||(file.startsWith(ownRoot+path.sep)&&!path.relative(ownRoot,file).startsWith('..'));
   const originals=new Map();
   for(const file of receipt.files) {
@@ -184,7 +196,7 @@ async function remove(installation,profile,options={}) {
   let mergedUser;
   const currentUser=originals.get(userPath);
   if(currentUser&&digest(currentUser)!==userFile.installedHash) {
-    const user=utf8(currentUser),pattern=new RegExp(escape(BEGIN)+'\\r?\\n[\\s\\S]*?'+escape(END)+'(?:\\r?\\n)?','g');
+    const user=utf8(currentUser),pattern=new RegExp(escape(names.begin)+'\\r?\\n[\\s\\S]*?'+escape(names.end)+'(?:\\r?\\n)?','g');
     if([...user.matchAll(pattern)].length!==1)throw new Error('The managed user.js settings block was edited. Restore its BEGIN/END markers before removing.');
     mergedUser=Buffer.from(user.replace(pattern,''));
   }
@@ -230,7 +242,7 @@ async function discover(options={}) {
   const addProfile=async(profile,name)=>{
     if(typeof profile!=='string'||!profile||!await exists(path.join(profile,'prefs.js')))return null;
     const real=await fs.realpath(profile);
-    if(!profiles.some(p=>eq(p.path,real,platform)))profiles.push({name:name||path.basename(real),path:real,installed:await exists(receiptFile(real))});
+    if(!profiles.some(p=>eq(p.path,real,platform)))profiles.push({name:name||path.basename(real),path:real,installed:!!await findReceipt(real)});
     return real;
   };
   for(const instance of running){
@@ -246,7 +258,8 @@ async function discover(options={}) {
     }
   }
   for(const profile of profiles){
-    const receipt=await fs.readFile(receiptFile(profile.path),'utf8').then(text=>{try{return JSON.parse(text);}catch{return null;}},()=>null);
+    const found=await findReceipt(profile.path);
+    const receipt=found&&await fs.readFile(found.file,'utf8').then(text=>{try{return JSON.parse(text);}catch{return null;}},()=>null);
     if(receipt?.installation)await addApp(receipt.installation);
     const compatibility=await fs.readFile(path.join(profile.path,'compatibility.ini'),'utf8').then(parseIni,()=>({}));
     for(const directory of [compatibility.Compatibility?.LastPlatformDir,compatibility.Compatibility?.LastAppDir].filter(Boolean)){
@@ -255,8 +268,8 @@ async function discover(options={}) {
     }
   }
   // App ownership receipts connect an installed theme to its exact profile.
-  for(const app of apps){
-    const owner=await fs.readFile(path.join(layout(app,platform).resources,'arc-ui-owner.json'),'utf8').then(text=>{try{return JSON.parse(text);}catch{return null;}},()=>null);
+  for(const app of apps)for(const names of LAYOUTS){
+    const owner=await fs.readFile(path.join(layout(app,platform).resources,names.owner),'utf8').then(text=>{try{return JSON.parse(text);}catch{return null;}},()=>null);
     if(owner?.profile){
       const profile=await addProfile(owner.profile);
       if(profile&&!instances.some(i=>eq(i.app,app,platform)&&i.profile&&eq(i.profile,profile,platform))){
@@ -267,4 +280,4 @@ async function discover(options={}) {
   }
   return {platform,version:VERSION,supportedZen:SUPPORTED,apps,profiles,instances};
 }
-module.exports={inspect,VERSION,SUPPORTED,SUPPORTED_VERSIONS,BEGIN,END,parseIni,layout,candidates,discover,install,remove,validate,receiptFile,digest};
+module.exports={inspect,VERSION,SUPPORTED,SUPPORTED_VERSIONS,BEGIN,END,NAMES,LEGACY,parseIni,layout,candidates,discover,install,remove,validate,receiptFile,digest};

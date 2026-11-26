@@ -28,7 +28,7 @@ function clock() {
 }
 test("legacy browsers keep idle tabs open when native Archive storage is absent", () => {
   let started = false;
-  const feature = load("features/archive/auto-archive.js", "ArcAutoArchive").install({
+  const feature = load("features/archive/auto-archive.js", "ZenniaAutoArchive").install({
     document: {querySelector: () => null},
   }, {createMotion() { started = true; throw Error("must not start timers"); }});
   assert.equal(feature.hours(), null);
@@ -37,7 +37,7 @@ test("legacy browsers keep idle tabs open when native Archive storage is absent"
 });
 test("one feature can stop without cancelling another feature in the same window", () => {
   const window = clock();
-  const motion = load("shared/motion.js", "ArcMotion");
+  const motion = load("shared/motion.js", "ZenniaMotion");
   const sidebar = motion.install(window),
     downloads = motion.install(window);
   let calls = 0;
@@ -57,7 +57,7 @@ test("one feature can stop without cancelling another feature in the same window
 });
 test("destroy cancels animation and prevents delayed continuations from scheduling more work", async () => {
   const window = clock();
-  const motion = load("shared/motion.js", "ArcMotion").install(window);
+  const motion = load("shared/motion.js", "ZenniaMotion").install(window);
   let reject,
     cancelled = 0;
   const animation = {
@@ -92,7 +92,7 @@ test("destroy cancels animation and prevents delayed continuations from scheduli
 test("reduced motion skips visual animation but leaves nonvisual feedback timers working", async () => {
   const window = clock();
   window.matchMedia = () => ({ matches: true });
-  const motion = load("shared/motion.js", "ArcMotion").install(window);
+  const motion = load("shared/motion.js", "ZenniaMotion").install(window);
   await motion.animate(
     {
       animate() {
@@ -121,7 +121,7 @@ function widthFixture(prefs) {
       listeners.delete(type);
     },
   };
-  const feature = load("features/sidebar/width.js", "ArcSidebarWidth").install(
+  const feature = load("features/sidebar/width.js", "ZenniaSidebarWidth").install(
     window,
     { Services: { prefs } },
   );
@@ -163,9 +163,9 @@ test("only primary-button double-clicks on the native splitter are intercepted",
   feature.destroy();
 });
 test("stylesheet entrypoint imports existing local styles exactly once", () => {
-  const css = fs.readFileSync(path.join(content, "../arc.css"), "utf8");
+  const css = fs.readFileSync(path.join(content, "../zennia.css"), "utf8");
   const imports = [
-    ...css.matchAll(/@import url\("chrome:\/\/arc-ui\/content\/([^"\n]+)"\);/g),
+    ...css.matchAll(/@import url\("chrome:\/\/zennia\/content\/([^"\n]+)"\);/g),
   ].map((match) => match[1]);
   assert.ok(imports.length > 0);
   assert.equal(new Set(imports).size, imports.length);
@@ -189,7 +189,7 @@ test("a failed sidebar measurement does not block the next dock attempt", async 
     getComputedStyle: () => ({visibility:'hidden'}),
     addEventListener() {}, removeEventListener() {},
   };
-  const feature = load('features/sidebar/compact-mode.js', 'ArcCompactSidebar').install(window, {
+  const feature = load('features/sidebar/compact-mode.js', 'ZenniaCompactSidebar').install(window, {
     createMotion: () => ({reduced: () => true, destroy() {}}), updateNav() {},
   });
   await assert.rejects(manager._updateEvent());
@@ -211,7 +211,7 @@ test('application menu placement respects nonzero screen work-area edges', () =>
     getElementById: id => id === 'appMenu-popup' ? popup : null,
     addEventListener() {}, removeEventListener() {},
   };
-  const feature = load('features/menus/create-menu.js', 'ArcMenus').install({
+  const feature = load('features/menus/create-menu.js', 'ZenniaMenus').install({
     document, mozInnerScreenX: 0, mozInnerScreenY: 0,
     screen: {availLeft: 40, availTop: 60, availWidth: 1200, availHeight: 900},
   });
@@ -225,15 +225,15 @@ test('application menu placement respects nonzero screen work-area edges', () =>
 });
 
 test("background gradients keep separate light and dark colors and validate saved values", () => {
-  const library = load("features/library/library.js", "ArcLibrary");
+  const library = load("features/library/library.js", "ZenniaLibrary");
   const values = new Map([
-    ["arc-ui.appearance.light.background", "#aabbcc"],
-    ["arc-ui.appearance.light.gradient-end", "#ccbbaa"],
-    ["arc-ui.appearance.light.gradient", true],
-    ["arc-ui.appearance.light.gradient-angle", 90],
-    ["arc-ui.appearance.dark.background", "url(unsafe)"],
-    ["arc-ui.appearance.dark.gradient-end", "invalid"],
-    ["arc-ui.appearance.dark.gradient-angle", 999],
+    ["zennia.appearance.light.background", "#aabbcc"],
+    ["zennia.appearance.light.gradient-end", "#ccbbaa"],
+    ["zennia.appearance.light.gradient", true],
+    ["zennia.appearance.light.gradient-angle", 90],
+    ["zennia.appearance.dark.background", "url(unsafe)"],
+    ["zennia.appearance.dark.gradient-end", "invalid"],
+    ["zennia.appearance.dark.gradient-angle", 999],
   ]);
   const prefs = Object.fromEntries(["getStringPref", "getIntPref", "getBoolPref"].map(name =>
     [name, (key, fallback) => values.has(key) ? values.get(key) : fallback]));
@@ -247,7 +247,7 @@ test("background gradients keep separate light and dark colors and validate save
   assert.equal(dark.end, "#493b56");
   assert.equal(dark.angle, 360);
   assert.equal(dark.enabled, false);
-  values.set("arc-ui.appearance.dark.gradient-angle", -20);
+  values.set("zennia.appearance.dark.gradient-angle", -20);
   assert.equal(library.background(prefs, "dark").angle, 0);
   values.clear();
   assert.equal(library.background(prefs, "light").angle, 135);
@@ -255,13 +255,13 @@ test("background gradients keep separate light and dark colors and validate save
 });
 
 test("theme presets validate saved settings and ignore unrelated preference keys", () => {
-  const library = load("features/library/library.js", "ArcLibrary");
+  const library = load("features/library/library.js", "ZenniaLibrary");
   const stored = new Map([
-    ["arc-ui.appearance.mode", "dark"],
-    ["arc-ui.appearance.content-radius", 0],
-    ["arc-ui.appearance.dark.opacity", 52],
-    ["arc-ui.appearance.dark.gradient", true],
-    ["arc-ui.appearance.dark.gradient-angle", 240],
+    ["zennia.appearance.mode", "dark"],
+    ["zennia.appearance.content-radius", 0],
+    ["zennia.appearance.dark.opacity", 52],
+    ["zennia.appearance.dark.gradient", true],
+    ["zennia.appearance.dark.gradient-angle", 240],
   ]);
   const prefs = {};
   for (const [get, set] of [["getStringPref", "setStringPref"], ["getIntPref", "setIntPref"], ["getBoolPref", "setBoolPref"]]) {
@@ -274,16 +274,16 @@ test("theme presets validate saved settings and ignore unrelated preference keys
   assert.equal(snapshot["dark.gradient-angle"], 240);
   stored.clear();
   library.applyPreset(prefs, { ...snapshot, "dark.background": "url(unsafe)", "light.opacity": 101, "content-radius": -2, "browser.startup.homepage": "unsafe" });
-  assert.equal(stored.get("arc-ui.appearance.dark.opacity"), 52);
-  assert.equal(stored.get("arc-ui.appearance.dark.background"), "#23202a");
-  assert.equal(stored.get("arc-ui.appearance.light.opacity"), 70);
-  assert.equal(stored.get("arc-ui.appearance.content-radius"), 10);
-  assert.equal(stored.has("arc-ui.appearance.browser.startup.homepage"), false);
-  assert.equal(stored.get("arc-ui.appearance.mode"), "dark");
+  assert.equal(stored.get("zennia.appearance.dark.opacity"), 52);
+  assert.equal(stored.get("zennia.appearance.dark.background"), "#23202a");
+  assert.equal(stored.get("zennia.appearance.light.opacity"), 70);
+  assert.equal(stored.get("zennia.appearance.content-radius"), 10);
+  assert.equal(stored.has("zennia.appearance.browser.startup.homepage"), false);
+  assert.equal(stored.get("zennia.appearance.mode"), "dark");
 });
 
 test("saved theme presets recover from malformed data and normalize duplicate names", () => {
-  const library = load("features/library/library.js", "ArcLibrary");
+  const library = load("features/library/library.js", "ZenniaLibrary");
   let raw = "not json";
   const prefs = { getStringPref: () => raw };
   assert.equal(library.presets(prefs).length, 0);
@@ -300,7 +300,7 @@ test("saved theme presets recover from malformed data and normalize duplicate na
 });
 
 test("shared presets round-trip all appearance values without applying them or overwriting names", () => {
-  const library = load("features/library/library.js", "ArcLibrary");
+  const library = load("features/library/library.js", "ZenniaLibrary");
   const stored = new Map();
   const prefs = { getStringPref: (key, fallback) => stored.get(key) ?? fallback,
     setStringPref: (key, value) => stored.set(key, value) };
@@ -322,12 +322,57 @@ test("shared presets round-trip all appearance values without applying them or o
   assert.equal(library.importPreset(prefs, caseVariant).name, "a".repeat(56) + " (4)");
 });
 
+test("presets exported before the rename to Zennia still import", () => {
+  const library = load("features/library/library.js", "ZenniaLibrary");
+  const stored = new Map();
+  const prefs = { getStringPref: (key, fallback) => stored.get(key) ?? fallback,
+    setStringPref: (key, value) => stored.set(key, value) };
+  const values = Object.fromEntries(library.schema().map(field => [field.key, field.fallback]));
+  const legacy = JSON.stringify({format: "arc-ui-preset", version: 1, name: "Old", values});
+  assert.equal(library.importPreset(prefs, legacy).name, "Old");
+  assert.equal(JSON.parse(library.exportPreset({name: "New", values})).format, "zennia-preset");
+});
+
+test("settings saved under arc-ui.* move to zennia.* once, without overwriting newer values", () => {
+  const migration = load("shared/legacy-prefs.js", "ZenniaLegacyPrefs");
+  const STRING = 32, INT = 64, BOOL = 128;
+  const user = new Map([
+    ["arc-ui.appearance.mode", [STRING, "dark"]],
+    ["arc-ui.archive.hours", [INT, 24]],
+    ["arc-ui.demo-seen", [BOOL, true]],
+    ["arc-ui.updates.track", [STRING, "beta"]],
+    ["zennia.updates.track", [STRING, "stable"]],
+    ["unrelated.arc-ui.keep", [STRING, "x"]],
+  ]);
+  const get = type => key => { const [t, v] = user.get(key); assert.equal(t, type); return v; };
+  const set = type => (key, value) => user.set(key, [type, value]);
+  const prefs = {
+    PREF_STRING: STRING, PREF_INT: INT, PREF_BOOL: BOOL,
+    getBranch: root => ({ getChildList: () => [...user.keys()].filter(k => k.startsWith(root)).map(k => k.slice(root.length)) }),
+    prefHasUserValue: key => user.has(key),
+    getPrefType: key => user.get(key)?.[0] ?? 0,
+    getStringPref: get(STRING), getIntPref: get(INT), getBoolPref: get(BOOL),
+    setStringPref: set(STRING), setIntPref: set(INT), setBoolPref: set(BOOL),
+    clearUserPref: key => user.delete(key),
+  };
+  migration.migrate(prefs);
+  assert.deepEqual(Object.fromEntries(user), {
+    "zennia.appearance.mode": [STRING, "dark"],
+    "zennia.archive.hours": [INT, 24],
+    "zennia.demo-seen": [BOOL, true],
+    "zennia.updates.track": [STRING, "stable"],
+    "unrelated.arc-ui.keep": [STRING, "x"],
+  });
+  migration.migrate(prefs);
+  assert.equal(user.size, 5);
+});
+
 test("invalid shared presets and full galleries leave saved data untouched", () => {
-  const library = load("features/library/library.js", "ArcLibrary");
+  const library = load("features/library/library.js", "ZenniaLibrary");
   let raw = "[]", writes = 0;
   const prefs = {getStringPref: () => raw, setStringPref: () => writes++};
   const values = Object.fromEntries(library.schema().map(field => [field.key, field.fallback]));
-  const valid = {format: "arc-ui-preset", version: 1, name: "Sample", values};
+  const valid = {format: "zennia-preset", version: 1, name: "Sample", values};
   const invalid = ["broken", "x".repeat(65537), "null", "[]", ...[
     {...valid, version: 2}, {...valid, format: "other"}, {...valid, name: " "},
     {...valid, name: "x".repeat(61)}, {...valid, name: "bad\nname"},
@@ -362,7 +407,7 @@ test("tab hover re-syncs only when a tab closes under a still pointer with stale
     setTimeout: fn => timers.push(fn),
     clearTimeout() {},
   };
-  const feature = load("features/tabs/hover-sync.js", "ArcTabHoverSync").install(window);
+  const feature = load("features/tabs/hover-sync.js", "ZenniaTabHoverSync").install(window);
   listeners.mousemove({clientX: 50, clientY: 20, buttons: 0});
   const drain = () => { while (frames.length || timers.length) (frames.shift() || timers.shift())(); };
   listeners.TabClose({target: closed});

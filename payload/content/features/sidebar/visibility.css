@@ -2,13 +2,13 @@
 {
   /* Native titlebar children set visibility themselves. Hide the entire live
      tree while the captured sidebar moves, rather than just its parent. */
-  :root[data-arc-ui][data-arc-sidebar-animating="closing"]
+  :root[data-zennia][data-zennia-sidebar-animating="closing"]
     :is(#navigator-toolbox, #navigator-toolbox *) {
     visibility: hidden !important;
   }
   /* Zen keeps an empty tab's sidebar open independently of hover. Explicit
      undocking must still hide it; focus, menus, dragging and edge peeks work. */
-  :root[data-arc-ui][zen-compact-mode="true"]:not([customizing])
+  :root[data-zennia][zen-compact-mode="true"]:not([customizing])
     #navigator-toolbox:not([animate="true"]):not(
       :is(
         [zen-has-hover],
@@ -21,15 +21,15 @@
     ) {
     translate: var(--zen-compact-hidden-translate) !important;
   }
-  #arc-sidebar-transition {
+  #zennia-sidebar-transition {
     position: fixed;
     pointer-events: none;
     z-index: 99999;
   }
-  #arc-sidebar-surface {
+  #zennia-sidebar-surface {
     position: fixed;
     pointer-events: none;
     z-index: 9;
-    background: var(--arc-surface);
+    background: var(--zennia-surface);
   }
 }

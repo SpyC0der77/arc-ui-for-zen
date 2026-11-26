@@ -2,7 +2,7 @@
 {
   /* Extension actions share the site's compact button grid, including
      toolbar buttons contributed outside the native extension wrappers. */
-  :root[data-arc-ui]
+  :root[data-zennia]
     #zen-site-data-addons
     :is(
       #overflowed-extensions-list,
@@ -11,7 +11,7 @@
       #zen-site-data-new-addon-button-container
     )
     > *,
-  :root[data-arc-ui] #zen-site-data-addons > toolbarbutton {
+  :root[data-zennia] #zen-site-data-addons > toolbarbutton {
     appearance: none !important;
     box-sizing: border-box !important;
     width: 48px !important;
@@ -35,11 +35,11 @@
       background: color-mix(in srgb, currentColor 14%, transparent) !important;
     }
     &:focus-visible {
-      outline: 2px solid var(--arc-muted);
+      outline: 2px solid var(--zennia-muted);
       outline-offset: 2px;
     }
   }
-  :root[data-arc-ui] #zen-site-data-addons toolbarbutton {
+  :root[data-zennia] #zen-site-data-addons toolbarbutton {
     & .toolbarbutton-text {
       display: none !important;
     }

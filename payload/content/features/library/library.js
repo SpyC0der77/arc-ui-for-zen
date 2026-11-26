@@ -1,16 +1,16 @@
 /* Library trigger, native opening position, and footer links. Downloads only supply a hide callback. */
-var ArcLibrary = {
+var ZenniaLibrary = {
   colors: [
-    ["background", "Background", "--arc-surface", "#cec7d4", "#23202a"],
-    ["gradient-end", "Gradient end", "--arc-gradient-end", "#e8dff0", "#493b56"],
-    ["foreground", "Foreground text", "--arc-text", "#141414", "#f0edf3"],
-    ["accent", "Accent text", "--arc-muted", "#65556f", "#e4d2f5"],
-    ["popup", "Menu background", "--arc-popup-surface", "#f6f4f3", "#302c35"],
-    ["folder", "Folder icons", "--arc-folder", "#b86ba6", "#d9a3cb"],
-    ["tab-active", "Active tab", "--arc-tab-active", "#ffffff", "#655c70"],
-    ["tab-hover", "Hover tab", "--arc-tab-hover", "#bcb6c2", "#4c4752"],
-    ["hover", "Hover background", "--arc-popup-hover", "#e8e3df", "#413b48"],
-    ["pressed", "Pressed background", "--arc-popup-active", "#ded7d2", "#514858"],
+    ["background", "Background", "--zennia-surface", "#cec7d4", "#23202a"],
+    ["gradient-end", "Gradient end", "--zennia-gradient-end", "#e8dff0", "#493b56"],
+    ["foreground", "Foreground text", "--zennia-text", "#141414", "#f0edf3"],
+    ["accent", "Accent text", "--zennia-muted", "#65556f", "#e4d2f5"],
+    ["popup", "Menu background", "--zennia-popup-surface", "#f6f4f3", "#302c35"],
+    ["folder", "Folder icons", "--zennia-folder", "#b86ba6", "#d9a3cb"],
+    ["tab-active", "Active tab", "--zennia-tab-active", "#ffffff", "#655c70"],
+    ["tab-hover", "Hover tab", "--zennia-tab-hover", "#bcb6c2", "#4c4752"],
+    ["hover", "Hover background", "--zennia-popup-hover", "#e8e3df", "#413b48"],
+    ["pressed", "Pressed background", "--zennia-popup-active", "#ded7d2", "#514858"],
   ],
   schema() {
     const fields = [
@@ -40,14 +40,14 @@ var ArcLibrary = {
     const values = {};
     for (const field of this.schema()) {
       const read = { string: "getStringPref", boolean: "getBoolPref", number: "getIntPref" }[field.type];
-      const value = prefs[read]("arc-ui.appearance." + field.key, field.fallback);
+      const value = prefs[read]("zennia.appearance." + field.key, field.fallback);
       values[field.key] = this.validSetting(field, value) ? value : field.fallback;
     }
     return values;
   },
   presets(prefs) {
     try {
-      const saved = JSON.parse(prefs.getStringPref("arc-ui.appearance.presets", "[]"));
+      const saved = JSON.parse(prefs.getStringPref("zennia.appearance.presets", "[]"));
       if (!Array.isArray(saved)) return [];
       const seen = new Set();
       return saved.filter(preset => {
@@ -64,7 +64,7 @@ var ArcLibrary = {
   applyPreset(prefs, values) {
     for (const field of this.schema()) {
       const write = { string: "setStringPref", boolean: "setBoolPref", number: "setIntPref" }[field.type];
-      prefs[write]("arc-ui.appearance." + field.key,
+      prefs[write]("zennia.appearance." + field.key,
         this.validSetting(field, values[field.key]) ? values[field.key] : field.fallback);
     }
   },
@@ -73,9 +73,10 @@ var ArcLibrary = {
       throw new Error("Choose a preset JSON file smaller than 64 KB.");
     let data;
     try { data = JSON.parse(text); }
-    catch { throw new Error("This file is not valid JSON. Choose an exported Arc UI preset."); }
-    if (!data || data.format !== "arc-ui-preset" || data.version !== 1)
-      throw new Error("Unsupported preset format or version. Choose a version 1 Arc UI preset.");
+    catch { throw new Error("This file is not valid JSON. Choose an exported Zennia preset."); }
+    // Presets exported before the rename to Zennia used the "arc-ui-preset" format name.
+    if (!data || !["zennia-preset", "arc-ui-preset"].includes(data.format) || data.version !== 1)
+      throw new Error("Unsupported preset format or version. Choose a version 1 Zennia preset.");
     if (typeof data.name !== "string" || !data.name.trim() || data.name.length > 60 || /[\u0000-\u001f\u007f]/.test(data.name))
       throw new Error("The preset needs a name of 1 to 60 characters without control characters.");
     const fields = this.schema();
@@ -89,7 +90,7 @@ var ArcLibrary = {
     return { name: data.name.trim(), values: Object.fromEntries(fields.map(field => [field.key, data.values[field.key]])) };
   },
   exportPreset(preset) {
-    const text = JSON.stringify({ format: "arc-ui-preset", version: 1, name: preset.name, values: preset.values }, null, 2) + "\n";
+    const text = JSON.stringify({ format: "zennia-preset", version: 1, name: preset.name, values: preset.values }, null, 2) + "\n";
     this.parsePreset(text);
     return text;
   },
@@ -103,11 +104,11 @@ var ArcLibrary = {
       preset.name = original.slice(0, 60 - ending.length).trimEnd() + ending;
     }
     presets.push(preset);
-    prefs.setStringPref("arc-ui.appearance.presets", JSON.stringify(presets));
+    prefs.setStringPref("zennia.appearance.presets", JSON.stringify(presets));
     return preset;
   },
   background(prefs, mode) {
-    const branch = "arc-ui.appearance." + mode + ".";
+    const branch = "zennia.appearance." + mode + ".";
     const readColor = (key, fallback) => {
       const value = prefs.getStringPref(branch + key, fallback);
       return /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
@@ -126,7 +127,7 @@ var ArcLibrary = {
       return this.installLegacy(window, dependencies);
     const footerButtons = new Set();
     const { Services } = window;
-    const prefBranch = "arc-ui.appearance.";
+    const prefBranch = "zennia.appearance.";
     const appearanceInputs = [];
     let editorWindow = null;
     let settingsWindow = null;
@@ -141,7 +142,7 @@ var ArcLibrary = {
     let glassInput = null;
     let applyGlass = () => {};
     const systemScheme = window.matchMedia("(prefers-color-scheme: dark)");
-    const appearance = ArcLibrary.colors;
+    const appearance = ZenniaLibrary.colors;
     // Preserve existing custom colors in both palettes on upgrade.
     for (const [key] of appearance) {
       if (!Services.prefs.prefHasUserValue(prefBranch + key)) continue;
@@ -156,22 +157,22 @@ var ArcLibrary = {
       const savedMode = Services.prefs.getStringPref(prefBranch + "mode", "system");
       const mode = ["light", "dark"].includes(savedMode) ? savedMode : "system";
       const resolved = mode === "system" ? (systemScheme.matches ? "dark" : "light") : mode;
-      document.documentElement.setAttribute("data-arc-color-mode", resolved);
-      const background = ArcLibrary.background(Services.prefs, resolved);
-      document.documentElement.toggleAttribute("data-arc-gradient", background.enabled);
+      document.documentElement.setAttribute("data-zennia-color-mode", resolved);
+      const background = ZenniaLibrary.background(Services.prefs, resolved);
+      document.documentElement.toggleAttribute("data-zennia-gradient", background.enabled);
       const { start, end, angle } = background;
-      const values = ArcLibrary.snapshot(Services.prefs);
+      const values = ZenniaLibrary.snapshot(Services.prefs);
       const opacity = values[resolved + ".opacity"] + "%";
-      document.documentElement.style.setProperty("--arc-window-opacity", opacity);
-      document.documentElement.style.setProperty("--arc-content-radius", values["content-radius"] + "px");
+      document.documentElement.style.setProperty("--zennia-window-opacity", opacity);
+      document.documentElement.style.setProperty("--zennia-content-radius", values["content-radius"] + "px");
       for (const { key, input, output, suffix } of rangeInputs) {
         input.value = values[key];
         output.value = values[key] + suffix;
       }
-      document.documentElement.style.setProperty("--arc-shell-gradient", `linear-gradient(${angle}deg, ${start}, ${end})`);
-      document.documentElement.style.setProperty("--arc-shell-gradient-tint", `linear-gradient(${angle}deg, color-mix(in srgb, ${start} ${opacity}, transparent), color-mix(in srgb, ${end} ${opacity}, transparent))`);
+      document.documentElement.style.setProperty("--zennia-shell-gradient", `linear-gradient(${angle}deg, ${start}, ${end})`);
+      document.documentElement.style.setProperty("--zennia-shell-gradient-tint", `linear-gradient(${angle}deg, color-mix(in srgb, ${start} ${opacity}, transparent), color-mix(in srgb, ${end} ${opacity}, transparent))`);
       for (const entry of gradientInputs) {
-        const config = ArcLibrary.background(Services.prefs, entry.mode);
+        const config = ZenniaLibrary.background(Services.prefs, entry.mode);
         if (entry.key === "gradient") entry.input.checked = config.enabled;
         else {
           entry.input.value = config.angle;
@@ -180,7 +181,7 @@ var ArcLibrary = {
       }
       for (const entry of appearanceInputs) {
         if (entry.key === "gradient-end")
-          entry.input.disabled = !ArcLibrary.background(Services.prefs, entry.mode).enabled;
+          entry.input.disabled = !ZenniaLibrary.background(Services.prefs, entry.mode).enabled;
       }
       for (const input of modeInputs) input.checked = input.value === mode;
       syncModeThumb();
@@ -199,7 +200,7 @@ var ArcLibrary = {
           editorWindow.document.documentElement.style.setProperty(variable, `light-dark(${values[0]}, ${values[1]})`);
       }
       const reduceMotion = Services.prefs.getBoolPref(prefBranch + "reduce-motion", false);
-      document.documentElement.toggleAttribute("data-arc-reduced-motion", reduceMotion);
+      document.documentElement.toggleAttribute("data-zennia-reduced-motion", reduceMotion);
       if (motionInput) motionInput.checked = reduceMotion;
       const glass = Services.prefs.getBoolPref(prefBranch + "liquid-glass", true);
       if (glassInput) glassInput.checked = glass;
@@ -213,19 +214,19 @@ var ArcLibrary = {
     systemScheme.addEventListener("change", applyAppearance);
     applyAppearance();
     const projectMenu = document.createXULElement("menupopup");
-    projectMenu.id = "arc-project-menu";
+    projectMenu.id = "zennia-project-menu";
     projectMenu.setAttribute("nonnative", "true");
     document.getElementById("mainPopupSet").append(projectMenu);
     const settings = document.createElementNS("http://www.w3.org/1999/xhtml", "dialog");
-    settings.id = "arc-settings-dialog";
-    settings.setAttribute("aria-labelledby", "arc-settings-title");
+    settings.id = "zennia-settings-dialog";
+    settings.setAttribute("aria-labelledby", "zennia-settings-title");
     function html(tag, text) {
       const node = document.createElementNS("http://www.w3.org/1999/xhtml", tag);
       node.textContent = text;
       return node;
     }
-    const title = html("h2", "Arc UI settings");
-    title.id = "arc-settings-title";
+    const title = html("h2", "Zennia settings");
+    title.id = "zennia-settings-title";
     // Settings live in a real OS window (settings.xhtml), so the system draws
     // the title bar, close button and dragging. Closing means closing it.
     function closeSettings() {
@@ -237,23 +238,23 @@ var ArcLibrary = {
     });
     settings.append(title);
     const modeRow = html("div", "");
-    modeRow.className = "arc-settings-row";
+    modeRow.className = "zennia-settings-row";
     const modeLabel = html("span", "Theme mode");
-    modeLabel.id = "arc-appearance-label";
+    modeLabel.id = "zennia-appearance-label";
     const modeGroup = html("div", "");
-    modeGroup.id = "arc-appearance-mode";
+    modeGroup.id = "zennia-appearance-mode";
     modeGroup.setAttribute("role", "radiogroup");
     modeGroup.setAttribute("aria-labelledby", modeLabel.id);
     const modeThumb = html("div", "");
-    modeThumb.className = "arc-segment-thumb";
+    modeThumb.className = "zennia-segment-thumb";
     modeGroup.append(modeThumb);
     for (const [value, label] of [["light", "Light"], ["dark", "Dark"], ["system", "System"]]) {
       const segment = html("label", "");
       const input = html("input", "");
       input.type = "radio";
-      input.name = "arc-appearance-mode";
+      input.name = "zennia-appearance-mode";
       input.value = value;
-      input.id = "arc-appearance-" + value;
+      input.id = "zennia-appearance-" + value;
       input.addEventListener("change", () => {
         if (input.checked) Services.prefs.setStringPref(prefBranch + "mode", value);
       });
@@ -278,14 +279,14 @@ var ArcLibrary = {
     applyAppearance();
     function rangeControl(key, label, min, max, suffix) {
       const row = html("label", "");
-      row.className = "arc-settings-row";
+      row.className = "zennia-settings-row";
       row.dataset.appearanceKey = key;
       row.append(html("span", label));
       const controls = html("div", "");
-      controls.className = "arc-range-control";
+      controls.className = "zennia-range-control";
       const input = html("input", "");
       input.type = "range";
-      input.id = "arc-" + key.replaceAll(".", "-");
+      input.id = "zennia-" + key.replaceAll(".", "-");
       input.min = String(min);
       input.max = String(max);
       input.step = "1";
@@ -299,71 +300,71 @@ var ArcLibrary = {
     }
     settings.append(rangeControl("content-radius", "Content corners", 0, 16, " px"));
     const presetDetails = html("section", "");
-    presetDetails.id = "arc-theme-presets";
+    presetDetails.id = "zennia-theme-presets";
     const presetLabel = html("fieldset", "");
-    presetLabel.className = "arc-preset-field";
+    presetLabel.className = "zennia-preset-field";
     const presetLegend = html("legend", "Saved presets");
     const presetGallery = html("div", "");
-    presetGallery.id = "arc-preset-gallery";
+    presetGallery.id = "zennia-preset-gallery";
     const presetEmpty = html("p", "Save your current appearance to create a preset.");
-    presetEmpty.id = "arc-preset-empty";
+    presetEmpty.id = "zennia-preset-empty";
     presetLabel.append(presetLegend, presetGallery, presetEmpty);
     let selectedPresetName = "";
     let renderedPresets = "";
     const presetActions = html("div", "");
-    presetActions.className = "arc-preset-actions";
+    presetActions.className = "zennia-preset-actions";
     const apply = html("button", "Apply");
     apply.type = "button";
-    apply.id = "arc-preset-apply";
+    apply.id = "zennia-preset-apply";
     const remove = html("button", "Delete");
     remove.type = "button";
-    remove.id = "arc-preset-delete";
+    remove.id = "zennia-preset-delete";
     const exportButton = html("button", "Export…");
     exportButton.type = "button";
-    exportButton.id = "arc-preset-export";
+    exportButton.id = "zennia-preset-export";
     const importButton = html("button", "Import…");
     importButton.type = "button";
-    importButton.id = "arc-preset-import";
+    importButton.id = "zennia-preset-import";
     presetActions.append(apply, remove, exportButton, importButton);
     const nameLabel = html("label", "Preset name");
-    nameLabel.className = "arc-preset-field";
+    nameLabel.className = "zennia-preset-field";
     const presetName = html("input", "");
-    presetName.id = "arc-preset-name";
+    presetName.id = "zennia-preset-name";
     presetName.type = "text";
     presetName.maxLength = 60;
     nameLabel.append(presetName);
     const save = html("button", "Save current appearance");
     save.type = "button";
-    save.id = "arc-preset-save";
+    save.id = "zennia-preset-save";
     const presetStatus = html("p", "");
-    presetStatus.id = "arc-preset-status";
+    presetStatus.id = "zennia-preset-status";
     presetStatus.setAttribute("role", "status");
     const previewLabel = html("p", "Current theme");
-    previewLabel.id = "arc-preset-preview-label";
+    previewLabel.id = "zennia-preset-preview-label";
     const preview = html("div", "");
-    preview.id = "arc-preset-preview";
-    preview.className = "arc-theme-preview";
+    preview.id = "zennia-preset-preview";
+    preview.className = "zennia-theme-preview";
     preview.setAttribute("role", "img");
     const previewRail = html("div", "");
-    previewRail.className = "arc-preview-rail";
+    previewRail.className = "zennia-preview-rail";
     const previewToolbar = html("div", "");
-    previewToolbar.className = "arc-preview-toolbar";
+    previewToolbar.className = "zennia-preview-toolbar";
     for (const name of ["panel"]) previewToolbar.append(icon(name));
     const previewAddress = html("div", "Search...");
-    previewAddress.className = "arc-preview-address";
+    previewAddress.className = "zennia-preview-address";
     previewRail.append(previewToolbar, previewAddress);
     for (const [image, title, active] of [["folder", "Space", false], ["folder", "Pull Requests", false], ["folder", "Issues", false], ["file", "New Tab", false], ["file", "New Tab", true]]) {
       const tab = html("div", "");
-      tab.className = "arc-preview-tab";
-      if (active) tab.classList.add("arc-preview-active");
-      if (image === "folder") tab.classList.add("arc-preview-folder");
+      tab.className = "zennia-preview-tab";
+      if (active) tab.classList.add("zennia-preview-active");
+      if (image === "folder") tab.classList.add("zennia-preview-folder");
       tab.append(icon(image), html("span", title));
       previewRail.append(tab);
     }
     const previewPage = html("div", "");
-    previewPage.className = "arc-preview-page";
+    previewPage.className = "zennia-preview-page";
     const previewFooter = html("div", "");
-    previewFooter.className = "arc-preview-footer";
+    previewFooter.className = "zennia-preview-footer";
     previewFooter.append(icon("gift"), html("span", "+"));
     previewRail.append(previewFooter);
     preview.append(previewRail, previewPage);
@@ -384,7 +385,7 @@ var ArcLibrary = {
       apply.disabled = remove.disabled = exportButton.disabled = !selectedPresetName;
     }
     refreshPresets = () => {
-      const presets = ArcLibrary.presets(Services.prefs);
+      const presets = ZenniaLibrary.presets(Services.prefs);
       if (!presets.some(item => item.name === selectedPresetName)) selectedPresetName = "";
       const signature = JSON.stringify([presets, systemScheme.matches]);
       if (signature !== renderedPresets) {
@@ -393,10 +394,10 @@ var ArcLibrary = {
         presetGallery.replaceChildren();
         for (const preset of presets) {
           const choice = html("label", "");
-          choice.className = "arc-preset-choice";
+          choice.className = "zennia-preset-choice";
           const radio = html("input", "");
           radio.type = "radio";
-          radio.name = "arc-saved-preset";
+          radio.name = "zennia-saved-preset";
           radio.value = preset.name;
           radio.checked = preset.name === selectedPresetName;
           const thumbnail = preview.cloneNode(true);
@@ -404,11 +405,11 @@ var ArcLibrary = {
           thumbnail.removeAttribute("role");
           thumbnail.removeAttribute("aria-label");
           thumbnail.hidden = false;
-          thumbnail.classList.add("arc-preset-mini");
+          thumbnail.classList.add("zennia-preset-mini");
           thumbnail.setAttribute("aria-hidden", "true");
           paintPreview(thumbnail, preset.values);
           const caption = html("span", preset.name);
-          caption.className = "arc-preset-caption";
+          caption.className = "zennia-preset-caption";
           radio.addEventListener("change", () => {
             selectedPresetName = radio.value;
             selectionChanged();
@@ -423,20 +424,20 @@ var ArcLibrary = {
       preview.hidden = previewLabel.hidden = presets.length > 0;
       presetEmpty.hidden = presets.length > 0;
       presetGallery.hidden = !presets.length;
-      const mode = paintPreview(preview, ArcLibrary.snapshot(Services.prefs));
+      const mode = paintPreview(preview, ZenniaLibrary.snapshot(Services.prefs));
       preview.setAttribute("aria-label", `Current theme, ${mode} appearance. Sample browser sidebar and content.`);
       selectionChanged();
     };
     refreshPresets();
     save.addEventListener("click", () => {
       const name = presetName.value.trim();
-      const presets = ArcLibrary.presets(Services.prefs);
+      const presets = ZenniaLibrary.presets(Services.prefs);
       if (!name) { presetStatus.textContent = "Enter a name for this preset."; presetName.focus(); return; }
       if (presets.some(preset => preset.name.toLowerCase() === name.toLowerCase())) {
         presetStatus.textContent = "That name is already saved. Choose another name."; return;
       }
       if (presets.length >= 20) { presetStatus.textContent = "You can save up to 20 presets. Delete one to make room."; return; }
-      presets.push({ name, values: ArcLibrary.snapshot(Services.prefs) });
+      presets.push({ name, values: ZenniaLibrary.snapshot(Services.prefs) });
       Services.prefs.setStringPref(prefBranch + "presets", JSON.stringify(presets));
       selectedPresetName = name;
       refreshPresets();
@@ -445,22 +446,22 @@ var ArcLibrary = {
       presetStatus.textContent = `Saved ${name}.`;
     });
     apply.addEventListener("click", () => {
-      const preset = ArcLibrary.presets(Services.prefs).find(preset => preset.name === selectedPresetName);
+      const preset = ZenniaLibrary.presets(Services.prefs).find(preset => preset.name === selectedPresetName);
       if (!preset) return;
-      ArcLibrary.applyPreset(Services.prefs, preset.values);
+      ZenniaLibrary.applyPreset(Services.prefs, preset.values);
       presetStatus.textContent = `Applied ${preset.name}.`;
     });
     remove.addEventListener("click", () => {
       const name = selectedPresetName;
       if (!name) return;
-      const presets = ArcLibrary.presets(Services.prefs).filter(preset => preset.name !== name);
+      const presets = ZenniaLibrary.presets(Services.prefs).filter(preset => preset.name !== name);
       Services.prefs.setStringPref(prefBranch + "presets", JSON.stringify(presets));
       presetStatus.textContent = `Deleted ${name}.`;
     });
     let fileBusy = false;
     async function transferPreset(exporting) {
       if (fileBusy) return;
-      const preset = ArcLibrary.presets(Services.prefs).find(item => item.name === selectedPresetName);
+      const preset = ZenniaLibrary.presets(Services.prefs).find(item => item.name === selectedPresetName);
       if (exporting && !preset) return;
       fileBusy = true;
       importButton.disabled = exportButton.disabled = true;
@@ -470,18 +471,18 @@ var ArcLibrary = {
         const picker = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
         picker.init(settings.ownerDocument.defaultView.browsingContext, exporting ? "Export preset" : "Import preset",
           exporting ? Ci.nsIFilePicker.modeSave : Ci.nsIFilePicker.modeOpen);
-        picker.appendFilter("Arc UI preset (*.json)", "*.json");
+        picker.appendFilter("Zennia preset (*.json)", "*.json");
         picker.defaultExtension = "json";
-        if (exporting) picker.defaultString = (preset.name.replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "arc-ui-preset") + ".json";
+        if (exporting) picker.defaultString = (preset.name.replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "zennia-preset") + ".json";
         const result = await new Promise(resolve => picker.open(resolve));
         if (result === Ci.nsIFilePicker.returnCancel || !picker.file) return;
         if (exporting) {
-          await IOUtils.writeUTF8(picker.file.path, ArcLibrary.exportPreset(preset));
+          await IOUtils.writeUTF8(picker.file.path, ZenniaLibrary.exportPreset(preset));
           presetStatus.textContent = `Exported ${preset.name}.`;
         } else {
           if ((await IOUtils.stat(picker.file.path)).size > 65536)
             throw new Error("Choose a preset JSON file smaller than 64 KB.");
-          const imported = ArcLibrary.importPreset(Services.prefs, await IOUtils.readUTF8(picker.file.path));
+          const imported = ZenniaLibrary.importPreset(Services.prefs, await IOUtils.readUTF8(picker.file.path));
           selectedPresetName = imported.name;
           refreshPresets();
           presetStatus.textContent = `Imported ${imported.name}. Preview it above, then choose Apply to use it.`;
@@ -501,7 +502,7 @@ var ArcLibrary = {
     presetDetails.append(previewLabel, preview, presetLabel, presetActions, nameLabel, save, presetStatus);
     settings.append(presetDetails);
     const heading = html("div", "");
-    heading.className = "arc-palette-heading";
+    heading.className = "zennia-palette-heading";
     heading.append(html("span", "Color"), html("span", "Light"), html("span", "Dark"));
     settings.append(heading);
     let activeColor = null;
@@ -509,7 +510,7 @@ var ArcLibrary = {
       for (const entry of appearanceInputs) {
         const { input, key, mode, fallback } = entry;
         entry.value = Services.prefs.getStringPref(prefBranch + mode + "." + key, fallback);
-        const background = ArcLibrary.background(Services.prefs, mode);
+        const background = ZenniaLibrary.background(Services.prefs, mode);
         const preview = key === "background" && background.enabled
           ? `linear-gradient(${background.angle}deg, ${background.start}, ${background.end})` : entry.value;
         input.style.setProperty("--swatch", preview);
@@ -519,15 +520,15 @@ var ArcLibrary = {
     }
     function appendGradientRow(key, label) {
       const row = html("div", "");
-      row.className = "arc-settings-row";
+      row.className = "zennia-settings-row";
       row.dataset.appearanceKey = key;
       row.append(html("span", label));
       const pair = html("div", "");
-      pair.className = "arc-gradient-pair";
+      pair.className = "zennia-gradient-pair";
       for (const mode of ["light", "dark"]) {
         const input = html("input", "");
         input.type = key === "gradient" ? "checkbox" : "number";
-        input.id = "arc-" + key + "-" + mode;
+        input.id = "zennia-" + key + "-" + mode;
         input.setAttribute("aria-label", `${label}, ${mode} mode`);
         if (key !== "gradient") {
           input.min = "0";
@@ -541,17 +542,17 @@ var ArcLibrary = {
             const angle = input.valueAsNumber;
             if (Number.isInteger(angle) && angle >= 0 && angle <= 360)
               Services.prefs.setIntPref(prefBranch + mode + "." + key, angle);
-            else input.value = ArcLibrary.background(Services.prefs, mode).angle;
+            else input.value = ZenniaLibrary.background(Services.prefs, mode).angle;
           }
         });
         gradientInputs.push({ input, mode, key });
         if (key === "gradient") pair.append(input);
         else {
           const cell = html("div", "");
-          cell.className = "arc-angle-control";
+          cell.className = "zennia-angle-control";
           const slider = html("input", "");
           slider.type = "range";
-          slider.id = "arc-gradient-slider-" + mode;
+          slider.id = "zennia-gradient-slider-" + mode;
           slider.min = "0";
           slider.max = "360";
           slider.step = "1";
@@ -567,15 +568,15 @@ var ArcLibrary = {
     }
     for (const [key, label, , fallback, darkDefault] of appearance) {
       const row = html("div", "");
-      row.className = "arc-settings-row arc-color-row";
+      row.className = "zennia-settings-row zennia-color-row";
       row.dataset.appearanceKey = key;
       row.append(html("span", label));
       const pair = html("div", "");
-      pair.className = "arc-color-pair";
+      pair.className = "zennia-color-pair";
       for (const mode of ["light", "dark"]) {
         const input = html("button", "");
         input.type = "button";
-        input.className = "arc-color-swatch";
+        input.className = "zennia-color-swatch";
         input.setAttribute("aria-label", `${label}, ${mode} mode`);
         input.setAttribute("aria-expanded", "false");
         const entry = { input, key, mode, label, fallback: mode === "dark" ? darkDefault : fallback };
@@ -594,7 +595,7 @@ var ArcLibrary = {
     applyAppearance();
     refreshColorInputs();
     const editor = html("section", "");
-    editor.id = "arc-color-editor";
+    editor.id = "zennia-color-editor";
     editor.hidden = true;
     const editorTitle = html("h3", "");
     editorTitle.title = "Drag to move";
@@ -697,7 +698,7 @@ var ArcLibrary = {
         host.mozInnerScreenY + bounds.top + 50,
         host.screen.availTop + host.screen.availHeight - 440));
       editorWindow = Services.ww.openWindow(host,
-        "chrome://arc-ui/content/features/library/color-editor.xhtml", null,
+        "chrome://zennia/content/features/library/color-editor.xhtml", null,
         `chrome,titlebar=no,alwaysontop,dependent,dialog=yes,resizable=no,minimizable=no,width=216,height=350,left=${Math.round(left)},top=${Math.round(top)}`, null);
       const floating = editorWindow;
       floating.addEventListener("load", () => {
@@ -733,7 +734,7 @@ var ArcLibrary = {
     pickerDone.type = "button";
     pickerDone.addEventListener("click", () => pickerDone.ownerDocument.defaultView.close());
     const colorReset = html("button", "Reset color");
-    colorReset.id = "arc-reset-color";
+    colorReset.id = "zennia-reset-color";
     colorReset.type = "button";
     updateColorReset = () => {
       colorReset.disabled = !activeColor || !Services.prefs.prefHasUserValue(prefBranch + activeColor.mode + "." + activeColor.key);
@@ -746,12 +747,12 @@ var ArcLibrary = {
       updateColorReset();
     });
     const pickerActions = html("div", "");
-    pickerActions.className = "arc-picker-actions";
+    pickerActions.className = "zennia-picker-actions";
     pickerActions.append(colorReset, pickerDone);
     editor.append(editorTitle, pickerHost, brightnessLabel, hexLabel, pickerActions);
     settings.addEventListener("close", () => editorWindow?.close());
     const motionRow = html("label", "");
-    motionRow.className = "arc-settings-row";
+    motionRow.className = "zennia-settings-row";
     motionRow.append(html("span", "Reduce animations"));
     const motion = html("input", "");
     motionInput = motion;
@@ -761,7 +762,7 @@ var ArcLibrary = {
     motionRow.append(motion);
     // Liquid Glass controls in this window, on by default (settings.css).
     const glassRow = html("label", "");
-    glassRow.className = "arc-settings-row";
+    glassRow.className = "zennia-settings-row";
     glassRow.append(html("span", "Liquid Glass"));
     const glassToggle = html("input", "");
     glassInput = glassToggle;
@@ -769,25 +770,25 @@ var ArcLibrary = {
     glassToggle.checked = Services.prefs.getBoolPref(prefBranch + "liquid-glass", true);
     glassToggle.addEventListener("change", () => Services.prefs.setBoolPref(prefBranch + "liquid-glass", glassToggle.checked));
     glassRow.append(glassToggle);
-    applyGlass = enabled => settings.toggleAttribute("data-arc-glass", enabled);
+    applyGlass = enabled => settings.toggleAttribute("data-zennia-glass", enabled);
     const reset = html("button", "Reset appearance");
     reset.type = "button";
     reset.addEventListener("click", () => {
-      for (const { key } of ArcLibrary.schema()) Services.prefs.clearUserPref(prefBranch + key);
+      for (const { key } of ZenniaLibrary.schema()) Services.prefs.clearUserPref(prefBranch + key);
       refreshColorInputs();
       if (activeColor) loadColor(activeColor.value);
       Services.prefs.clearUserPref(prefBranch + "reduce-motion");
       motion.checked = false;
     });
     const header = html("header", "");
-    header.className = "arc-settings-header";
+    header.className = "zennia-settings-header";
     header.append(title);
     const navigation = html("div", "");
-    navigation.className = "arc-settings-tabs";
+    navigation.className = "zennia-settings-tabs";
     navigation.setAttribute("role", "tablist");
     navigation.setAttribute("aria-label", "Settings sections");
     const body = html("div", "");
-    body.className = "arc-settings-body";
+    body.className = "zennia-settings-body";
     const panels = new Map();
     const tabs = [];
     function selectSection(tab, focus = false) {
@@ -813,11 +814,11 @@ var ArcLibrary = {
       const tab = html("button", "");
       tab.append(icon(image), html("span", label));
       tab.type = "button";
-      tab.id = "arc-settings-tab-" + key;
+      tab.id = "zennia-settings-tab-" + key;
       tab.dataset.section = key;
       tab.dataset.label = label;
       tab.setAttribute("role", "tab");
-      tab.setAttribute("aria-controls", "arc-settings-panel-" + key);
+      tab.setAttribute("aria-controls", "zennia-settings-panel-" + key);
       tab.addEventListener("click", () => selectSection(tab));
       tab.addEventListener("keydown", event => {
         let index = tabs.indexOf(tab);
@@ -830,8 +831,8 @@ var ArcLibrary = {
         selectSection(tabs[index], true);
       });
       const panel = html("section", "");
-      panel.id = "arc-settings-panel-" + key;
-      panel.className = "arc-settings-panel";
+      panel.id = "zennia-settings-panel-" + key;
+      panel.className = "zennia-settings-panel";
       panel.setAttribute("role", "tabpanel");
       panel.setAttribute("aria-labelledby", tab.id);
       panel.tabIndex = 0;
@@ -844,7 +845,7 @@ var ArcLibrary = {
     function describe(row, text) {
       const label = row.firstElementChild;
       const copy = html("div", "");
-      copy.className = "arc-row-text";
+      copy.className = "zennia-row-text";
       const note = html("small", text);
       label.before(copy);
       copy.append(label, note);
@@ -853,7 +854,7 @@ var ArcLibrary = {
     // Arc groups related rows into one bordered list; headings stay outside.
     function group(...rows) {
       const card = html("div", "");
-      card.className = "arc-settings-group";
+      card.className = "zennia-settings-group";
       card.append(...rows);
       return card;
     }
@@ -873,9 +874,9 @@ var ArcLibrary = {
     }
     function editHeading(text) {
       const row = html("div", "");
-      row.className = "arc-palette-heading";
+      row.className = "zennia-palette-heading";
       const switcher = html("div", "");
-      switcher.className = "arc-edit-mode";
+      switcher.className = "zennia-edit-mode";
       switcher.setAttribute("role", "group");
       switcher.setAttribute("aria-label", `${text}: appearance to edit`);
       for (const [value, label] of [["light", "Light"], ["dark", "Dark"]]) {
@@ -904,12 +905,12 @@ var ArcLibrary = {
       backgroundRows.push(row);
     }
     const opacityRow = html("div", "");
-    opacityRow.className = "arc-settings-row";
+    opacityRow.className = "zennia-settings-row";
     opacityRow.append(html("span", "Window opacity"));
     const opacityPair = html("div", "");
-    opacityPair.className = "arc-gradient-pair";
+    opacityPair.className = "zennia-gradient-pair";
     for (const mode of ["light", "dark"]) {
-      const controls = settings.querySelector(`[data-appearance-key="${mode}.opacity"] .arc-range-control`);
+      const controls = settings.querySelector(`[data-appearance-key="${mode}.opacity"] .zennia-range-control`);
       controls.querySelector("input").setAttribute("aria-label", `Window opacity, ${mode} mode`);
       opacityPair.append(controls);
     }
@@ -938,9 +939,9 @@ var ArcLibrary = {
     colorsPanel.append(group(...colorRows));
     // Presets read as two cards: the gallery with its actions, then saving.
     const presetSaveHeading = html("h4", "Save current appearance");
-    presetSaveHeading.className = "arc-settings-section";
+    presetSaveHeading.className = "zennia-settings-section";
     const presetSaveRow = html("div", "");
-    presetSaveRow.className = "arc-preset-save-row";
+    presetSaveRow.className = "zennia-preset-save-row";
     save.textContent = "Save";
     presetName.placeholder = "Preset name";
     presetName.setAttribute("aria-label", "Preset name");
@@ -952,25 +953,25 @@ var ArcLibrary = {
       presetStatus,
     );
     panels.get("presets").append(presetDetails);
-    const { ArcUpdater: updater } = window.ChromeUtils.importESModule('chrome://arc-ui/content/updater.sys.mjs');
+    const { ZenniaUpdater: updater } = window.ChromeUtils.importESModule('chrome://zennia/content/updater.sys.mjs');
     const trackRow = html('label', '');
-    trackRow.className = 'arc-settings-row';
+    trackRow.className = 'zennia-settings-row';
     trackRow.append(html('span', 'Release track'));
     const track = html('select', '');
-    track.id = 'arc-update-track';
+    track.id = 'zennia-update-track';
     track.disabled = true;
     for (const [value, label] of [['stable', 'Stable'], ['beta', 'Beta']]) {
       const option = html('option', label); option.value = value; track.append(option);
     }
     trackRow.append(track);
     const trackDescription = html('p', 'Stable receives stable releases only. Beta also receives prereleases.');
-    trackDescription.id = 'arc-update-track-description';
+    trackDescription.id = 'zennia-update-track-description';
     track.setAttribute('aria-describedby', trackDescription.id);
     trackDescription.remove();
     const trackNote = html("small", trackDescription.textContent);
     trackNote.id = trackDescription.id;
     const trackCopy = html("div", "");
-    trackCopy.className = "arc-row-text";
+    trackCopy.className = "zennia-row-text";
     trackCopy.append(trackRow.firstElementChild, trackNote);
     trackRow.prepend(trackCopy);
     panels.get('updates').append(group(trackRow));
@@ -989,8 +990,8 @@ var ArcLibrary = {
     updater.listeners.add(syncTrack);
     syncTrack();
     const footer = html("footer", "");
-    footer.className = "arc-settings-footer";
-    reset.id = "arc-settings-reset";
+    footer.className = "zennia-settings-footer";
+    reset.id = "zennia-settings-reset";
     footer.append(reset);
     // Reset scrolls with the settings list, as the last item under it.
     body.append(footer);
@@ -1000,11 +1001,11 @@ var ArcLibrary = {
     for (const select of settings.querySelectorAll("select")) {
       const trigger = html("button", "");
       trigger.type = "button";
-      trigger.className = "arc-select-trigger";
+      trigger.className = "zennia-select-trigger";
       trigger.setAttribute("aria-haspopup", "menu");
       trigger.setAttribute("aria-label", select.closest("label")?.querySelector("span")?.textContent || "Choose option");
       const menu = html("div", "");
-      menu.className = "arc-select-menu";
+      menu.className = "zennia-select-menu";
       menu.setAttribute("popover", "auto");
       menu.setAttribute("role", "menu");
       const triggerLabel = html("span", "");
@@ -1057,7 +1058,7 @@ var ArcLibrary = {
       }
       resetEditMode();
       const host = Services.ww.openWindow(window,
-        "chrome://arc-ui/content/features/library/settings.xhtml", "arc-ui-settings",
+        "chrome://zennia/content/features/library/settings.xhtml", "zennia-settings",
         "chrome,titlebar,close,minimizable,resizable,centerscreen,dependent,width=640,height=640", null);
       settingsWindow = host;
       host.addEventListener("load", () => {
@@ -1093,7 +1094,7 @@ var ArcLibrary = {
     }
     for (const [label, image, action] of [
       ["GitHub", "github", () => {
-        window.openTrustedLinkIn("https://github.com/SpyC0der77/arc-ui-for-zen", "tab");
+        window.openTrustedLinkIn("https://github.com/SpyC0der77/zennia", "tab");
         void setRail(false).catch(report);
       }],
       ["Settings", "settings", () => openSettings()],
@@ -1101,7 +1102,7 @@ var ArcLibrary = {
       const item = document.createXULElement("menuitem");
       item.setAttribute("label", label);
       item.classList.add("menuitem-iconic");
-      item.setAttribute("image", `chrome://arc-ui/content/menu-icons/${image}.svg`);
+      item.setAttribute("image", `chrome://zennia/content/menu-icons/${image}.svg`);
       item.addEventListener("command", action);
       projectMenu.append(item);
     }
@@ -1114,19 +1115,19 @@ var ArcLibrary = {
       if (!donate) return;
       if (!donateImages.has(donate))
         donateImages.set(donate, donate.getAttribute("image"));
-      const heart = "chrome://arc-ui/content/menu-icons/heart.svg";
+      const heart = "chrome://zennia/content/menu-icons/heart.svg";
       if (donate.getAttribute("image") !== heart)
         donate.setAttribute("image", heart);
-      if (footer.querySelector("#arc-project-github-button")) return;
+      if (footer.querySelector("#zennia-project-github-button")) return;
       const github = document.createXULElement("toolbarbutton");
-      github.id = "arc-project-github-button";
+      github.id = "zennia-project-github-button";
       github.className = "toolbarbutton-1";
       github.setAttribute(
         "image",
-        "chrome://arc-ui/content/menu-icons/menu.svg",
+        "chrome://zennia/content/menu-icons/menu.svg",
       );
-      github.setAttribute("tooltiptext", "Arc UI menu");
-      github.setAttribute("aria-label", "Arc UI menu");
+      github.setAttribute("tooltiptext", "Zennia menu");
+      github.setAttribute("aria-label", "Zennia menu");
       github.setAttribute("aria-haspopup", "menu");
       github.addEventListener("command", () => {
         projectMenu.openPopup(github, "before_end", 0, 0);
@@ -1149,9 +1150,9 @@ var ArcLibrary = {
       const transform = content.style.getPropertyValue("transform");
       const match = /^translateX\((-?[\d.]+)px\)$/.exec(transform);
       const offset = value > 0 && match ? Number(match[1]) : 0;
-      root.style.setProperty("--arc-library-left", `${Math.max(0, offset)}px`);
-      root.style.setProperty("--arc-library-right", `${Math.max(0, -offset)}px`);
-      root.toggleAttribute("data-arc-library-resize", value > 0 && !!match);
+      root.style.setProperty("--zennia-library-left", `${Math.max(0, offset)}px`);
+      root.style.setProperty("--zennia-library-right", `${Math.max(0, -offset)}px`);
+      root.toggleAttribute("data-zennia-library-resize", value > 0 && !!match);
     };
     if (progressDescriptor?.configurable && progressDescriptor.set) {
       Object.defineProperty(NativeLibrary.prototype, "openProgress", {
@@ -1174,9 +1175,9 @@ var ArcLibrary = {
       return NativeLibrary.animateProgress(open ? 1 : 0);
     }
     const gift = document.createXULElement("toolbarbutton");
-    gift.id = "arc-gift-button";
+    gift.id = "zennia-gift-button";
     gift.className =
-      "toolbarbutton-1 zen-sidebar-action-button arc-icon-button arc-ui";
+      "toolbarbutton-1 zen-sidebar-action-button zennia-icon-button zennia";
     gift.setAttribute("aria-label", "Library (hover for downloads)");
     gift.append(icon("gift"));
     gift.addEventListener("command", () => {
@@ -1188,7 +1189,7 @@ var ArcLibrary = {
     });
     gift.setAttribute("aria-pressed", "false");
     gift.setAttribute("aria-expanded", "false");
-    gift.setAttribute("aria-controls", "arc-download-popup");
+    gift.setAttribute("aria-controls", "zennia-download-popup");
     const libraryObserver = new MutationObserver(() =>
       gift.setAttribute(
         "aria-pressed",
@@ -1210,9 +1211,9 @@ var ArcLibrary = {
       destroy() {
         if (Object.getOwnPropertyDescriptor(NativeLibrary.prototype, "openProgress")?.set === resizeProgress)
           Object.defineProperty(NativeLibrary.prototype, "openProgress", progressDescriptor);
-        root.removeAttribute("data-arc-library-resize");
-        root.style.removeProperty("--arc-library-left");
-        root.style.removeProperty("--arc-library-right");
+        root.removeAttribute("data-zennia-library-resize");
+        root.style.removeProperty("--zennia-library-left");
+        root.style.removeProperty("--zennia-library-right");
         if (NativeLibrary.animateProgress === animateLibrary)
           NativeLibrary.animateProgress = originalLibraryAnimate;
         libraryObserver.disconnect();
@@ -1221,14 +1222,14 @@ var ArcLibrary = {
         settingsWindow?.close();
         Services.prefs.removeObserver(prefBranch, appearanceObserver);
         systemScheme.removeEventListener("change", applyAppearance);
-        document.documentElement.removeAttribute("data-arc-color-mode");
-        document.documentElement.removeAttribute("data-arc-gradient");
-        document.documentElement.style.removeProperty("--arc-shell-gradient");
-        document.documentElement.style.removeProperty("--arc-shell-gradient-tint");
-        document.documentElement.style.removeProperty("--arc-window-opacity");
-        document.documentElement.style.removeProperty("--arc-content-radius");
+        document.documentElement.removeAttribute("data-zennia-color-mode");
+        document.documentElement.removeAttribute("data-zennia-gradient");
+        document.documentElement.style.removeProperty("--zennia-shell-gradient");
+        document.documentElement.style.removeProperty("--zennia-shell-gradient-tint");
+        document.documentElement.style.removeProperty("--zennia-window-opacity");
+        document.documentElement.style.removeProperty("--zennia-content-radius");
         for (const [, , variable] of appearance) document.documentElement.style.removeProperty(variable);
-        document.documentElement.removeAttribute("data-arc-reduced-motion");
+        document.documentElement.removeAttribute("data-zennia-reduced-motion");
         projectMenu.remove();
         settings.remove();
         updater.listeners.delete(syncTrack);
@@ -1246,15 +1247,15 @@ var ArcLibrary = {
   installLegacy(window, { icon, nudge, hideDownloads, report }) {
     const { document } = window;
     const gift = document.createXULElement("toolbarbutton");
-    gift.id = "arc-gift-button";
-    gift.className = "toolbarbutton-1 zen-sidebar-action-button arc-icon-button arc-ui";
+    gift.id = "zennia-gift-button";
+    gift.className = "toolbarbutton-1 zen-sidebar-action-button zennia-icon-button zennia";
     gift.setAttribute("aria-label", "Library (hover for downloads)");
     gift.setAttribute("aria-haspopup", "menu");
     gift.setAttribute("aria-expanded", "false");
     gift.setAttribute("aria-pressed", "false");
     gift.append(icon("gift"));
     const popup = document.createXULElement("menupopup");
-    popup.id = "arc-legacy-library";
+    popup.id = "zennia-legacy-library";
     function addItem(label, action) {
       const item = document.createXULElement("menuitem");
       item.setAttribute("label", label);

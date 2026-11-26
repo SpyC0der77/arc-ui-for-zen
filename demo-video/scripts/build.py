@@ -57,8 +57,8 @@ def main():
             '-filter_complex', '[0:v]scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080[bg];[1:v]scale=1296:888[app];[bg][app]overlay=(W-w)/2:(H-h)/2:shortest=1,setsar=1[v]',
             '-map', '[v]', '-t', '19', '-r', '30', '-c:v', 'libx264', '-preset', 'fast',
             '-crf', '17', '-pix_fmt', 'yuv420p', 'recordings/onboarding.mp4')
-    base = exports / 'arc-ui-for-zen-demo.mp4'
-    output = exports / 'arc-ui-for-zen-demo-cursor.mp4'
+    base = exports / 'zennia-demo.mp4'
+    output = exports / 'zennia-demo-cursor.mp4'
     run('ffmpeg', '-y', '-hide_banner', '-loglevel', 'error', '-copyts',
         '-segment_time_metadata', '1', '-safe', '0', '-i', 'timeline/edit.ffconcat',
         '-vf', 'select=concatdec_select,setpts=N/30/TB', '-an', '-c:v', 'libx264',

@@ -26,9 +26,9 @@ const windows=new Set();
 let provider=null, manager=null;
 
 function available(action,win) {
-  if(!win?.ZenArc||win.closed)return false;
-  if(["debug","debug-enable","debug-disable"].includes(action.id))return !!win.ZenArc.debug?.available;
-  if(action.id==="debug-reset")return !!win.ZenArc.debug?.enabled;
+  if(!win?.Zennia||win.closed)return false;
+  if(["debug","debug-enable","debug-disable"].includes(action.id))return !!win.Zennia.debug?.available;
+  if(action.id==="debug-reset")return !!win.Zennia.debug?.enabled;
   if(!action.command)return true;
   const command=win.document.getElementById(action.command);
   if(!command||command.getAttribute("disabled")==="true")return false;
@@ -44,18 +44,18 @@ async function run(action,win) {
     win.document.getElementById(action.command).dispatchEvent(new win.Event("command",{bubbles:true}));
     return;
   }
-  if(action.id==="sidebar"){win.ZenArc.toggleDock();return;}
-  if(action.id==="debug"){await win.ZenArc.debug.toggle();return;}
-  if(action.id==="debug-enable"){await win.ZenArc.debug.enable();return;}
-  if(action.id==="debug-disable"){await win.ZenArc.debug.disable();return;}
-  if(action.id==="debug-reset"){await win.ZenArc.debug.reset();return;}
+  if(action.id==="sidebar"){win.Zennia.toggleDock();return;}
+  if(action.id==="debug"){await win.Zennia.debug.toggle();return;}
+  if(action.id==="debug-enable"){await win.Zennia.debug.enable();return;}
+  if(action.id==="debug-disable"){await win.Zennia.debug.disable();return;}
+  if(action.id==="debug-reset"){await win.Zennia.debug.reset();return;}
   const library=win.document.querySelector("zen-library");
   if(!library){
     if(action.id==="downloads"){
-      win.ZenArc.hideDownloads();
-      await win.ZenArc.setRail(false);
+      win.Zennia.hideDownloads();
+      await win.Zennia.setRail(false);
       win.BrowserCommands.downloadsUI();
-    }else await win.ZenArc.setRail(true);
+    }else await win.Zennia.setRail(true);
     return;
   }
   if(action.id==="downloads")library.activeTab="downloads";
@@ -71,7 +71,7 @@ async function run(action,win) {
       section.requestUpdate();
     }
   }
-  await win.ZenArc.setRail(true);
+  await win.Zennia.setRail(true);
 }
 
 export function install(win) {
@@ -82,7 +82,7 @@ export function install(win) {
     const {UrlbarResult}=ChromeUtils.importESModule("chrome://browser/content/urlbar/UrlbarResult.mjs");
     const {ProvidersManager}=ChromeUtils.importESModule("moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs");
     manager=ProvidersManager.getInstanceForSap("urlbar");
-    provider=new class ArcCommandProvider extends UrlbarProvider {
+    provider=new class ZenniaCommandProvider extends UrlbarProvider {
       contexts=new WeakMap();
       get type(){return UrlbarShared.PROVIDER_TYPE.PROFILE;}
       async isActive(context,controller){
@@ -95,10 +95,10 @@ export function install(win) {
         const target=this.contexts.get(context);
         for(const [index,action] of matchActions(context.searchString).filter(a=>available(a,target)).entries()){
           add(this,new UrlbarResult({type:UrlbarShared.RESULT_TYPE.DYNAMIC,source:UrlbarShared.RESULT_SOURCE.OTHER_LOCAL,
-            suggestedIndex:index+1,payload:{dynamicType:"arc-command",commandId:action.id,title:action.id==="debug"?`${target.ZenArc.debug.enabled?"Disable":"Enable"} Debug Mode`:action.title,input:context.searchString,
+            suggestedIndex:index+1,payload:{dynamicType:"zennia-command",commandId:action.id,title:action.id==="debug"?`${target.Zennia.debug.enabled?"Disable":"Enable"} Debug Mode`:action.title,input:context.searchString,
               icon:action.icon==="archive"?"chrome://browser/content/zen-images/downloads/archive.svg":
                 action.icon==="download"?"chrome://browser/skin/downloads/downloads.svg":
-                  action.icon==="debug"?"chrome://arc-ui/content/spaces.svg":
+                  action.icon==="debug"?"chrome://zennia/content/spaces.svg":
                   action.id==="sidebar"?"chrome://browser/skin/zen-icons/sidebar.svg":"chrome://browser/skin/zen-icons/split.svg"}}));
         }
       }
@@ -116,8 +116,8 @@ export function install(win) {
         const action=ACTIONS.find(a=>a.id===details.result?.payload.commandId);
         const target=controller.browserWindow;
         if(action&&windows.has(target))void run(action,target).catch(error=>{
-          console.error("[Arc UI] Command failed",error);
-          target.document.getElementById("arc-live-status").textContent=`${action.title} failed. Please try again.`;
+          console.error("[Zennia] Command failed",error);
+          target.document.getElementById("zennia-live-status").textContent=`${action.title} failed. Please try again.`;
         });
       }
     };

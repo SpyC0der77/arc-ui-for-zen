@@ -1,15 +1,15 @@
 /* Replacement navigation row; commands and loading state still come from Zen. */
-var ArcNavigation = {
+var ZenniaNavigation = {
   install(window, dependencies = {}) {
     const { document, gBrowser, BrowserCommands, ResizeObserver } = window;
     const { el, button, icon, rememberAddress, toggleDock } = dependencies;
     const toolbox = document.getElementById("navigator-toolbox");
     const compactMode = window.gZenCompactModeManager;
-    const controls = el("div", { id: "arc-top-controls", class: "arc-ui" });
+    const controls = el("div", { id: "zennia-top-controls", class: "zennia" });
     const toggle = button("Hide sidebar (Ctrl+B)", "panel", () => toggleDock());
     controls.append(toggle);
-    toggle.id = "arc-sidebar-toggle";
-    const nav = el("div", { id: "arc-navigation-controls" });
+    toggle.id = "zennia-sidebar-toggle";
+    const nav = el("div", { id: "zennia-navigation-controls" });
     const back = button("Back", "back", () => BrowserCommands.back());
     const forward = button("Forward", "forward", () =>
       BrowserCommands.forward(),
@@ -31,7 +31,7 @@ var ArcNavigation = {
         ])
       : [];
     const previousHeight = toolbox.style.getPropertyValue(
-      "--arc-top-controls-height",
+      "--zennia-top-controls-height",
     );
     nav.append(back, forward, reload);
     if (appMenu) {
@@ -46,7 +46,7 @@ var ArcNavigation = {
     toolbox.prepend(controls);
     const syncControlsHeight = () =>
       toolbox.style.setProperty(
-        "--arc-top-controls-height",
+        "--zennia-top-controls-height",
         `${controls.getBoundingClientRect().height}px`,
       );
     syncControlsHeight();
@@ -91,10 +91,10 @@ var ArcNavigation = {
         }
         if (previousHeight)
           toolbox.style.setProperty(
-            "--arc-top-controls-height",
+            "--zennia-top-controls-height",
             previousHeight,
           );
-        else toolbox.style.removeProperty("--arc-top-controls-height");
+        else toolbox.style.removeProperty("--zennia-top-controls-height");
         controls.remove();
       },
     };

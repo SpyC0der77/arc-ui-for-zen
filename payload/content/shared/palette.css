@@ -1,20 +1,20 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
-  :root[data-arc-ui] {
-    --arc-font: -apple-system, BlinkMacSystemFont, Geist, sans-serif;
-    font-family: var(--arc-font) !important;
+  :root[data-zennia] {
+    --zennia-font: -apple-system, BlinkMacSystemFont, Geist, sans-serif;
+    font-family: var(--zennia-font) !important;
     font-synthesis: none;
-    --arc-surface: light-dark(#cec7d4, #23202a);
-    --arc-folder: light-dark(#b86ba6, #d9a3cb);
-    --arc-tab-active: light-dark(#ffffff, #655c70);
-    --arc-tab-hover: light-dark(#bcb6c2, #4c4752);
-    --arc-text: light-dark(#141414, #f0edf3);
-    --arc-muted: light-dark(#65556f, #e4d2f5);
-    --arc-popup-surface: light-dark(#f6f4f3, #302c35);
-    --arc-popup-hover: light-dark(#e8e3df, #413b48);
-    --arc-popup-active: light-dark(#ded7d2, #514858);
-    --arc-popup-control: light-dark(#eeebe8, #39333f);
-    --arc-popup-group: light-dark(#ece7ef, #35303e);
+    --zennia-surface: light-dark(#cec7d4, #23202a);
+    --zennia-folder: light-dark(#b86ba6, #d9a3cb);
+    --zennia-tab-active: light-dark(#ffffff, #655c70);
+    --zennia-tab-hover: light-dark(#bcb6c2, #4c4752);
+    --zennia-text: light-dark(#141414, #f0edf3);
+    --zennia-muted: light-dark(#65556f, #e4d2f5);
+    --zennia-popup-surface: light-dark(#f6f4f3, #302c35);
+    --zennia-popup-hover: light-dark(#e8e3df, #413b48);
+    --zennia-popup-active: light-dark(#ded7d2, #514858);
+    --zennia-popup-control: light-dark(#eeebe8, #39333f);
+    --zennia-popup-group: light-dark(#ece7ef, #35303e);
     --zen-primary-color: light-dark(#cec7d4, #292630) !important;
     --zen-main-browser-background: light-dark(#cec7d4, #292630) !important;
     --zen-main-browser-background-toolbar: light-dark(#cec7d4, #292630) !important;
@@ -24,75 +24,75 @@
     --zen-themed-toolbar-bg-transparent: light-dark(#cec7d4, #292630) !important;
     background: light-dark(#cec7d4, #292630) !important;
     --toolbar-bgcolor: light-dark(#cec7d4, #292630) !important;
-    --toolbox-textcolor: var(--arc-text) !important;
+    --toolbox-textcolor: var(--zennia-text) !important;
     --toolbar-color: light-dark(#141414, #f0edf3) !important;
     --lwt-text-color: light-dark(#141414, #f0edf3) !important;
-    --tab-selected-bgcolor: var(--arc-tab-active) !important;
+    --tab-selected-bgcolor: var(--zennia-tab-active) !important;
     --tab-selected-textcolor: light-dark(#141414, #f0edf3) !important;
-    --zen-native-inner-radius: var(--arc-content-radius, 10px) !important;
+    --zen-native-inner-radius: var(--zennia-content-radius, 10px) !important;
     --zen-border-radius: 8px !important;
     --zen-big-shadow: 0 1px 6px #44375038 !important;
     --zen-element-separation: 10px !important;
     color-scheme: light !important;
   }
-  /* Workspace content must follow Arc's palette in light and dark mode. */
-  :root[data-arc-ui] zen-workspace {
-    color: var(--arc-text) !important;
-    --toolbarbutton-icon-fill: var(--arc-text) !important;
-    --lwt-text-color: var(--arc-text) !important;
-    --zen-sidebar-themed-text-color: var(--arc-text) !important;
+  /* Workspace content must follow Zennia's palette in light and dark mode. */
+  :root[data-zennia] zen-workspace {
+    color: var(--zennia-text) !important;
+    --toolbarbutton-icon-fill: var(--zennia-text) !important;
+    --lwt-text-color: var(--zennia-text) !important;
+    --zen-sidebar-themed-text-color: var(--zennia-text) !important;
   }
-  :root[data-arc-ui] zen-workspace :is(.tab-text, .tab-label, .zen-workspace-name) {
-    color: var(--arc-text) !important;
+  :root[data-zennia] zen-workspace :is(.tab-text, .tab-label, .zen-workspace-name) {
+    color: var(--zennia-text) !important;
   }
-  :root[data-arc-ui] zen-folder {
-    color: var(--arc-text) !important;
-    --sidebar-text-color: var(--arc-text) !important;
-    --toolbox-textcolor: var(--arc-text) !important;
+  :root[data-zennia] zen-folder {
+    color: var(--zennia-text) !important;
+    --sidebar-text-color: var(--zennia-text) !important;
+    --toolbox-textcolor: var(--zennia-text) !important;
   }
-  :root[data-arc-ui] zen-folder .tab-group-label {
-    color: var(--arc-text) !important;
+  :root[data-zennia] zen-folder .tab-group-label {
+    color: var(--zennia-text) !important;
   }
-  /* Arc owns the chrome palette, including per-workspace native overrides. */
-  :root[data-arc-ui],
-  :root[data-arc-ui] :is(zen-workspace, zen-folder) {
-    --zen-primary-color: var(--arc-surface) !important;
-    --zen-colors-primary: var(--arc-surface) !important;
-    --zen-colors-primary-foreground: var(--arc-text) !important;
-    --zen-colors-secondary: color-mix(in srgb, var(--arc-surface), var(--arc-text) 8%) !important;
-    --zen-colors-tertiary: color-mix(in srgb, var(--arc-surface), var(--arc-text) 12%) !important;
-    --zen-colors-input-bg: var(--arc-popup-control) !important;
-    --zen-colors-border: color-mix(in srgb, var(--arc-text) 18%, transparent) !important;
-    --zen-colors-border-contrast: color-mix(in srgb, var(--arc-text) 30%, transparent) !important;
-    --zen-colors-hover-bg: var(--arc-popup-hover) !important;
+  /* Zennia owns the chrome palette, including per-workspace native overrides. */
+  :root[data-zennia],
+  :root[data-zennia] :is(zen-workspace, zen-folder) {
+    --zen-primary-color: var(--zennia-surface) !important;
+    --zen-colors-primary: var(--zennia-surface) !important;
+    --zen-colors-primary-foreground: var(--zennia-text) !important;
+    --zen-colors-secondary: color-mix(in srgb, var(--zennia-surface), var(--zennia-text) 8%) !important;
+    --zen-colors-tertiary: color-mix(in srgb, var(--zennia-surface), var(--zennia-text) 12%) !important;
+    --zen-colors-input-bg: var(--zennia-popup-control) !important;
+    --zen-colors-border: color-mix(in srgb, var(--zennia-text) 18%, transparent) !important;
+    --zen-colors-border-contrast: color-mix(in srgb, var(--zennia-text) 30%, transparent) !important;
+    --zen-colors-hover-bg: var(--zennia-popup-hover) !important;
     /* Resting toolbar surfaces previously used Zen's 8% / 15% text tint.
-       Derive it from Arc's foreground so workspace colors cannot affect it. */
+       Derive it from Zennia's foreground so workspace colors cannot affect it. */
     --zen-toolbar-element-bg: light-dark(
-      color-mix(in oklch, var(--arc-text) 8%, transparent),
-      color-mix(in oklch, var(--arc-text) 15%, transparent)
+      color-mix(in oklch, var(--zennia-text) 8%, transparent),
+      color-mix(in oklch, var(--zennia-text) 15%, transparent)
     ) !important;
-    --zen-toolbar-element-bg-hover: var(--arc-popup-active) !important;
-    --zen-sidebar-themed-icon-fill: var(--arc-text) !important;
-    --zen-accent-button-color: var(--arc-text) !important;
-    --zen-accent-button-background: var(--arc-popup-active) !important;
-    --zen-secondary-btn-color: var(--arc-text) !important;
-    --zen-urlbar-background: var(--arc-popup-surface) !important;
-    --zen-dialog-background: var(--arc-popup-surface) !important;
-    --zen-in-content-dialog-background: var(--arc-popup-surface) !important;
-    --sidebar-text-color: var(--arc-text) !important;
-    --zen-folder-behind-bgcolor: color-mix(in srgb, var(--arc-folder), var(--arc-text) 20%) !important;
-    --zen-folder-front-bgcolor: color-mix(in srgb, var(--arc-folder), var(--arc-popup-surface) 35%) !important;
-    --zen-folder-stroke: color-mix(in srgb, var(--arc-folder), var(--arc-text) 45%) !important;
+    --zen-toolbar-element-bg-hover: var(--zennia-popup-active) !important;
+    --zen-sidebar-themed-icon-fill: var(--zennia-text) !important;
+    --zen-accent-button-color: var(--zennia-text) !important;
+    --zen-accent-button-background: var(--zennia-popup-active) !important;
+    --zen-secondary-btn-color: var(--zennia-text) !important;
+    --zen-urlbar-background: var(--zennia-popup-surface) !important;
+    --zen-dialog-background: var(--zennia-popup-surface) !important;
+    --zen-in-content-dialog-background: var(--zennia-popup-surface) !important;
+    --sidebar-text-color: var(--zennia-text) !important;
+    --zen-folder-behind-bgcolor: color-mix(in srgb, var(--zennia-folder), var(--zennia-text) 20%) !important;
+    --zen-folder-front-bgcolor: color-mix(in srgb, var(--zennia-folder), var(--zennia-popup-surface) 35%) !important;
+    --zen-folder-stroke: color-mix(in srgb, var(--zennia-folder), var(--zennia-text) 45%) !important;
   }
   /* Zen's chrome media query follows its selected theme, including system mode.
      Native surfaces must not retain an independent light color scheme. */
-  :root[data-arc-ui][data-arc-color-mode="dark"] { color-scheme: dark !important; }
-  :root[data-arc-ui][data-arc-color-mode="dark"] zen-workspace {
-    color: var(--arc-text) !important;
-    --toolbarbutton-icon-fill: var(--arc-text) !important;
-    --lwt-text-color: var(--arc-text) !important;
+  :root[data-zennia][data-zennia-color-mode="dark"] { color-scheme: dark !important; }
+  :root[data-zennia][data-zennia-color-mode="dark"] zen-workspace {
+    color: var(--zennia-text) !important;
+    --toolbarbutton-icon-fill: var(--zennia-text) !important;
+    --lwt-text-color: var(--zennia-text) !important;
   }
-  :root[data-arc-ui][data-arc-color-mode="dark"] :is(.toolbarbutton-icon, .menu-icon, .menu-iconic-icon) {
+  :root[data-zennia][data-zennia-color-mode="dark"] :is(.toolbarbutton-icon, .menu-icon, .menu-iconic-icon) {
     -moz-context-properties: fill, stroke;
     fill: currentColor;
     stroke: currentColor;
@@ -100,17 +100,17 @@
   /* Native live folders embed the GitHub mark as an SVG image, while
      menus and other chrome surfaces use img/XUL image assets. Cover the
      shared assets globally so their location does not affect contrast. */
-  :root[data-arc-ui][data-arc-color-mode="dark"] :is(
+  :root[data-zennia][data-zennia-color-mode="dark"] :is(
     [href$="/logo-github.svg"],
     [src$="/logo-github.svg"],
     [src$="/github.svg"],
     [style*="logo-github.svg"]
   ),
-  :root[data-arc-ui][data-arc-color-mode="dark"] :is(
+  :root[data-zennia][data-zennia-color-mode="dark"] :is(
     [image$="/logo-github.svg"],
     [image$="/github.svg"]
   ) > .toolbarbutton-icon,
-  :root[data-arc-ui][data-arc-color-mode="dark"] :is(
+  :root[data-zennia][data-zennia-color-mode="dark"] :is(
     [image$="/logo-github.svg"],
     [image$="/github.svg"]
   ) > .menu-iconic-left > .menu-iconic-icon {
@@ -118,86 +118,86 @@
     fill: white !important;
     -moz-context-properties: fill;
   }
-  :root[data-arc-ui] * { color-scheme: inherit !important; }
-  :root[data-arc-ui] #zen-main-app-wrapper,
-  :root[data-arc-ui] body,
-  :root[data-arc-ui] #browser,
-  :root[data-arc-ui] #zen-browser-background,
-  :root[data-arc-ui] #zen-toolbar-background,
-  :root[data-arc-ui] #zen-appcontent-wrapper,
-  :root[data-arc-ui] #zen-tabbox-wrapper,
-  :root[data-arc-ui] #navigator-toolbox,
-  :root[data-arc-ui] #titlebar,
-  :root[data-arc-ui] .zen-toolbar-background,
-  :root[data-arc-ui] #zen-appcontent-navbar-wrapper {
-    background: var(--arc-surface) !important;
-    color: var(--arc-text) !important;
+  :root[data-zennia] * { color-scheme: inherit !important; }
+  :root[data-zennia] #zen-main-app-wrapper,
+  :root[data-zennia] body,
+  :root[data-zennia] #browser,
+  :root[data-zennia] #zen-browser-background,
+  :root[data-zennia] #zen-toolbar-background,
+  :root[data-zennia] #zen-appcontent-wrapper,
+  :root[data-zennia] #zen-tabbox-wrapper,
+  :root[data-zennia] #navigator-toolbox,
+  :root[data-zennia] #titlebar,
+  :root[data-zennia] .zen-toolbar-background,
+  :root[data-zennia] #zen-appcontent-navbar-wrapper {
+    background: var(--zennia-surface) !important;
+    color: var(--zennia-text) !important;
   }
-  :root[data-arc-ui] .zen-browser-grain,
-  :root[data-arc-ui] #zen-browser-background::before,
-  :root[data-arc-ui] #zen-browser-background::after,
-  :root[data-arc-ui] #zen-toolbar-background::before,
-  :root[data-arc-ui] #zen-toolbar-background::after,
-  :root[data-arc-ui] .zen-library-space-background::before,
-  :root[data-arc-ui] .zen-library-space-background::after {
+  :root[data-zennia] .zen-browser-grain,
+  :root[data-zennia] #zen-browser-background::before,
+  :root[data-zennia] #zen-browser-background::after,
+  :root[data-zennia] #zen-toolbar-background::before,
+  :root[data-zennia] #zen-toolbar-background::after,
+  :root[data-zennia] .zen-library-space-background::before,
+  :root[data-zennia] .zen-library-space-background::after {
     display: none !important;
   }
-  :root[data-arc-ui] #navigator-toolbox {
+  :root[data-zennia] #navigator-toolbox {
     min-width: 200px !important;
   }
   @media (-moz-platform: macos), (-moz-platform: windows) {
     /* Paint the tint once over Zen's native window material (vibrancy on macOS,
        DWM/Acrylic on Windows). Opaque popup and secondary surfaces keep using
-       --arc-surface and their own colors. */
-    :root[data-arc-ui],
-    :root[data-arc-ui] :is(
+       --zennia-surface and their own colors. */
+    :root[data-zennia],
+    :root[data-zennia] :is(
       body, #zen-main-app-wrapper, #browser, #zen-toolbar-background,
       #zen-appcontent-wrapper, #zen-tabbox-wrapper, #navigator-toolbox,
       #titlebar, .zen-toolbar-background, #zen-appcontent-navbar-wrapper
     ) {
       background: transparent !important;
     }
-    :root[data-arc-ui] #zen-browser-background {
-      background: color-mix(in srgb, var(--arc-surface) var(--arc-window-opacity, 70%), transparent) !important;
+    :root[data-zennia] #zen-browser-background {
+      background: color-mix(in srgb, var(--zennia-surface) var(--zennia-window-opacity, 70%), transparent) !important;
     }
     /* The selector is more opaque than the library content, which shares the
        translucent window background. Other secondary sidebars stay opaque. */
-    :root[data-arc-ui] #sidebar-box {
-      background: var(--arc-surface) !important;
+    :root[data-zennia] #sidebar-box {
+      background: var(--zennia-surface) !important;
     }
     /* Space cards and the raised navigation rail share one surface tint. */
-    :root[data-arc-ui] :is(#zen-library-side, .zen-library-space-background) {
+    :root[data-zennia] :is(#zen-library-side, .zen-library-space-background) {
       background: light-dark(rgba(206, 199, 212, 0.35), rgba(45, 40, 53, 0.65)) !important;
     }
-    :root[data-arc-ui] zen-library {
+    :root[data-zennia] zen-library {
       background: transparent !important;
     }
     /* The undocked peek covers web content with a solid sidebar surface. */
-    :root[data-arc-ui][zen-compact-mode="true"] #zen-toolbar-background {
-      background: var(--arc-surface) !important;
+    :root[data-zennia][zen-compact-mode="true"] #zen-toolbar-background {
+      background: var(--zennia-surface) !important;
       backdrop-filter: none !important;
     }
   }
   /* One shared gradient spans the sidebar and the frame around web content. */
-  :root[data-arc-ui][data-arc-gradient],
-  :root[data-arc-ui][data-arc-gradient] :is(
+  :root[data-zennia][data-zennia-gradient],
+  :root[data-zennia][data-zennia-gradient] :is(
     body, #zen-main-app-wrapper, #browser, #zen-toolbar-background,
     #zen-appcontent-wrapper, #zen-tabbox-wrapper, #navigator-toolbox,
     #titlebar, .zen-toolbar-background, #zen-appcontent-navbar-wrapper
   ) {
     background: transparent !important;
   }
-  :root[data-arc-ui][data-arc-gradient] #zen-browser-background {
-    background: var(--arc-shell-gradient) !important;
+  :root[data-zennia][data-zennia-gradient] #zen-browser-background {
+    background: var(--zennia-shell-gradient) !important;
   }
   @media (-moz-platform: macos), (-moz-platform: windows) {
-    :root[data-arc-ui][data-arc-gradient] #zen-browser-background {
-      background: var(--arc-shell-gradient-tint) !important;
+    :root[data-zennia][data-zennia-gradient] #zen-browser-background {
+      background: var(--zennia-shell-gradient-tint) !important;
     }
   }
-  :root[data-arc-ui][data-arc-gradient] #arc-sidebar-surface,
-  :root[data-arc-ui][data-arc-gradient][zen-compact-mode="true"] #zen-toolbar-background {
-    background: var(--arc-shell-gradient) !important;
+  :root[data-zennia][data-zennia-gradient] #zennia-sidebar-surface,
+  :root[data-zennia][data-zennia-gradient][zen-compact-mode="true"] #zen-toolbar-background {
+    background: var(--zennia-shell-gradient) !important;
   }
 
 }

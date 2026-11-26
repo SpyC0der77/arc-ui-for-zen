@@ -1,5 +1,5 @@
 /* Timers and animations owned by one feature. Reduced motion skips animation, not the action. */
-var ArcMotion = {
+var ZenniaMotion = {
   install(window, dependencies = {}) {
     let destroyed = false;
     const timers = new Set(),

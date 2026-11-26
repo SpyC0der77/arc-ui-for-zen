@@ -1,4 +1,4 @@
-name: Build Arc UI for Zen installer
+name: Build Zennia installer
 on:
   push:
     branches: [main]
@@ -96,7 +96,7 @@ jobs:
         run: pnpm exec electron tests/installer-smoke.cjs "${{ github.workspace }}/release/win-unpacked/resources/app.asar"
       - uses: actions/upload-artifact@v4
         with:
-          name: arc-ui-zen-${{ matrix.target }}
+          name: zennia-${{ matrix.target }}
           if-no-files-found: error
           path: |
             release/*.exe

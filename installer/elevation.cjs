@@ -4,7 +4,7 @@ const path=require('node:path');
 const os=require('node:os');
 const {execFile}=require('node:child_process');
 const {promisify}=require('node:util');
-const FLAG='--arc-elevated-operation';
+const FLAG='--zennia-elevated-operation';
 const psQuote=value=>"'"+value.replace(/'/g,"''")+"'";
 // Start-Process joins ArgumentList, so quote each argument for CommandLineToArgvW.
 function winQuote(value){return '"'+value.replace(/(\\*)"/g,'$1$1\\"').replace(/(\\+)$/,'$1$1')+'"';}
@@ -12,7 +12,7 @@ function elevationScript(executable,args){
  return `$ErrorActionPreference='Stop'; try { $p=Start-Process -FilePath ${psQuote(executable)} -ArgumentList ${psQuote(args.map(winQuote).join(' '))} -Verb RunAs -Wait -PassThru; exit $p.ExitCode } catch { if ($_.Exception.NativeErrorCode -eq 1223 -or $_.Exception.InnerException.NativeErrorCode -eq 1223) { exit 1223 }; [Console]::Error.WriteLine($_.Exception.Message); exit 1 }`;
 }
 async function elevate(action,installation,profile,{executable=process.execPath,appPath,packaged=false,run=promisify(execFile)}={}){
- const folder=await fs.mkdtemp(path.join(os.tmpdir(),'arc-elevation-'));
+ const folder=await fs.mkdtemp(path.join(os.tmpdir(),'zennia-elevation-'));
  const resultFile=path.join(folder,'result.json');
  try{
   const args=[...(packaged?[]:[appPath]),FLAG,action,path.resolve(installation),path.resolve(profile),resultFile];

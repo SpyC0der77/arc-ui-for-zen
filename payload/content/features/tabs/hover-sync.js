@@ -2,7 +2,7 @@
    tab closes beneath it (middle-click or close button). Gecko occasionally
    leaves :hover on a tab elsewhere in the list once the rows shift; replaying
    a mousemove at the same point makes it hit-test the settled layout again. */
-var ArcTabHoverSync = {
+var ZenniaTabHoverSync = {
   install(window) {
     const { document } = window;
     let pointer = null;

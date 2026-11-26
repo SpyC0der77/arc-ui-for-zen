@@ -1,5 +1,5 @@
-:root[data-arc-ui]
-  .urlbarView-row[dynamicType="arc-command"]
+:root[data-zennia]
+  .urlbarView-row[dynamicType="zennia-command"]
   .urlbarView-row-inner {
   display: flex !important;
   flex-wrap: nowrap !important;
@@ -7,24 +7,24 @@
   gap: 12px;
   min-height: 40px;
 }
-:root[data-arc-ui] .urlbarView-dynamic-arc-command-title {
+:root[data-zennia] .urlbarView-dynamic-zennia-command-title {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   light-dark(white, #39333f)-space: nowrap;
 }
-:root[data-arc-ui] .urlbarView-dynamic-arc-command-hint {
+:root[data-zennia] .urlbarView-dynamic-zennia-command-hint {
   font-size: 12px;
   color: light-dark(#54485e, #e4d2f5);
   light-dark(white, #39333f)-space: nowrap;
   flex: 0 0 auto;
 }
-:root[data-arc-ui]
-  .urlbarView-row[selected][dynamicType="arc-command"]
+:root[data-zennia]
+  .urlbarView-row[selected][dynamicType="zennia-command"]
   :is(
-    .urlbarView-dynamic-arc-command-title,
-    .urlbarView-dynamic-arc-command-hint
+    .urlbarView-dynamic-zennia-command-title,
+    .urlbarView-dynamic-zennia-command-hint
   ) {
   color: light-dark(#141414, #f0edf3) !important;
 }

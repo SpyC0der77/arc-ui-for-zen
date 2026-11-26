@@ -1,5 +1,5 @@
 /* Shared HTML controls and SVG icons. Native XUL controls stay in their feature modules. */
-var ArcUI = {
+var ZenniaUI = {
   install(window, dependencies = {}) {
     const { document, ChromeUtils } = window;
     const { createMotion } = dependencies;
@@ -8,7 +8,7 @@ var ArcUI = {
     const motion = createMotion(window);
     const { animate, reduced } = motion;
     const { actionIcon } = ChromeUtils.importESModule(
-      "chrome://arc-ui/content/download-icons.sys.mjs",
+      "chrome://zennia/content/download-icons.sys.mjs",
     );
     function el(tag, attrs = {}, text) {
       const node = document.createElementNS(HTML, tag);
@@ -147,7 +147,7 @@ var ArcUI = {
         type: "button",
         title: label,
         "aria-label": label,
-        class: "arc-icon-button",
+        class: "zennia-icon-button",
       });
       b.append(icon(name));
       b.addEventListener("click", action);
@@ -161,7 +161,7 @@ var ArcUI = {
         type: "button",
         title: label,
         "aria-label": label,
-        class: "arc-icon-button",
+        class: "zennia-icon-button",
       });
       b.append(
         el("img", { src: actionIcon(name), alt: "", "aria-hidden": "true" }),

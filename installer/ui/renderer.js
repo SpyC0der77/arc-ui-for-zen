@@ -37,13 +37,13 @@ function showStep(step){
 }
 async function refreshVersions(){
  const choice=selection();
- $('review-versions').textContent='Reading installed Arc UI version...';
+ $('review-versions').textContent='Reading installed Zennia version...';
  try{
   const info=unwrap(await api.inspect(choice));
   if(JSON.stringify(choice)!==JSON.stringify(selection()))return;
   $('review-versions').textContent=info.installedVersion
-   ? 'Arc UI installed: '+info.installedVersion+'. '+(info.installedVersion===info.targetVersion?'Reinstall version: ':'Install version: ')+info.targetVersion+'.'
-   : 'Arc UI is not installed in this profile. Install version: '+info.targetVersion+'.';
+   ? 'Zennia installed: '+info.installedVersion+'. '+(info.installedVersion===info.targetVersion?'Reinstall version: ':'Install version: ')+info.targetVersion+'.'
+   : 'Zennia is not installed in this profile. Install version: '+info.targetVersion+'.';
  }catch(error){if(JSON.stringify(choice)===JSON.stringify(selection()))$('review-versions').textContent='Could not read installed version. '+error.message;}
 }
 function status(text,error=false){errorSelection=error?selection():null;$('status').textContent=text;$('review-error').textContent=error?text:'';$('review-error').hidden=!error;for(const copy of document.querySelectorAll('.status-copy')){copy.textContent=error&&currentStep==='review'?'Review the error above and try again.':text;copy.dataset.error=String(error);}}

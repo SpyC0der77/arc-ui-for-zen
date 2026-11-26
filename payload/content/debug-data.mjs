@@ -1,5 +1,5 @@
 /* Deterministic, local fixtures. These objects never enter native data stores. */
-export const PAGE = "chrome://arc-ui/content/debug.xhtml";
+export const PAGE = "chrome://zennia/content/debug.xhtml";
 export function ownsPage(url,token) {
   try {const u=new URL(url);return `${u.protocol}//${u.host}${u.pathname}`===PAGE&&u.searchParams.get("debug")===token;}
   catch {return false;}

@@ -1,8 +1,8 @@
 # Demo video
 
-The code and assets for the Arc UI for Zen product demo live here.
+The code and assets for the Zennia product demo live here.
 
-The current video is [exports/arc-ui-for-zen-demo-cursor.mp4](exports/arc-ui-for-zen-demo-cursor.mp4): 1920 x 1080, 30 fps, 2:32, silent, with a visible cursor.
+The current video is [exports/zennia-demo-cursor.mp4](exports/zennia-demo-cursor.mp4): 1920 x 1080, 30 fps, 2:32, silent, with a visible cursor.
 
 ## Folder layout
 
@@ -63,7 +63,7 @@ No product source was changed to make the recording. The disposable Zen session 
 ## Three-browser comparison
 
 The comparison tools use actual native browser recordings, with Arc on the left,
-Arc UI for Zen in the middle, and vanilla Zen on the right. They do not use
+Zennia in the middle, and vanilla Zen on the right. They do not use
 Codex computer-use tools or a development server. The existing recording scripts
 and original edit remain unchanged. The comparison skips the original onboarding
 segment and starts with the browser features.

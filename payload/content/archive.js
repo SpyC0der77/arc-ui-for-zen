@@ -1,5 +1,5 @@
-/* Arc UI auto-archive: retires long-idle background tabs into Zen's Archive list. */
-var ArcArchive = {
+/* Zennia auto-archive: retires long-idle background tabs into Zen's Archive list. */
+var ZenniaArchive = {
   DEFAULT_HOURS: 12,
   MAX_PER_RUN: 10,
   FIRST_RUN_DELAY_MS: 90000,
@@ -13,13 +13,13 @@ var ArcArchive = {
    * @returns {number}
    */
   hours(prefs) {
-    let hours = ArcArchive.DEFAULT_HOURS;
+    let hours = ZenniaArchive.DEFAULT_HOURS;
     try {
-      hours = prefs.getIntPref("arc-ui.archive.hours", ArcArchive.DEFAULT_HOURS);
+      hours = prefs.getIntPref("zennia.archive.hours", ZenniaArchive.DEFAULT_HOURS);
     } catch (error) {
-      return ArcArchive.DEFAULT_HOURS;
+      return ZenniaArchive.DEFAULT_HOURS;
     }
-    return Number.isInteger(hours) && hours >= 0 ? hours : ArcArchive.DEFAULT_HOURS;
+    return Number.isInteger(hours) && hours >= 0 ? hours : ZenniaArchive.DEFAULT_HOURS;
   },
 
   /**
@@ -55,13 +55,13 @@ var ArcArchive = {
    * @param {number} options.hours
    * @returns {object[]}
    */
-  due(tabs, { now = Date.now(), hours = ArcArchive.DEFAULT_HOURS } = {}) {
+  due(tabs, { now = Date.now(), hours = ZenniaArchive.DEFAULT_HOURS } = {}) {
     const idleMs = hours * 3600000;
     if (!(idleMs > 0)) return [];
     return tabs
-      .filter(tab => ArcArchive.eligible(tab, now, idleMs))
+      .filter(tab => ZenniaArchive.eligible(tab, now, idleMs))
       .sort((a, b) => a.lastAccessed - b.lastAccessed)
-      .slice(0, ArcArchive.MAX_PER_RUN);
+      .slice(0, ZenniaArchive.MAX_PER_RUN);
   },
 
   /**
@@ -78,14 +78,14 @@ var ArcArchive = {
     tabs,
     close,
     announce = () => {},
-    getHours = () => ArcArchive.DEFAULT_HOURS,
+    getHours = () => ZenniaArchive.DEFAULT_HOURS,
     now = Date.now,
     isClosed = () => false,
     schedule,
     cancel = () => {},
     onError = () => {},
-    delay = ArcArchive.FIRST_RUN_DELAY_MS,
-    interval = ArcArchive.RUN_INTERVAL_MS,
+    delay = ZenniaArchive.FIRST_RUN_DELAY_MS,
+    interval = ZenniaArchive.RUN_INTERVAL_MS,
   }) {
     let stopped = false;
     let timer = null;
@@ -94,7 +94,7 @@ var ArcArchive = {
       timer = null;
       if (stopped || isClosed()) return;
       try {
-        const rows = ArcArchive.due(tabs(), { now: now(), hours: getHours() });
+        const rows = ZenniaArchive.due(tabs(), { now: now(), hours: getHours() });
         let archived = 0;
         for (const row of rows) {
           if (stopped || isClosed()) break;

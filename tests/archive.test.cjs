@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const scope={};
 vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../payload/content/archive.js'),'utf8'),scope);
-const {ArcArchive}=scope;
+const {ZenniaArchive}=scope;
 const HOUR=3600000;
 const now=Date.UTC(2026,9,25,12);
 function row(id,overrides={}) {
@@ -41,29 +41,29 @@ test('archives only idle background web pages, oldest first',()=>{
     row('zero-time',{lastAccessed:0}),
     row('exactly-idle',{lastAccessed:now-12*HOUR})
   ];
-  const selected=ArcArchive.due(rows,{now,hours:12});
+  const selected=ZenniaArchive.due(rows,{now,hours:12});
   assert.deepEqual(selected.map(tab=>tab.tab),['older','old','exactly-idle']);
   assert.equal(rows.find(tab=>tab.tab==='older').lastAccessed,now-40*HOUR,'input order is not mutated');
 });
 test('one pass archives at most ten tabs',()=>{
   const rows=Array.from({length:15},(_,i)=>row('tab'+i,{lastAccessed:now-(20+i)*HOUR}));
-  const selected=ArcArchive.due(rows,{now,hours:12});
+  const selected=ZenniaArchive.due(rows,{now,hours:12});
   assert.equal(selected.length,10);
   assert.deepEqual(selected.map(tab=>tab.tab),Array.from({length:10},(_,i)=>'tab'+(14-i)));
 });
 test('idle hours read from preferences and zero disables',()=>{
-  assert.equal(ArcArchive.hours(prefs()),12);
-  assert.equal(ArcArchive.hours(prefs({'arc-ui.archive.hours':0})),0);
-  assert.equal(ArcArchive.hours(prefs({'arc-ui.archive.hours':24})),24);
-  assert.equal(ArcArchive.hours(prefs({'arc-ui.archive.hours':-3})),12);
-  assert.equal(ArcArchive.hours({getIntPref(){throw new Error('no pref');}}),12);
-  assert.equal(ArcArchive.due([row('old')],{now,hours:0}).length,0);
+  assert.equal(ZenniaArchive.hours(prefs()),12);
+  assert.equal(ZenniaArchive.hours(prefs({'zennia.archive.hours':0})),0);
+  assert.equal(ZenniaArchive.hours(prefs({'zennia.archive.hours':24})),24);
+  assert.equal(ZenniaArchive.hours(prefs({'zennia.archive.hours':-3})),12);
+  assert.equal(ZenniaArchive.hours({getIntPref(){throw new Error('no pref');}}),12);
+  assert.equal(ZenniaArchive.due([row('old')],{now,hours:0}).length,0);
 });
 test('schedule closes due tabs once, announces and keeps running',()=>{
   const timers=clock();
   const closed=[],announced=[];
   const rows=[row('old'),row('fresh',{lastAccessed:now-HOUR}),row('pinned',{pinned:true})];
-  const stop=ArcArchive.start({tabs:()=>rows,close:tab=>closed.push(tab.tab),announce:count=>announced.push(count),
+  const stop=ZenniaArchive.start({tabs:()=>rows,close:tab=>closed.push(tab.tab),announce:count=>announced.push(count),
     getHours:()=>12,now:()=>now,schedule:timers.schedule,cancel:timers.cancel,delay:10,interval:20});
   assert.equal(timers.queue.length,1);
   assert.equal(timers.queue[0].ms,10);
@@ -78,7 +78,7 @@ test('schedule closes due tabs once, announces and keeps running',()=>{
 test('a stopped or closed window never closes tabs',()=>{
   const timers=clock();
   let closed=0,closedWindow=false;
-  const stop=ArcArchive.start({tabs:()=>[row('old')],close:()=>closed++,isClosed:()=>closedWindow,
+  const stop=ZenniaArchive.start({tabs:()=>[row('old')],close:()=>closed++,isClosed:()=>closedWindow,
     schedule:timers.schedule,cancel:timers.cancel,delay:10,interval:20});
   closedWindow=true;
   timers.fire();
@@ -93,7 +93,7 @@ test('a failing close is reported and the remaining tabs still archive',()=>{
   const timers=clock();
   const closed=[],errors=[];
   const rows=[row('oldest',{lastAccessed:now-30*HOUR}),row('old',{lastAccessed:now-20*HOUR})];
-  ArcArchive.start({tabs:()=>rows,close:tab=>{if(tab.tab==='oldest')throw new Error('tab is closing');closed.push(tab.tab);},
+  ZenniaArchive.start({tabs:()=>rows,close:tab=>{if(tab.tab==='oldest')throw new Error('tab is closing');closed.push(tab.tab);},
     isClosed:()=>false,onError:error=>errors.push(error.message),schedule:timers.schedule,cancel:timers.cancel,delay:10,interval:20});
   timers.fire();
   assert.deepEqual(errors,['tab is closing']);

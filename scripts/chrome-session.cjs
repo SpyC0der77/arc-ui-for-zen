@@ -25,7 +25,7 @@ const engine = require('../installer/engine.cjs');
   // macOS signing can fail in cloud-managed workspaces. Keep the disposable
   // bundle local; diagnostics and its fresh profile remain under zen-instances.
   const appFolder = process.platform === 'darwin'
-    ? await fs.mkdtemp(path.join(await fs.realpath(os.tmpdir()), 'arc-ui-chrome-session-'))
+    ? await fs.mkdtemp(path.join(await fs.realpath(os.tmpdir()), 'zennia-chrome-session-'))
     : folder;
   const app = path.join(appFolder, process.platform === 'darwin' ? 'Zen.app' : 'Zen');
   const profile = path.join(folder, 'profile');
@@ -36,7 +36,7 @@ const engine = require('../installer/engine.cjs');
     'user_pref("zen.welcome-screen.seen", true);',
     'user_pref("browser.shell.checkDefaultBrowser", false);',
     'user_pref("browser.startup.homepage_override.mstone", "ignore");',
-    'user_pref("arc-ui.demo-seen", true);',
+    'user_pref("zennia.demo-seen", true);',
     ''
   ].join('\n'));
   // Only this freshly created application copy is modified. A running personal

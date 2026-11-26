@@ -7,14 +7,14 @@ const asar = require('@electron/asar');
 const {verifyPackage} = require('../scripts/verify-package.cjs');
 
 async function fixture(t) {
-  const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'arc-package-'));
+  const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'zennia-package-'));
   t.after(() => fs.rm(temporary, {recursive: true, force: true}));
   const source = path.join(temporary, 'source');
   const archive = path.join(temporary, 'app.asar');
   for (const [file, content] of Object.entries({
     'package.json': '{"name":"fixture","version":"1.0.0","main":"installer/main.cjs"}',
     'installer/main.cjs': 'module.exports = {};',
-    'payload/arc.css': ':root { color: black; }',
+    'payload/zennia.css': ':root { color: black; }',
     'payload/content/debug.sys.mjs': 'export const enabled = false;'
   })) {
     await fs.mkdir(path.dirname(path.join(source, file)), {recursive: true});
@@ -47,7 +47,7 @@ test('package verification rejects missing runtime modules', async t => {
 test('package verification rejects stale packaged payloads', async t => {
   const {source, archive} = await fixture(t);
   await asar.createPackage(source, archive);
-  await fs.writeFile(path.join(source, 'payload/arc.css'), ':root { color: purple; }');
+  await fs.writeFile(path.join(source, 'payload/zennia.css'), ':root { color: purple; }');
   assert.throws(() => verifyPackage(archive, source), /Packaged file differs/);
 });
 

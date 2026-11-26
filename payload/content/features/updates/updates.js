@@ -1,22 +1,22 @@
-var ArcUpdates = {
+var ZenniaUpdates = {
   install(window, { el, icon, PrivateBrowsingUtils }) {
     if (PrivateBrowsingUtils.isWindowPrivate(window)) return { destroy() {} };
-    const { ArcUpdater: updater } = window.ChromeUtils.importESModule('chrome://arc-ui/content/updater.sys.mjs');
+    const { ZenniaUpdater: updater } = window.ChromeUtils.importESModule('chrome://zennia/content/updater.sys.mjs');
     const { document } = window;
-    const button = el('button', { id: 'arc-update-button', type: 'button', hidden: true, 'aria-haspopup': 'dialog', 'aria-expanded': 'false' });
+    const button = el('button', { id: 'zennia-update-button', type: 'button', hidden: true, 'aria-haspopup': 'dialog', 'aria-expanded': 'false' });
     button.append(icon('download'));
-    const popup = el('div', { id: 'arc-update-popup', popover: 'auto', role: 'dialog', 'aria-label': 'Arc UI release notes' });
-    const title = el('p', { class: 'arc-update-title' });
+    const popup = el('div', { id: 'zennia-update-popup', popover: 'auto', role: 'dialog', 'aria-label': 'Zennia release notes' });
+    const title = el('p', { class: 'zennia-update-title' });
     const message = el('p', { role: 'status' });
     const progress = el('progress', { max: 100, 'aria-label': 'Theme download progress' });
-    const notes = el('div', { class: 'arc-update-notes' });
+    const notes = el('div', { class: 'zennia-update-notes' });
     const action = el('button', { type: 'button' });
-    const link = el('a', { href: '#', class: 'arc-update-link' }, 'View release on GitHub');
+    const link = el('a', { href: '#', class: 'zennia-update-link' }, 'View release on GitHub');
     popup.append(title, message, progress, notes, action, link);
     document.body.append(popup);
     const place = () => {
       const footer = document.getElementById('zen-sidebar-foot-buttons');
-      const gift = document.getElementById('arc-gift-button');
+      const gift = document.getElementById('zennia-gift-button');
       if (footer && gift?.parentNode === footer && gift.nextElementSibling !== button) gift.after(button);
       else if (footer && button.parentNode !== footer) footer.append(button);
     };
@@ -50,15 +50,15 @@ var ArcUpdates = {
     action.addEventListener('click', activate);
     link.addEventListener('click', event => {
       event.preventDefault();
-      window.openTrustedLinkIn(`https://github.com/SpyC0der77/arc-ui-for-zen/releases/tag/${encodeURIComponent(updater.release.tag_name)}`, 'tab');
+      window.openTrustedLinkIn(`https://github.com/SpyC0der77/zennia/releases/tag/${encodeURIComponent(updater.release.tag_name)}`, 'tab');
     });
     function render() {
       button.hidden = !updater.release;
       if (!updater.release) { hide(); return; }
       const state = updater.state;
       const label = state === 'downloading' ? `Downloading${updater.progress === null ? '…' : ` ${updater.progress}%`}` : state === 'applying' ? 'Applying update...' : state === 'restarting' ? 'Restarting...' : state === 'ready' ? 'Restart to apply' : state === 'error' ? 'Retry download' : 'Download update';
-      button.setAttribute('aria-label', `Arc UI ${updater.release.tag_name}: ${label}`);
-      title.textContent = `Arc UI ${updater.release.tag_name}`;
+      button.setAttribute('aria-label', `Zennia ${updater.release.tag_name}: ${label}`);
+      title.textContent = `Zennia ${updater.release.tag_name}`;
       message.textContent = updater.error || (state === 'ready' ? 'Theme updated in place. Restart Zen to apply it.' : state === 'downloading' ? label : 'A new version is available.');
       progress.hidden = state !== 'downloading';
       if (updater.progress === null) progress.removeAttribute('value'); else progress.value = updater.progress;

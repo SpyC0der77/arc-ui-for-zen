@@ -1,7 +1,7 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
   /* Recent files share the sidebar surface, without a separate popup card. */
-  #arc-download-popup {
+  #zennia-download-popup {
     position: fixed;
     inset: auto;
     margin: 0;
@@ -13,38 +13,38 @@
     flex-direction: column;
     overflow: hidden;
     padding: 0;
-    background: var(--arc-surface);
-    color: var(--arc-text);
+    background: var(--zennia-surface);
+    color: var(--zennia-text);
     border: 0;
     border-radius: 0;
     box-shadow: none;
     -moz-window-dragging: no-drag;
   }
-  #arc-download-popup[hidden] {
+  #zennia-download-popup[hidden] {
     display: none;
   }
-  #arc-download-popup::backdrop {
+  #zennia-download-popup::backdrop {
     background: transparent;
     pointer-events: none;
   }
   /* The popover paints in the top layer. Leave room for the page shadow at
      the docked sidebar edge rather than covering it with the popup surface. */
-  :root[data-arc-ui]:not([zen-compact-mode="true"]) #arc-download-popup {
+  :root[data-zennia]:not([zen-compact-mode="true"]) #zennia-download-popup {
     background: linear-gradient(
       to right,
-      var(--arc-surface) calc(100% - 10px),
+      var(--zennia-surface) calc(100% - 10px),
       transparent calc(100% - 10px)
     );
   }
   /* The empty message floats over the sidebar with no surface of its own. */
-  :root[data-arc-ui] #arc-download-popup:has(.arc-download-empty) {
+  :root[data-zennia] #zennia-download-popup:has(.zennia-download-empty) {
     background: transparent !important;
     overflow: visible;
   }
   /* With no downloads the message sits over the last tabs. Fade those tabs
      out instead of painting a veil: the real sidebar shows through, so the
      colour matches in light and dark, translucent, gradient or opaque. */
-  :root[data-arc-ui]:has(#arc-download-popup:popover-open .arc-download-empty)
+  :root[data-zennia]:has(#zennia-download-popup:popover-open .zennia-download-empty)
     zen-workspace[active] > .workspace-arrowscrollbox {
     mask-image: linear-gradient(to top, transparent 40px, black 76px);
   }
@@ -52,9 +52,9 @@
      while more tabs sit below). Redraw it under the same condition, on the
      list's bottom edge, in Zen's --zen-scrollbar-overflow-background colour
      (copied: that variable is not inherited by this top-layer popover). */
-  :root[data-arc-ui]:has(
+  :root[data-zennia]:has(
       zen-workspace[active] > .workspace-arrowscrollbox[overflowing]:not([scrolledtoend])
-    ) #arc-download-popup:has(.arc-download-empty)::before {
+    ) #zennia-download-popup:has(.zennia-download-empty)::before {
     content: "";
     position: absolute;
     inset: auto 0 -2px;
@@ -62,18 +62,18 @@
     background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
     pointer-events: none;
   }
-  :root[data-arc-ui] #arc-download-popup:has(.arc-download-empty) .arc-download-list {
+  :root[data-zennia] #zennia-download-popup:has(.zennia-download-empty) .zennia-download-list {
     padding-inline-end: 0;
   }
-  #arc-download-popup:has(.arc-download-empty) .arc-download-content {
+  #zennia-download-popup:has(.zennia-download-empty) .zennia-download-content {
     position: relative;
   }
-  .arc-download-content {
+  .zennia-download-content {
     display: flex;
     flex-direction: column;
     min-height: 0;
   }
-  .arc-download-list {
+  .zennia-download-list {
     list-style: none;
     margin: 0;
     min-height: 0;
@@ -82,10 +82,10 @@
     padding: 0;
     scrollbar-width: none;
   }
-  :root[data-arc-ui]:not([zen-compact-mode="true"]) .arc-download-list {
+  :root[data-zennia]:not([zen-compact-mode="true"]) .zennia-download-list {
     padding-inline-end: 10px;
   }
-  .arc-download-row {
+  .zennia-download-row {
     display: flex;
     align-items: center;
     gap: 0;
@@ -95,16 +95,16 @@
     transform-origin: 20px bottom;
     transition: background-color 140ms ease;
   }
-  .arc-download-row,
-  .arc-download-row .arc-download-main,
-  .arc-download-row > .arc-icon-button {
+  .zennia-download-row,
+  .zennia-download-row .zennia-download-main,
+  .zennia-download-row > .zennia-icon-button {
     corner-shape: round !important;
   }
-  .arc-download-row:hover,
-  .arc-download-row:focus-within {
+  .zennia-download-row:hover,
+  .zennia-download-row:focus-within {
     background: #44375010;
   }
-  .arc-download-row .arc-download-main {
+  .zennia-download-row .zennia-download-main {
     display: flex;
     flex: 1;
     min-width: 0;
@@ -113,15 +113,15 @@
     padding: 8px 10px 8px 6px;
     text-align: left;
     border-radius: 8px;
-    color: var(--arc-text);
+    color: var(--zennia-text);
   }
-  .arc-download-row .arc-download-main:hover {
+  .zennia-download-row .zennia-download-main:hover {
     background: transparent;
   }
-  .arc-download-row .arc-download-main:disabled {
+  .zennia-download-row .zennia-download-main:disabled {
     opacity: 1;
   }
-  .arc-download-icon {
+  .zennia-download-icon {
     position: relative;
     display: flex;
     width: 40px;
@@ -131,11 +131,11 @@
     justify-content: center;
     color: light-dark(#65556f, #e4d2f5);
   }
-  .arc-download-icon svg {
+  .zennia-download-icon svg {
     width: 28px;
     height: 28px;
   }
-  .arc-download-file-icon {
+  .zennia-download-file-icon {
     position: absolute;
     inset: 4px;
     width: 32px;
@@ -143,18 +143,18 @@
     object-fit: contain;
     opacity: 0;
   }
-  .arc-download-icon.has-file-icon .arc-download-file-icon {
+  .zennia-download-icon.has-file-icon .zennia-download-file-icon {
     opacity: 1;
   }
-  .arc-download-icon.has-file-icon svg {
+  .zennia-download-icon.has-file-icon svg {
     visibility: hidden;
   }
-  .arc-download-icon.has-preview {
+  .zennia-download-icon.has-preview {
     overflow: hidden;
     border-radius: 4px;
     corner-shape: round !important;
   }
-  .arc-download-preview {
+  .zennia-download-preview {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -162,13 +162,13 @@
     object-fit: cover;
     opacity: 0;
   }
-  .arc-download-icon.has-preview .arc-download-preview {
+  .zennia-download-icon.has-preview .zennia-download-preview {
     opacity: 1;
   }
-  .arc-download-icon.has-preview :is(svg, .arc-download-file-icon) {
+  .zennia-download-icon.has-preview :is(svg, .zennia-download-file-icon) {
     visibility: hidden;
   }
-  .arc-download-row > .arc-icon-button {
+  .zennia-download-row > .zennia-icon-button {
     width: 28px;
     height: 28px;
     border-radius: 6px;
@@ -177,48 +177,48 @@
     opacity: 0;
     transition: opacity 120ms ease;
   }
-  .arc-download-row:hover > .arc-icon-button,
-  .arc-download-row:focus-within > .arc-icon-button {
+  .zennia-download-row:hover > .zennia-icon-button,
+  .zennia-download-row:focus-within > .zennia-icon-button {
     opacity: 1;
   }
-  #arc-gift-button[aria-expanded="true"] {
+  #zennia-gift-button[aria-expanded="true"] {
     background: #44375018 !important;
     border-radius: 8px;
   }
-  .arc-download-row > .arc-icon-button:hover {
+  .zennia-download-row > .zennia-icon-button:hover {
     background: #44375014;
   }
-  .arc-download-row > .arc-icon-button :is(svg, img) {
+  .zennia-download-row > .zennia-icon-button :is(svg, img) {
     width: 16px;
     height: 16px;
   }
-  #arc-download-popup button:focus-visible {
+  #zennia-download-popup button:focus-visible {
     outline: 2px solid light-dark(#65556f, #e4d2f5);
     outline-offset: -2px;
   }
-  .arc-download-label {
+  .zennia-download-label {
     min-width: 0;
     flex: 1;
   }
-  .arc-download-name,
-  .arc-download-meta {
+  .zennia-download-name,
+  .zennia-download-meta {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .arc-download-name {
+  .zennia-download-name {
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
   }
-  .arc-download-meta {
+  .zennia-download-meta {
     font-size: 12px;
     font-weight: 400;
     line-height: 17px;
     color: light-dark(#65556f, #e4d2f5);
   }
-  .arc-download-label progress {
+  .zennia-download-label progress {
     appearance: none;
     display: block;
     width: 100%;
@@ -229,11 +229,11 @@
     overflow: hidden;
     background: #4437501a;
   }
-  .arc-download-label progress::-moz-progress-bar {
+  .zennia-download-label progress::-moz-progress-bar {
     background: #8b719e;
     border-radius: 3px;
   }
-  .arc-download-empty {
+  .zennia-download-empty {
     padding: 12px 8px;
     color: light-dark(#65556f, #e4d2f5);
     font-size: 13px;

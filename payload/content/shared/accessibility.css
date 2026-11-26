@@ -1,6 +1,6 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
-  #arc-live-status {
+  #zennia-live-status {
     position: fixed;
     width: 1px;
     height: 1px;
@@ -8,8 +8,8 @@
     clip-path: inset(50%);
   }
   @media (prefers-reduced-motion: reduce) {
-    #arc-library-rail,
-    :root[data-arc-ui] #navigator-toolbox {
+    #zennia-library-rail,
+    :root[data-zennia] #navigator-toolbox {
       transition: none !important;
     }
   }

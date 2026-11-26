@@ -1,5 +1,5 @@
 /* Animate native dock/undock transitions and require pointer exit before hover can reopen the sidebar. */
-var ArcCompactSidebar = {
+var ZenniaCompactSidebar = {
   install(window, dependencies = {}) {
     const { document, DOMRect } = window;
     const { el, createMotion, hideDownloads, updateNav } = dependencies;
@@ -62,7 +62,7 @@ var ArcCompactSidebar = {
       // These siblings are reparented by Zen when compact mode changes. Preserve
       // their screen positions independently of the sidebar's outer padding.
       const parts = peekVisible
-        ? ["arc-top-controls", "nav-bar", "TabsToolbar"].map((id) => {
+        ? ["zennia-top-controls", "nav-bar", "TabsToolbar"].map((id) => {
             const node = document.getElementById(id);
             return {
               node,
@@ -101,7 +101,7 @@ var ArcCompactSidebar = {
                 "transparent",
               );
           } catch (error) {
-            window.console.warn("[Arc UI] Sidebar snapshot unavailable", error);
+            window.console.warn("[Zennia] Sidebar snapshot unavailable", error);
           }
         }
         if (destroyed) return;
@@ -113,7 +113,7 @@ var ArcCompactSidebar = {
         }
         if (!reduced())
           root.setAttribute(
-            "data-arc-sidebar-animating",
+            "data-zennia-sidebar-animating",
             wasCompact ? "opening" : "closing",
           );
         await originalUpdate.apply(this, args);
@@ -126,7 +126,7 @@ var ArcCompactSidebar = {
           wasCompact !== this.preference
         ) {
           root.setAttribute(
-            "data-arc-sidebar-animating",
+            "data-zennia-sidebar-animating",
             this.preference ? "closing" : "opening",
           );
           const timing = {
@@ -155,7 +155,7 @@ var ArcCompactSidebar = {
           ];
           if (this.preference && snapshot) {
             ghost = el("canvas", {
-              id: "arc-sidebar-transition",
+              id: "zennia-sidebar-transition",
               "aria-hidden": "true",
             });
             ghost.width = snapshot.width;
@@ -201,7 +201,7 @@ var ArcCompactSidebar = {
             // One painted surface, with the same outline clipping every native
             // child. A rounded background alone leaves square ancestors visible.
             surface = el("div", {
-              id: "arc-sidebar-surface",
+              id: "zennia-sidebar-surface",
               "aria-hidden": "true",
             });
             Object.assign(surface.style, {
@@ -282,7 +282,7 @@ var ArcCompactSidebar = {
         snapshot?.close();
         ghost?.remove();
         surface?.remove();
-        root.removeAttribute("data-arc-sidebar-animating");
+        root.removeAttribute("data-zennia-sidebar-animating");
         sidebarAnimating = false;
         if (!destroyed) updateNav();
       }

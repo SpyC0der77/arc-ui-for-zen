@@ -29,7 +29,7 @@ let frames=0,successAt=null,installation=null,profile=null;
 const register=ipcMain.handle.bind(ipcMain);
 ipcMain.handle=(channel,handler)=>register(channel,async(...args)=>{
   const result=await handler(...args);
-  if(channel==='arc:apply'&&args[1]==='install'&&result?.ok){
+  if(channel==='zennia:apply'&&args[1]==='install'&&result?.ok){
     installation=args[2].installation;profile=args[2].profile;
   }
   return result;
@@ -49,7 +49,7 @@ app.on('browser-window-created',(event,window)=>{
 });
 process.on('exit',code=>{
   const unchanged=crypto.createHash('sha256').update(fs.readFileSync(original)).digest('hex')===sha;
-  const receipt=profile&&path.join(profile,'chrome/arc-ui.install.json');
+  const receipt=profile&&path.join(profile,'chrome/zennia.install.json');
   const complete=code===0&&frames===570&&successAt!==null&&receipt&&fs.existsSync(receipt)&&unchanged;
   fs.writeFileSync(path.join(output,complete?'onboarding-window.json':'onboarding-window.partial.json'),JSON.stringify({
     completed:Boolean(complete),source_script:path.relative(root,original),source_sha256:sha,

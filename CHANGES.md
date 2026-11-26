@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Rename the project from Arc UI for Zen to Zennia: installer, release files, settings window, menus and update source now use the new name.
+- Upgrade earlier Arc UI installations from the installer, keeping saved appearance settings and presets. Previously exported presets still import.
 - Import and export named appearance presets as versioned JSON files from Settings → Presets.
 - Validate imported appearance values, preview before applying, and preserve existing presets when names match.
 

@@ -1,8 +1,8 @@
 {
-  "name": "arc-ui-zen-installer",
+  "name": "zennia-installer",
   "version": "0.1.8-beta.10",
   "private": true,
-  "description": "Cross-platform installer for the Arc UI theme and behavior patches for Zen Browser",
+  "description": "Cross-platform installer for the Zennia theme and behavior patches for Zen Browser",
   "license": "UNLICENSED",
   "main": "installer/main.cjs",
   "scripts": {
@@ -24,8 +24,8 @@
     "electron-builder": "26.18.0"
   },
   "build": {
-    "appId": "dev.arcui.zen-installer",
-    "productName": "Arc UI for Zen",
+    "appId": "dev.zennia.installer",
+    "productName": "Zennia",
     "directories": {
       "output": "release"
     },
@@ -41,7 +41,7 @@
         "portable"
       ],
       "requestedExecutionLevel": "asInvoker",
-      "artifactName": "Arc-UI-Zen-${version}-Windows.${ext}"
+      "artifactName": "Zennia-${version}-Windows.${ext}"
     },
     "mac": {
       "identity": "-",
@@ -51,17 +51,17 @@
         "zip"
       ],
       "category": "public.app-category.utilities",
-      "artifactName": "Arc-UI-Zen-${version}-macOS-${arch}.${ext}"
+      "artifactName": "Zennia-${version}-macOS-${arch}.${ext}"
     },
     "linux": {
       "target": [
         "AppImage"
       ],
       "category": "Utility",
-      "artifactName": "Arc-UI-Zen-${version}-Linux-${arch}.${ext}"
+      "artifactName": "Zennia-${version}-Linux-${arch}.${ext}"
     }
   },
   "bin": {
-    "arc-ui-zen": "installer/cli.cjs"
+    "zennia": "installer/cli.cjs"
   }
 }

@@ -1,8 +1,8 @@
 /* This stylesheet lives inside Zen's native popup shadow root. Tokens come
    from features/menus/menus.css on the host and inherit into this tree. */
 :host {
-  --panel-background: var(--arc-menu-surface, light-dark(#f6f4f3, #302c35)) !important;
-  --arrowpanel-background: var(--arc-menu-surface, light-dark(#f6f4f3, #302c35)) !important;
+  --panel-background: var(--zennia-menu-surface, light-dark(#f6f4f3, #302c35)) !important;
+  --arrowpanel-background: var(--zennia-menu-surface, light-dark(#f6f4f3, #302c35)) !important;
   --panel-color: light-dark(#141414, #f0edf3) !important;
   --arrowpanel-color: light-dark(#141414, #f0edf3) !important;
 }
@@ -10,10 +10,10 @@
 .panel-arrowcontent,
 arrowscrollbox.menupopup-arrowscrollbox {
   appearance: none !important;
-  background: var(--arc-menu-surface, light-dark(#f6f4f3, #302c35)) !important;
+  background: var(--zennia-menu-surface, light-dark(#f6f4f3, #302c35)) !important;
   color: light-dark(#141414, #f0edf3) !important;
-  border: 1px solid var(--arc-menu-border, #44375026) !important;
-  border-radius: var(--arc-menu-radius, 12px) !important;
+  border: 1px solid var(--zennia-menu-border, #44375026) !important;
+  border-radius: var(--zennia-menu-radius, 12px) !important;
   corner-shape: round !important;
   box-shadow: none !important;
 }

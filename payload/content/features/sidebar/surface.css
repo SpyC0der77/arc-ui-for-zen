@@ -1,46 +1,46 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
-  :root[data-arc-ui] .browserSidebarContainer:not(.zen-glance-overlay) {
-    border-radius: var(--arc-content-radius, 10px) !important;
+  :root[data-zennia] .browserSidebarContainer:not(.zen-glance-overlay) {
+    border-radius: var(--zennia-content-radius, 10px) !important;
     box-shadow: 0 1px 9px #21172b66 !important;
   }
   /* Let the page's existing shadow fall over the docked sidebar edge. In
      compact mode the sidebar must stay above the page for its hover peek. */
-  :root[data-arc-ui]:not([zen-compact-mode="true"]) #zen-appcontent-wrapper {
+  :root[data-zennia]:not([zen-compact-mode="true"]) #zen-appcontent-wrapper {
     position: relative !important;
     z-index: 3 !important;
   }
   /* The content-navbar background otherwise paints over the top shadow. */
-  :root[data-arc-ui]:not([zen-compact-mode="true"]) #zen-tabbox-wrapper {
+  :root[data-zennia]:not([zen-compact-mode="true"]) #zen-tabbox-wrapper {
     z-index: 2 !important;
   }
   /* Zen animates the library by translating the page without shrinking it.
      Use its measured offset as flex margins so the far edge stays visible. */
-  :root[data-arc-ui][data-arc-library-resize] #zen-appcontent-wrapper {
+  :root[data-zennia][data-zennia-library-resize] #zen-appcontent-wrapper {
     transform: none !important;
-    margin-left: var(--arc-library-left, 0px) !important;
-    margin-right: var(--arc-library-right, 0px) !important;
+    margin-left: var(--zennia-library-left, 0px) !important;
+    margin-right: var(--zennia-library-right, 0px) !important;
   }
-  :root[data-arc-ui][zen-compact-mode="true"]
+  :root[data-zennia][zen-compact-mode="true"]
     .browserSidebarContainer:not(.zen-glance-overlay) {
-    border-radius: var(--arc-content-radius, 10px) !important;
+    border-radius: var(--zennia-content-radius, 10px) !important;
   }
   /* Undocked: the page keeps its corners across the whole window, and Zen's peek
      panel becomes the only sidebar surface so it floats over the content instead
      of sitting in a full-height band. */
-  :root[data-arc-ui][zen-compact-mode="true"]
+  :root[data-zennia][zen-compact-mode="true"]
     :is(#navigator-toolbox, #titlebar) {
     background: transparent !important;
   }
-  :root[data-arc-ui][zen-compact-mode="true"] #zen-toolbar-background {
+  :root[data-zennia][zen-compact-mode="true"] #zen-toolbar-background {
     top: calc(
-      -1 * var(--arc-top-controls-height, 44px)
+      -1 * var(--zennia-top-controls-height, 44px)
     ) !important; /* reach over the added control row */
     border-radius: 12px !important;
     box-shadow: 0 1px 8px 3px #33263f66 !important;
   }
   /* A hidden panel must not leave its shadow on the page edge. */
-  :root[data-arc-ui][zen-compact-mode="true"]
+  :root[data-zennia][zen-compact-mode="true"]
     #navigator-toolbox:not([animate="true"]):not(
       :is(
         [zen-has-hover],
@@ -54,32 +54,32 @@
     #zen-toolbar-background {
     box-shadow: none !important;
   }
-  :root[data-arc-ui] #navigator-toolbox[zen-has-hover] {
+  :root[data-zennia] #navigator-toolbox[zen-has-hover] {
     transition: translate 120ms ease !important;
   }
-  :root[data-arc-ui] #navigator-toolbox:not([zen-has-hover]) {
+  :root[data-zennia] #navigator-toolbox:not([zen-has-hover]) {
     transition-timing-function: ease !important;
   }
   /* Keep these after the hover rules, which otherwise win at equal specificity. */
-  :root[data-arc-ui][data-arc-sidebar-animating]
+  :root[data-zennia][data-zennia-sidebar-animating]
     :is(#navigator-toolbox, #titlebar) {
     transition: none !important;
   }
-  :root[data-arc-ui][data-arc-sidebar-animating="opening"] #navigator-toolbox {
+  :root[data-zennia][data-zennia-sidebar-animating="opening"] #navigator-toolbox {
     translate: none !important;
     z-index: 10 !important;
   }
-  :root[data-arc-ui][data-arc-sidebar-animating="opening"]
+  :root[data-zennia][data-zennia-sidebar-animating="opening"]
     :is(#navigator-toolbox, #titlebar, #zen-toolbar-background) {
     background: transparent !important;
   }
-  :root[data-arc-ui][inDOMFullscreen="true"]
+  :root[data-zennia][inDOMFullscreen="true"]
     :is(
-      #arc-library-rail,
-      #arc-top-controls,
-      #arc-download-popup,
-      #arc-file-layer,
-      #arc-gift-button
+      #zennia-library-rail,
+      #zennia-top-controls,
+      #zennia-download-popup,
+      #zennia-file-layer,
+      #zennia-gift-button
     ) {
     display: none !important;
   }

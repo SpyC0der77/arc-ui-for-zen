@@ -1,15 +1,15 @@
 /* Initial sidebar width and the native splitter gesture that would reset it. */
-var ArcSidebarWidth = {
+var ZenniaSidebarWidth = {
   install(window, dependencies = {}) {
     const { document } = window;
     const { Services } = dependencies;
     // Keep Zen's native splitter and persisted width after the initial theme setup.
-    if (!Services.prefs.getBoolPref("arc-ui.width-initialized", false)) {
+    if (!Services.prefs.getBoolPref("zennia.width-initialized", false)) {
       const toolbox = document.getElementById("navigator-toolbox");
       toolbox.style.width = "264px";
       toolbox.style.setProperty("--zen-sidebar-width", "264px");
       toolbox.setAttribute("width", "264px");
-      Services.prefs.setBoolPref("arc-ui.width-initialized", true);
+      Services.prefs.setBoolPref("zennia.width-initialized", true);
     }
     // Zen resets the sidebar to its platform default on splitter double-click.
     // Intercept only that gesture; leave native pointer-based resizing intact.

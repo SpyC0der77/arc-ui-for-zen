@@ -19,7 +19,7 @@ m.start_session()
 m.set_context('chrome')
 out = ROOT / 'artifacts/sidebar-motion'
 out.mkdir(exist_ok=True)
-parts = ['arc-top-controls', 'nav-bar', 'TabsToolbar']
+parts = ['zennia-top-controls', 'nav-bar', 'TabsToolbar']
 
 def script(code, *args):
     return m.execute_script(code, script_args=list(args))
@@ -32,10 +32,10 @@ def screenshot(name):
 
 try:
     move(650, 300)
-    if script('return ZenArc.diagnostics().compact'):
-        script('ZenArc.toggleDock()')
+    if script('return Zennia.diagnostics().compact'):
+        script('Zennia.toggleDock()')
         time.sleep(.4)
-    script('ZenArc.toggleDock()')
+    script('Zennia.toggleDock()')
     time.sleep(.7)  # Zen's intentional ignore-hover interval lasts 500ms.
     move(650, 300)
     move(1, 300)
@@ -45,22 +45,22 @@ try:
     screenshot('peek')
     # Include the reparented toolbar parts in the same paused clock.
     script("""
-      window.arcTestAnimate=Element.prototype.animate;
+      window.zenniaTestAnimate=Element.prototype.animate;
       Element.prototype.animate=function(...args) {
-        const a=arcTestAnimate.apply(this,args);
-        if(['navigator-toolbox','zen-tabbox-wrapper','arc-sidebar-surface','arc-top-controls','nav-bar','TabsToolbar'].includes(this.id)) {
+        const a=zenniaTestAnimate.apply(this,args);
+        if(['navigator-toolbox','zen-tabbox-wrapper','zennia-sidebar-surface','zennia-top-controls','nav-bar','TabsToolbar'].includes(this.id)) {
           a.pause();a.currentTime=0;
         }
         return a;
       };
-      ZenArc.toggleDock();
+      Zennia.toggleDock();
     """)
     time.sleep(.15)
     frames = []
     for progress in [0, .25, .5, .75, .95]:
         script("for(const a of document.getAnimations())if(a.playState==='paused')a.currentTime=a.effect.getTiming().duration*arguments[0]", progress)
         frame = script("""
-          const toolbox=document.getElementById('navigator-toolbox'),surface=document.getElementById('arc-sidebar-surface');
+          const toolbox=document.getElementById('navigator-toolbox'),surface=document.getElementById('zennia-sidebar-surface');
           const r=surface.getBoundingClientRect(),s=getComputedStyle(surface);
           return {radius:parseFloat(s.borderRadius),rect:r.toJSON(),clip:getComputedStyle(toolbox).clipPath,
             transition:getComputedStyle(toolbox).transitionDuration,
@@ -81,7 +81,7 @@ try:
     print(json.dumps(checks, indent=2))
     assert all(checks.values()), checks
 finally:
-    script('if(window.arcTestAnimate)Element.prototype.animate=arcTestAnimate;for(const a of document.getAnimations())if(a.playState==="paused")a.finish()')
+    script('if(window.zenniaTestAnimate)Element.prototype.animate=zenniaTestAnimate;for(const a of document.getAnimations())if(a.playState==="paused")a.finish()')
     time.sleep(.1)
-    assert script("return !document.getElementById('arc-sidebar-surface')&&!document.documentElement.hasAttribute('data-arc-sidebar-animating')"), 'Transition did not clean up.'
+    assert script("return !document.getElementById('zennia-sidebar-surface')&&!document.documentElement.hasAttribute('data-zennia-sidebar-animating')"), 'Transition did not clean up.'
     m.delete_session()

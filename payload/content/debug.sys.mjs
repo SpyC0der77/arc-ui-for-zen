@@ -1,9 +1,11 @@
 /* Window-local view fixtures, plus explicitly owned native tabs and Spaces. */
-import {PAGE,PAGES,ownsPage,createDownloads} from "chrome://arc-ui/content/debug-data.mjs";
-import {actionIcon} from "chrome://arc-ui/content/download-icons.sys.mjs";
-const JOURNAL="arc-ui.debug.owned-data";
-const TAB_KEY="arc-ui.debug.token";
-const PLACEHOLDER_KEY="arc-ui.debug.placeholder";
+import {PAGE,PAGES,ownsPage,createDownloads} from "chrome://zennia/content/debug-data.mjs";
+import {actionIcon} from "chrome://zennia/content/download-icons.sys.mjs";
+const JOURNAL="zennia.debug.owned-data";
+const TAB_KEY="zennia.debug.token";
+const PLACEHOLDER_KEY="zennia.debug.placeholder";
+// Debug data tagged before the rename to Zennia is still recognised and cleaned up.
+const LEGACY_TAB_KEY="arc-ui.debug.token",LEGACY_PLACEHOLDER_KEY="arc-ui.debug.placeholder";
 let active=null;
 let recovery=null;
 
@@ -22,7 +24,7 @@ async function removeOwned(win,j) {
   const owned=new Set(j.spaces);
   for(const id of owned) {
     const space=win.gZenWorkspaces.getWorkspaces().find(s=>s.uuid===id);
-    if(space&&space.arcDebugToken!==j.token)throw new Error("Debug Space ownership no longer matches; leaving it intact.");
+    if(space&&(space.zenniaDebugToken??space.arcDebugToken)!==j.token)throw new Error("Debug Space ownership no longer matches; leaving it intact.");
   }
   const destination=win.gZenWorkspaces.getWorkspaces().find(s=>s.uuid===j.originalSpace&&!owned.has(s.uuid))||
     win.gZenWorkspaces.getWorkspaces().find(s=>!owned.has(s.uuid));
@@ -30,14 +32,15 @@ async function removeOwned(win,j) {
   await win.gZenWorkspaces.changeWorkspaceWithID(destination.uuid);
   for(const w of browserWindows()) {
     for(const tab of nativeTabs(w)) {
-      const tagged=SessionStore.getCustomTabValue(tab,TAB_KEY)===j.token;
+      const legacy=SessionStore.getCustomTabValue(tab,LEGACY_TAB_KEY)===j.token;
+      const tagged=legacy||SessionStore.getCustomTabValue(tab,TAB_KEY)===j.token;
       const url=tab.linkedBrowser?.currentURI?.spec||"";
-      const placeholder=tagged&&url==="about:blank"&&SessionStore.getCustomTabValue(tab,PLACEHOLDER_KEY)==="1";
+      const placeholder=tagged&&url==="about:blank"&&SessionStore.getCustomTabValue(tab,legacy?LEGACY_PLACEHOLDER_KEY:PLACEHOLDER_KEY)==="1";
       const mock=(tagged&&ownsPage(url,j.token))||placeholder;
       if(mock)w.gBrowser.removeTab(tab,{animate:false,skipPermitUnload:true,skipSessionStore:true});
       else {
         if(owned.has(tab.getAttribute("zen-workspace-id")))w.gZenWorkspaces.moveTabToWorkspace(tab,destination.uuid);
-        if(tagged){SessionStore.deleteCustomTabValue(tab,TAB_KEY);SessionStore.deleteCustomTabValue(tab,PLACEHOLDER_KEY);tab.removeAttribute("arc-debug-token");}
+        if(tagged){for(const key of [TAB_KEY,PLACEHOLDER_KEY,LEGACY_TAB_KEY,LEGACY_PLACEHOLDER_KEY])SessionStore.deleteCustomTabValue(tab,key);tab.removeAttribute("zennia-debug-token");tab.removeAttribute("arc-debug-token");}
       }
     }
   }
@@ -47,7 +50,7 @@ async function removeOwned(win,j) {
     await win.gZenWorkspaces.removeWorkspace(id);
   }
   // The only directory removed is this session's UUID-named temporary cache.
-  const cache=PathUtils.join(PathUtils.tempDir,`arc-ui-debug-${j.token}`);
+  const cache=PathUtils.join(PathUtils.tempDir,`zennia-debug-${j.token}`);
   if(PathUtils.parent(cache)===PathUtils.tempDir)await IOUtils.remove(cache,{recursive:true,ignoreAbsent:true});
   Services.prefs.clearUserPref(JOURNAL);
 }
@@ -76,20 +79,20 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
   function newTab(page,workspaceId=win.gZenWorkspaces.activeWorkspace) {
     const tab=win.gBrowser.addTab(pageURL(page),{triggeringPrincipal:Services.scriptSecurityManager.getSystemPrincipal(),skipAnimation:true,createLazyBrowser:true});
     SessionStore.setCustomTabValue(tab,TAB_KEY,data.token);
-    tab.setAttribute("arc-debug-token",data.token);
+    tab.setAttribute("zennia-debug-token",data.token);
     if(workspaceId)win.gZenWorkspaces.moveTabToWorkspace(tab,workspaceId);
     tab.setAttribute("label",page.title);
-    win.gBrowser.setIcon(tab,"chrome://arc-ui/content/spaces.svg");
+    win.gBrowser.setIcon(tab,"chrome://zennia/content/spaces.svg");
     tabs.push(tab);return tab;
   }
   function openPage(page) {
     const existing=tabs.find(t=>!t.closing&&t.linkedBrowser?.currentURI?.spec===pageURL(page));
     const tab=existing||newTab(page);
     win.gBrowser.selectedTab=tab;
-    void win.ZenArc.setRail(false);
+    void win.Zennia.setRail(false);
   }
   async function makeFiles() {
-    const directory=PathUtils.join(PathUtils.tempDir,`arc-ui-debug-${data.token}`);
+    const directory=PathUtils.join(PathUtils.tempDir,`zennia-debug-${data.token}`);
     await IOUtils.makeDirectory(directory,{ignoreExisting:true});
     files=[];
     for(let index=0;index<6;index++) {
@@ -117,7 +120,7 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
     return items.filter(item=>!query||key(item).toLowerCase().includes(query));
   }
   function row(title,subtitle,icon,click,action=null) {
-    return html`<div class="zen-library-row" data-arc-debug="true" @click=${click}>
+    return html`<div class="zen-library-row" data-zennia-debug="true" @click=${click}>
       <img class="zen-library-row-icon" src=${icon} alt=""/>
       <div class="zen-library-row-text"><span class="zen-library-row-title">${title}</span><span class="zen-library-row-subtitle">${subtitle}</span></div>
       ${action||""}</div>`;
@@ -138,26 +141,26 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
     const resume=d.stopped&&d.canceled&&d.hasPartialData;
     const label=d.stopped?(resume?"Resume":"Retry"):"Pause";
     const image=actionIcon(!d.stopped?"pause":resume?"play":"rotate-cw");
-    return html`<button class="arc-debug-action" title=${label} aria-label=${label} @click=${e=>{e.stopPropagation();void(d.stopped?d.start():d.cancel());}}><img src=${image} alt="" aria-hidden="true"/></button>`;
+    return html`<button class="zennia-debug-action" title=${label} aria-label=${label} @click=${e=>{e.stopPropagation();void(d.stopped?d.start():d.cancel());}}><img src=${image} alt="" aria-hidden="true"/></button>`;
   }
   function renderHistory(section) {
     const closed=section.activeFilters.has("source:closed");
     const pages=visible(PAGES,section);
     if(!pages.length)return empty();
     return html`<div class="zen-library-group"><div class="zen-library-group-header">${closed?"Archived today":"Today"}</div>${pages.map((page,index)=>row(page.title,
-      `${closed?"Archived":"Visited"} ${index+2} minutes ago · Mock page`,"chrome://arc-ui/content/spaces.svg",()=>openPage(page)))}</div>`;
+      `${closed?"Archived":"Visited"} ${index+2} minutes ago · Mock page`,"chrome://zennia/content/spaces.svg",()=>openPage(page)))}</div>`;
   }
   function renderMedia(section) {
     const media=files.map((path,i)=>({path,title:["Design overview","Components","Reading list","Release plan","Space layout","Download states"][i]}));
     const items=visible(media,section);
     if(!items.length)return empty();
-    return html`<div class="zen-library-media-grid">${items.map(item=>html`<button class="zen-library-media-item arc-debug-media-item" title=${item.title} @click=${()=>openPage({title:item.title,text:"Local mock media preview."})}><div class="zen-library-media-frame"><img class="zen-library-media-thumb" src=${PathUtils.toFileURI(item.path)} alt=${item.title}/></div></button>`)}</div>`;
+    return html`<div class="zen-library-media-grid">${items.map(item=>html`<button class="zen-library-media-item zennia-debug-media-item" title=${item.title} @click=${()=>openPage({title:item.title,text:"Local mock media preview."})}><div class="zen-library-media-frame"><img class="zen-library-media-thumb" src=${PathUtils.toFileURI(item.path)} alt=${item.title}/></div></button>`)}</div>`;
   }
   const boosts=[{title:"Quiet reading",domain:"reading.example",on:true},{title:"Larger type",domain:"docs.example",on:true},{title:"Reduced page chrome",domain:"news.example",on:false}];
   function renderBoosts(section) {
     const items=visible(boosts,section,b=>b.title+" "+b.domain);
     if(!items.length)return empty();
-    return html`<div class="zen-library-group">${items.map(b=>row(b.title,`${b.domain} · Mock boost`,"chrome://arc-ui/content/spaces.svg",()=>{b.on=!b.on;refresh();},
+    return html`<div class="zen-library-group">${items.map(b=>row(b.title,`${b.domain} · Mock boost`,"chrome://zennia/content/spaces.svg",()=>{b.on=!b.on;refresh();},
       html`<div class="zen-library-row-actions"><moz-toggle ?pressed=${b.on} aria-label=${b.title} @click=${e=>e.stopPropagation()} @toggle=${()=>{b.on=!b.on;refresh();}}></moz-toggle></div>`))}</div>`;
   }
   function empty(){return html`<div class="zen-library-empty">No matching mock data</div>`;}
@@ -190,12 +193,12 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
     const old=journal();if(old)await removeOwned(win,old);
     if(destroyed||win.closed)return;
     originalTab=win.gBrowser.selectedTab;originalLibraryTab=library.activeTab;
-    originalRail=preservedRail??!!win.ZenArc.diagnostics().rail;
+    originalRail=preservedRail??!!win.Zennia.diagnostics().rail;
     originalHistoryPref={user:Services.prefs.prefHasUserValue("zen.library.history.closed-tabs"),value:Services.prefs.getBoolPref("zen.library.history.closed-tabs",false)};
     data={token:Services.uuid.generateUUID().toString().slice(1,-1),spaces:[],originalSpace:win.gZenWorkspaces.activeWorkspace};
     writeJournal(data);enabled=true;active=controller;
     boosts.forEach((boost,index)=>{boost.on=index<2;});
-    document.documentElement.setAttribute("data-arc-debug","loading");
+    document.documentElement.setAttribute("data-zennia-debug","loading");
     try {
       const directory=await makeFiles();
       requireOpenWindow();
@@ -207,8 +210,8 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
         return originalRemove.call(this,tab,options);
       });
       for(const name of ["Debug Work","Debug Personal"]) {
-        const space=await win.gZenWorkspaces.createAndSaveWorkspace(name,"chrome://arc-ui/content/spaces.svg",false,0,{beforeChangeCallback:space=>{
-          space.arcDebugToken=data.token;win.gZenWorkspaces.saveWorkspace(space);data.spaces.push(space.uuid);writeJournal(data);
+        const space=await win.gZenWorkspaces.createAndSaveWorkspace(name,"chrome://zennia/content/spaces.svg",false,0,{beforeChangeCallback:space=>{
+          space.zenniaDebugToken=data.token;win.gZenWorkspaces.saveWorkspace(space);data.spaces.push(space.uuid);writeJournal(data);
         }});
         requireOpenWindow();
         if(!space||!data.spaces.includes(space.uuid))throw new Error("Could not create a debug Space.");
@@ -230,7 +233,7 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
       win.gBrowser.selectedTab=selected;
       observer=new win.MutationObserver(attachViews);observer.observe(library,{childList:true,subtree:true});
       library.addEventListener("contextmenu",blockContext,true);
-      attachViews();document.documentElement.setAttribute("data-arc-debug","true");announce("Debug Mode enabled. Mock data is ready.");
+      attachViews();document.documentElement.setAttribute("data-zennia-debug","true");announce("Debug Mode enabled. Mock data is ready.");
     } catch(error){await disable();throw error;}
   }
   async function disable() {
@@ -256,13 +259,13 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
       section.requestUpdate?.();
     }
     optInStates.clear();
-    document.documentElement.removeAttribute("data-arc-debug");
-    if(!destroyed&&!win.closed)await win.ZenArc.setRail(false);
+    document.documentElement.removeAttribute("data-zennia-debug");
+    if(!destroyed&&!win.closed)await win.Zennia.setRail(false);
     if(originalLibraryTab)library.activeTab=originalLibraryTab;
     try {
       await removeOwned(win,data);
       if(originalTab&&!originalTab.closing&&win.gBrowser.tabs.includes(originalTab))win.gBrowser.selectedTab=originalTab;
-      if(!destroyed&&!win.closed)await win.ZenArc.setRail(originalRail);
+      if(!destroyed&&!win.closed)await win.Zennia.setRail(originalRail);
       data=null;downloads=[];tabs=[];files=[];
       announce("Debug Mode disabled. Debug data was removed. Normal tabs moved into debug Spaces stayed in your original Space.");
     } finally {if(active===controller)active=null;}
@@ -276,12 +279,12 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
     }
     const stale=journal();if(stale&&!active)await removeOwned(win,stale);
   }).finally(()=>{recovery=null;})):Promise.resolve();
-  ready.catch(error=>console.error("[Arc UI] Debug recovery:",error));
+  ready.catch(error=>console.error("[Zennia] Debug recovery:",error));
   const controller={win,available,get enabled(){return enabled;},ready,
     toggle:()=>enqueue(()=>enabled?disable():enable()),
     enable:()=>enqueue(()=>enabled?undefined:enable()),disable:()=>enqueue(disable),
     reset:()=>enqueue(async()=>{if(enabled){const rail=originalRail;await disable();await enable(rail);}}),
-    destroy(){destroyed=true;void controller.disable().catch(error=>console.error("[Arc UI] Debug cleanup:",error));},
+    destroy(){destroyed=true;void controller.disable().catch(error=>console.error("[Zennia] Debug cleanup:",error));},
   };
   return controller;
 }

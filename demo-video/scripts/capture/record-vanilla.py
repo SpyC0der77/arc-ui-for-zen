@@ -258,7 +258,7 @@ class Recorder:
         return f"gURLBar.view.close();gURLBar.blur();{{const lib=document.querySelector('zen-library');if(!lib||typeof lib.constructor.animateProgress!=='function')throw new Error('Native Zen library unavailable');lib.activeTab={json.dumps(tab)};lib.constructor.animateProgress(1).catch(e=>window.demoActionError=String(e));}}"
 
     def record(self):
-        self.js("if(window.ZenArc)throw new Error('Vanilla recorder refuses a themed browser');if(!window.demoTabs)throw new Error('Run --setup first');gURLBar.view.close();gURLBar.blur();gBrowser.selectedTab=demoTabs.find(t=>t.title==='CSS').tab;")
+        self.js("if(window.Zennia)throw new Error('Vanilla recorder refuses a themed browser');if(!window.demoTabs)throw new Error('Run --setup first');gURLBar.view.close();gURLBar.blur();gBrowser.selectedTab=demoTabs.find(t=>t.title==='CSS').tab;")
         downloaded=self.m.execute_async_script("""const done=arguments[arguments.length-1];(async()=>{const {Downloads}=ChromeUtils.importESModule('resource://gre/modules/Downloads.sys.mjs');const list=await Downloads.getList(Downloads.PUBLIC);const d=await Downloads.createDownload({source:arguments[0],target:arguments[1]});await list.add(d);await d.start();done(d.succeeded)})().catch(e=>done({error:String(e)}))""",script_args=[(DEMO/'assets/wallpaper.jpg').as_uri(),str(self.output.parent/'Mountain landscape vanilla.jpg')])
         if downloaded is not True:
             raise RuntimeError(f'Native local image download failed: {downloaded}')
@@ -294,13 +294,13 @@ class Recorder:
         self.shot('Return from library',"document.querySelector('zen-library').constructor.animateProgress(0)")
         self.shot('Downloads hover menu',"DownloadsPanel.showPanel()",camera=(1200,0,720,1080),notes='Native Downloads popup, opened via its native API')
         for name in ['Download file flight','Hidden sidebar download']:
-            self.shot(name,"DownloadsPanel.hidePanel()",availability='unavailable',notes='Arc UI download flight has no corresponding vanilla Zen animation; unchanged native page is shown')
+            self.shot(name,"DownloadsPanel.hidePanel()",availability='unavailable',notes='Zennia download flight has no corresponding vanilla Zen animation; unchanged native page is shown')
         self.shot('Dock after download')
         self.shot('GitHub Live Folders',"const {ZenLiveFoldersManager}=ChromeUtils.importESModule('resource:///modules/zen/ZenLiveFoldersManager.sys.mjs');ZenLiveFoldersManager.createFolder('github:pull-requests');ZenLiveFoldersManager.createFolder('github:issues');for(const f of document.querySelectorAll('zen-folder'))if(f.isLiveFolder)f.collapsed=false",settle=1.5)
         self.shot('Boosts library',self.library('boosts'))
         self.shot('Archive command',"document.querySelector('zen-library').constructor.animateProgress(0);gURLBar.search('archive')",camera=center)
         self.shot('JavaScript reference as a background tab',"gURLBar.view.close();gURLBar.blur();window.demoRealIdle=gBrowser.addTab('https://developer.mozilla.org/en-US/docs/Web/JavaScript',{triggeringPrincipal:Services.scriptSecurityManager.getSystemPrincipal(),skipAnimation:true})",settle=2,predicate='!demoRealIdle.linkedBrowser.isLoadingDocument')
-        self.shot('Auto archive JavaScript reference','',availability='unavailable',notes='Arc UI auto-archive is not installed in this vanilla profile; tab remains visible')
+        self.shot('Auto archive JavaScript reference','',availability='unavailable',notes='Zennia auto-archive is not installed in this vanilla profile; tab remains visible')
         self.shot('Archive library',"gBrowser.removeTab(demoRealIdle,{animate:false});"+self.library('history'),notes='Native closed-tab history after explicitly closing the background tab')
         self.shot('Restore JavaScript reference',self.command('History:UndoCloseTab')+"document.querySelector('zen-library').constructor.animateProgress(0)",settle=1.5)
         self.shot('Finish on Work',"gBrowser.selectedTab=demoTabs.find(t=>t.title==='CSS').tab")

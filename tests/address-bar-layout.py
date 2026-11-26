@@ -7,7 +7,7 @@ from marionette_driver.marionette import Marionette
 m=Marionette('localhost',port=int(sys.argv[1]) if len(sys.argv)>1 else 2828,socket_timeout=25)
 m.start_session();m.set_context('chrome')
 def geometry():
- return m.execute_script("const a=document.getElementById('arc-top-controls').getBoundingClientRect(),b=document.getElementById('urlbar-container').getBoundingClientRect();return {gap:b.top-a.bottom,height:b.height}")
+ return m.execute_script("const a=document.getElementById('zennia-top-controls').getBoundingClientRect(),b=document.getElementById('urlbar-container').getBoundingClientRect();return {gap:b.top-a.bottom,height:b.height}")
 try:
  m.execute_script('gURLBar.view.close();gURLBar.blur()');time.sleep(.3)
  closed=geometry()

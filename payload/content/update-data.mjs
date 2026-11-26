@@ -1,5 +1,5 @@
 // Pure release selection, shared with the updater's regression tests.
-export const REPO = 'SpyC0der77/arc-ui-for-zen';
+export const REPO = 'SpyC0der77/zennia';
 export function newer(a, b) {
   const parse = v => /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/.exec(v);
   const x = parse(a), y = parse(b);
@@ -17,7 +17,7 @@ export function newer(a, b) {
   return false;
 }
 export function assetName(version, os, arch) {
-  return `Arc-UI-Zen-${version.replace(/^v/, '')}-Update.json`;
+  return `Zennia-${version.replace(/^v/, '')}-Update.json`;
 }
 
 export function releaseTrack(value, current) {

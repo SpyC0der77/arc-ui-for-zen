@@ -1,6 +1,6 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
-  :root[data-arc-debug] .arc-debug-action {
+  :root[data-zennia-debug] .zennia-debug-action {
     appearance: none;
     box-sizing: border-box;
     display: inline-flex;
@@ -13,8 +13,8 @@
     border: 0;
     border-radius: 6px;
     background: color-mix(in srgb, currentColor 6%, transparent);
-    color: var(--arc-text);
-    font: 500 12px var(--arc-font) !important;
+    color: var(--zennia-text);
+    font: 500 12px var(--zennia-font) !important;
     cursor: pointer;
     transition: background-color 120ms ease;
     & :is(svg, img) {
@@ -29,7 +29,7 @@
       background: color-mix(in srgb, currentColor 14%, transparent);
     }
     &:focus-visible {
-      outline: 2px solid var(--arc-muted);
+      outline: 2px solid var(--zennia-muted);
       outline-offset: 2px;
     }
     &:disabled {
@@ -37,7 +37,7 @@
       cursor: default;
     }
   }
-  :root[data-arc-debug] .arc-debug-media-item {
+  :root[data-zennia-debug] .zennia-debug-media-item {
     appearance: none;
     border: 0;
     color: inherit;

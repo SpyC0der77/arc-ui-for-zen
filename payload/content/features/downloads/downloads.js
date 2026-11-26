@@ -1,5 +1,5 @@
 /* Recent-download popup, native download list, and file-arrival animation. */
-var ArcDownloads = {
+var ZenniaDownloads = {
   install(window, dependencies = {}) {
     const { document, gBrowser } = window;
     const {
@@ -26,16 +26,16 @@ var ArcDownloads = {
     // Keep this in the sidebar's hover tree. The top layer lets it paint outside
     // Zen's sidebar clipping and stacking contexts without turning into a native panel.
     const popup = el("section", {
-      id: "arc-download-popup",
-      class: "arc-ui",
+      id: "zennia-download-popup",
+      class: "zennia",
       hidden: "true",
       popover: "manual",
-      "data-arc-download-design": "arc",
+      "data-zennia-download-design": "zennia",
       "aria-label": "Downloads",
       role: "region",
     });
-    const popupContent = el("div", { class: "arc-download-content" });
-    const list = el("ul", { class: "arc-download-list" });
+    const popupContent = el("div", { class: "zennia-download-content" });
+    const list = el("ul", { class: "zennia-download-list" });
     popupContent.append(list);
     popup.append(popupContent);
     toolbox.append(popup);
@@ -52,8 +52,8 @@ var ArcDownloads = {
     }
     document.addEventListener("popupshowing", interceptDownloadsPanel, true);
     const layer = el("div", {
-      id: "arc-file-layer",
-      class: "arc-ui",
+      id: "zennia-file-layer",
+      class: "zennia",
       "aria-hidden": "true",
     });
     document.body.append(layer);
@@ -73,7 +73,7 @@ var ArcDownloads = {
     function placePopup() {
       const r = gift.getBoundingClientRect();
       const sidebar = toolbox.getBoundingClientRect();
-      if (list.querySelector(".arc-download-empty")) {
+      if (list.querySelector(".zennia-download-empty")) {
         const footerNode = document.getElementById("zen-sidebar-foot-buttons");
         const footer = footerNode.getBoundingClientRect();
         if (footer.width > 0 && footer.height > 0) {
@@ -332,13 +332,13 @@ var ArcDownloads = {
           ),
         };
         sprite = el("div", {
-          class: "arc-flying-file",
-          "data-arc-flight": "true",
+          class: "zennia-flying-file",
+          "data-zennia-flight": "true",
         });
         sprite.append(icon("file"));
         layer.append(sprite);
         if (!visible) {
-          fallback = el("div", { class: "arc-fallback-gift" });
+          fallback = el("div", { class: "zennia-fallback-gift" });
           fallback.append(icon("gift"));
           fallback.style.left = `${target.x - 10}px`;
           fallback.style.top = `${target.y - 10}px`;

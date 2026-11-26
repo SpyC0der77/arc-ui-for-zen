@@ -6,9 +6,9 @@ document.getElementById("preview").addEventListener("click", async event => {
   button.disabled = true;
   try {
     const win = window.browsingContext.topChromeWindow;
-    if (!win.ZenArc) throw new Error("The Arc UI patch is not loaded. Restart Zen after installing.");
+    if (!win.Zennia) throw new Error("The Zennia patch is not loaded. Restart Zen after installing.");
     status.textContent = "";
-    await win.ZenArc.previewDownload(event.detail ? {
+    await win.Zennia.previewDownload(event.detail ? {
       clientX: event.screenX - win.mozInnerScreenX,
       clientY: event.screenY - win.mozInnerScreenY,
     } : undefined);

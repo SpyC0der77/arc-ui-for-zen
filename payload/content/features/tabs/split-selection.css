@@ -2,7 +2,7 @@
 {
   /* Paint selection above the page content, inside the clipped split pane.
      An outside outline is cut off beside the docked sidebar. */
-  :root[data-arc-ui]:not([inDOMFullscreen="true"])
+  :root[data-zennia]:not([inDOMFullscreen="true"])
     #tabbrowser-tabpanels[zen-split-view="true"]
     .browserSidebarContainer.deck-selected:not(.zen-glance-overlay) {
     outline: none !important;

@@ -1,5 +1,5 @@
 /* Retain the native address text and icon while Zen moves its URL bar into the command popup. */
-var ArcAddressLabel = {
+var ZenniaAddressLabel = {
   install(window, dependencies = {}) {
     const { document, gURLBar, ResizeObserver, MutationObserver } = window;
     const { el } = dependencies;
@@ -7,11 +7,11 @@ var ArcAddressLabel = {
     // The native URL bar moves into the popover. Keep its last sidebar text behind.
     const addressContainer = document.getElementById("urlbar-container");
     const addressLabel = el("span", {
-      id: "arc-sidebar-address-label",
+      id: "zennia-sidebar-address-label",
       "aria-hidden": "true",
     });
-    const addressIcon = el("span", { class: "arc-sidebar-address-icon" });
-    const addressText = el("span", { class: "arc-sidebar-address-text" });
+    const addressIcon = el("span", { class: "zennia-sidebar-address-icon" });
+    const addressText = el("span", { class: "zennia-sidebar-address-text" });
     addressLabel.append(addressIcon, addressText);
     addressContainer.append(addressLabel);
     let addressAnchor = null;

@@ -15,12 +15,12 @@ def check(condition, label):
         raise AssertionError(label)
 def ready():
     for _ in range(100):
-        if m.execute_script('return !!window.ZenArc'):
+        if m.execute_script('return !!window.Zennia'):
             return
         time.sleep(.1)
     raise AssertionError('new window did not initialize')
 def diagnostics():
-    return m.execute_script('return window.ZenArc.diagnostics()')
+    return m.execute_script('return window.Zennia.diagnostics()')
 try:
     initial = diagnostics()['realDownloads']
     handles = set(m.chrome_window_handles)
@@ -41,8 +41,8 @@ try:
       const done = arguments[arguments.length - 1];
       (async () => {
         const {Downloads} = ChromeUtils.importESModule('resource://gre/modules/Downloads.sys.mjs');
-        const download = await Downloads.createDownload({source:'https://example.invalid/refactor-check',target:PathUtils.join(PathUtils.tempDir,'arc-refactor-window-check.txt')});
-        window.arcWindowTestDownload = download;
+        const download = await Downloads.createDownload({source:'https://example.invalid/refactor-check',target:PathUtils.join(PathUtils.tempDir,'zennia-refactor-window-check.txt')});
+        window.zenniaWindowTestDownload = download;
         await (await Downloads.getList(Downloads.PUBLIC)).add(download);
         done(true);
       })().catch(error => done(String(error)));
@@ -54,9 +54,9 @@ try:
     m.execute_script('window.close()')
     m.switch_to_window(original)
     time.sleep(2)
-    m.execute_script('window.ZenArc.openDownloads()')
+    m.execute_script('window.Zennia.openDownloads()')
     check(diagnostics()['popup'], 'closing private window leaves public download controls working')
-    m.execute_script('window.ZenArc.hideDownloads()')
+    m.execute_script('window.Zennia.hideDownloads()')
     handles = set(m.chrome_window_handles)
     m.execute_script('OpenBrowserWindow()')
     for _ in range(100):
@@ -71,9 +71,9 @@ try:
     m.execute_script('window.close()')
     m.switch_to_window(original)
     time.sleep(2)
-    m.execute_script('window.ZenArc.openDownloads()')
+    m.execute_script('window.Zennia.openDownloads()')
     check(diagnostics()['popup'], 'closing second window leaves first window working')
-    m.execute_script('window.ZenArc.hideDownloads()')
+    m.execute_script('window.Zennia.hideDownloads()')
     print(json.dumps(checks, indent=2))
     (ROOT / 'artifacts/refactor-window-results.json').write_text(json.dumps(checks, indent=2))
 finally:
@@ -81,12 +81,12 @@ finally:
     m.execute_async_script("""
       const done = arguments[arguments.length - 1];
       (async () => {
-        if (window.arcWindowTestDownload) {
+        if (window.zenniaWindowTestDownload) {
           const {Downloads} = ChromeUtils.importESModule('resource://gre/modules/Downloads.sys.mjs');
-          await (await Downloads.getList(Downloads.PUBLIC)).remove(window.arcWindowTestDownload);
-          delete window.arcWindowTestDownload;
+          await (await Downloads.getList(Downloads.PUBLIC)).remove(window.zenniaWindowTestDownload);
+          delete window.zenniaWindowTestDownload;
         }
-        window.ZenArc.hideDownloads(); done(true);
+        window.Zennia.hideDownloads(); done(true);
       })().catch(error => done(String(error)));
     """)
     m.delete_session()

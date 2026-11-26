@@ -1,12 +1,16 @@
-# Arc UI for Zen
+# Zennia
 
-An Arc-style interface for Zen **1.22.3b, 1.23.3b, 1.23.4b, 1.24b and 1.24.1b**, with a lavender sidebar, centered address bar, library, auto-archive and animated downloads. It brings Arc's visual design to Zen's native tabs and browser features through local CSS and JavaScript patches, installed with an Electron app. It does not replace the browser engine or fork Zen.
+Zennia (formerly Arc UI for Zen) is an Arc-inspired interface for Zen **1.22.3b, 1.23.3b, 1.23.4b, 1.24b and 1.24.1b**, with a lavender sidebar, centered address bar, library, auto-archive and animated downloads. It brings Arc's visual design to Zen's native tabs and browser features through local CSS and JavaScript patches, installed with an Electron app. It does not replace the browser engine or fork Zen.
 
 On 1.22.3b, which predates Zen's native library, the gift button opens a native menu with Downloads, Bookmarks, History and restorable recently closed tabs. Downloads uses the browser's native downloads view, including its private-window behavior. Auto-archive and Debug Mode require the newer native library and are unavailable on 1.22.3b. Idle tabs stay open on that version, and sidebar transitions use the older browser's native behavior. Other versions retain the existing library interface. These versions have Windows runtime coverage; macOS/Linux runtime validation remains pending.
 
 ## Install
 
 Open the installer, select your Zen application and profile, close Zen, then click **Install**. Use **Open Zen** afterward. On first launch after Zen onboarding, a local preview page opens. Its Download button plays the file animation without downloading anything.
+
+### Upgrading from Arc UI for Zen
+
+This project was renamed from Arc UI for Zen. Versions released under the old name cannot update themselves to Zennia, so run the Zennia installer once and click **Install** for the same Zen installation and profile. It recognizes the earlier installation, removes it with its original receipt and edited-file checks, and installs Zennia in its place. Appearance settings, presets and other saved `arc-ui.*` preferences move to `zennia.*` the first time Zennia starts. Preset files exported before the rename can still be imported.
 
 ## Publishing a release
 
@@ -20,7 +24,7 @@ On macOS, copy the installer to Applications before opening it. If macOS blocks 
 
 **Open Zen** passes `-purgecaches` so updated browser UI scripts and styles are reloaded after installation. Reopening through a normal shortcut immediately after an update can leave the previous UI cached. This clears startup code caches, not history, cookies or saved tabs.
 
-The Windows executable is built into `release/Arc-UI-Zen-0.1.0-Windows.exe`. The Electron app also has macOS DMG/ZIP and Linux AppImage build targets. Build those on their respective operating systems with the included CI workflow. macOS and Linux installation paths are covered by automated filesystem tests; their browser runtime and distribution signing have not been validated here.
+The Windows executable is built into `release/Zennia-0.1.0-Windows.exe`. The Electron app also has macOS DMG/ZIP and Linux AppImage build targets. Build those on their respective operating systems with the included CI workflow. macOS and Linux installation paths are covered by automated filesystem tests; their browser runtime and distribution signing have not been validated here.
 
 Select your actual profile explicitly when there is more than one. Zen's `about:profiles` page lists its root directory. This installer never closes your existing browser automatically, imports private data, or changes your default browser.
 
@@ -41,7 +45,7 @@ The installer starts with a centered welcome page, followed by a split view with
 
 ## Features
 
-In Arc UI settings, open **Presets** to save your current appearance or share it. Select a saved preset and choose **Export…** to write a JSON file. Choose **Import…** to add an exported preset to the gallery, preview it, and then choose **Apply**. Importing does not change your current appearance. Duplicate names receive a numbered suffix; existing presets stay intact. Files use the version 1 `arc-ui-preset` format, contain appearance settings only, and are limited to 64 KB. The gallery holds up to 20 presets.
+In Zennia settings, open **Presets** to save your current appearance or share it. Select a saved preset and choose **Export…** to write a JSON file. Choose **Import…** to add an exported preset to the gallery, preview it, and then choose **Apply**. Importing does not change your current appearance. Duplicate names receive a numbered suffix; existing presets stay intact. Files use the version 1 `zennia-preset` format, contain appearance settings only, and are limited to 64 KB. The gallery holds up to 20 presets.
 
 "Theme" means added styling, controls or animations. "Patch" means changes to Zen's existing UI behavior or settings. Some features use both. All patches load at startup; they do not modify Zen's packaged source files.
 
@@ -71,13 +75,13 @@ The library sidebar footer retains Zen's donation link with an outline heart, an
 
 The gift-shaped button combines the library and downloads controls, following Arc's sidebar design. Hover over it to reveal recent files rising from the gift, directly on the sidebar surface. Completed images show thumbnails and relative timestamps; other files use the system's file-type icons. Click the gift to open Zen's library, or use the Downloads command to open its Downloads section. The list replaces Zen's native download popup and hover stack, retaining native file actions and separate public and private lists.
 
-Auto-Archive closes ordinary background tabs the user has not returned to for 12 hours. It runs 90 seconds after a window opens and every five minutes after that. Closed tabs are recorded by Zen itself, so they appear in the library sidebar's **Archive** tab with their history and reopen on click. Pinned tabs, Essentials, split views, tab groups, folder tabs, tabs playing audio and the selected tab are left alone, as are private windows and browser-internal pages. Set `arc-ui.archive.hours` to another number of hours, or to `0` to turn auto-archive off. On first run the theme selects the library's Archive view, and a later switch back to History is remembered. It also raises Zen's closed-tab history to 100 entries per window so an archive pass is not evicted immediately; browsing history remains available through the library's filter. The archive survives restarts through Zen's session data and is not sent anywhere.
+Auto-Archive closes ordinary background tabs the user has not returned to for 12 hours. It runs 90 seconds after a window opens and every five minutes after that. Closed tabs are recorded by Zen itself, so they appear in the library sidebar's **Archive** tab with their history and reopen on click. Pinned tabs, Essentials, split views, tab groups, folder tabs, tabs playing audio and the selected tab are left alone, as are private windows and browser-internal pages. Set `zennia.archive.hours` to another number of hours, or to `0` to turn auto-archive off. On first run the theme selects the library's Archive view, and a later switch back to History is remembered. It also raises Zen's closed-tab history to 100 entries per window so an archive pass is not evicted immediately; browsing history remains available through the library's filter. The archive survives restarts through Zen's session data and is not sent anywhere.
 
 Choose **Light**, **Dark**, or **System** in **Library > Settings > Appearance**. The selection applies immediately across windows and workspaces and is remembered after restarting. System follows the browser's preferred color scheme. The Light and Dark color swatches customize each palette independently. **Reset appearance** restores System and both default palettes.
 
 To give the sidebar and content frame a gradient, enable **Use gradient** in the Light or Dark column. **Background** sets the first color, **Gradient end** sets the second, and **Gradient angle** sets the direction in degrees. Each palette remembers its own gradient. Turn off Use gradient to return to its solid background. Background swatches preview the gradient, and its angle can be dragged with a slider or entered in degrees.
 
-Arc UI settings groups general and background controls in **Appearance**, individual palette colors in **Colors**, and saved themes in **Presets** on a side navigation rail like Arc's settings window. The window keeps a fixed height across sections, eases in and out, and Reset appearance and Done remain visible while scrolling.
+Zennia settings groups general and background controls in **Appearance**, individual palette colors in **Colors**, and saved themes in **Presets** on a side navigation rail like Arc's settings window. The window keeps a fixed height across sections, eases in and out, and Reset appearance and Done remain visible while scrolling.
 
 **Content corners** adjusts the page radius from square to 16 px. The **Light window opacity** and **Dark window opacity** sliders adjust the background tint over native window materials on Windows and macOS, leaving text and page content opaque. Open any color swatch and choose **Reset color** to restore only that color. Open the **Presets** tab to save a named copy of both palettes, gradients, opacity, corners, appearance mode, and animation preference; choose a saved preset by its theme thumbnail, then apply or delete it. Selecting a thumbnail does not change the active theme. Reset appearance restores defaults while keeping saved presets.
 
@@ -107,7 +111,7 @@ On Windows the installer also applies a profile-local DirectWrite preset: Natura
 
 To update an existing installation, close Zen, use the previous installer to Remove, then Install with the new build. Removal restores previous rendering preferences through the normal receipt backup.
 
-The installer adds two app startup files, `arc-ui.cfg` and `defaults/pref/arc-ui-autoconfig.js`. They register local chrome packages and load `chrome/arc-ui/arc.uc.js` only in the selected profile. Scripts and fonts are bundled; no remote scripts are downloaded or executed.
+The installer adds two app startup files, `zennia.cfg` and `defaults/pref/zennia-autoconfig.js`. They register local chrome packages and load `chrome/zennia/zennia.uc.js` only in the selected profile. Scripts and fonts are bundled; no remote scripts are downloaded or executed.
 
 The loader enables the unsandboxed **AutoConfig script context**, which gives these local scripts browser-level privileges. This does not disable web-content sandboxing, extension signatures, TLS checks or web security. The installer discloses this before installation and refuses to replace an existing AutoConfig loader, including Sine/fx-autoconfig installations.
 
@@ -123,7 +127,7 @@ The payload checks the exact Zen version again at startup and does not run in Sa
 
 ## Remove and recover
 
-Close Zen, open the same installer, select the same folders, and click **Remove**. A receipt at `PROFILE/chrome/arc-ui.install.json` records owned files and the previous settings. Removal restores the original `user.js`, or removes only its managed block when unrelated edits were added. Only persisted preferences that still match the installed value are restored; later user changes are retained. Namespaced `arc-ui.*` state may remain, with no active loader.
+Close Zen, open the same installer, select the same folders, and click **Remove**. A receipt at `PROFILE/chrome/zennia.install.json` records owned files and the previous settings. Removal restores the original `user.js`, or removes only its managed block when unrelated edits were added. Only persisted preferences that still match the installed value are restored; later user changes are retained. Namespaced `zennia.*` state may remain, with no active loader.
 
 Install and removal use atomic file writes and rollback on ordinary write failures. Edited patch files are not silently deleted. The installer reports their path and keeps the receipt. Keep that receipt until removal finishes. A crash or power failure between file writes is not a fully transactional filesystem operation; the receipt is written first for recovery.
 
@@ -144,7 +148,7 @@ pnpm dist:linux
 
 Historical Arc screenshots and their source notes live in [`dev/references/`](dev/references/README.md). They are excluded from installer packages. Pull requests run unit tests and build installers on Windows, macOS, and Linux; `pnpm verify:package` checks the resulting ASAR files for complete runtime contents and excluded development files. Pass an output directory to verify a separate build, for example `pnpm verify:package artifacts/pr-build`.
 
-`pnpm test:runtime -- <unpatched Zen application folder>` requires a Zen application folder without an installed Arc UI theme or another AutoConfig loader. It makes an isolated application copy and fresh profile, uses the production version gates, disables updates only in that copy, runs native browser checks, captures browser chrome on success or failure, and verifies removal. A browser-side watchdog requests graceful shutdown on timeout. It never force-kills Zen or changes the source application or your personal profile. Temporary copies remain under ignored `artifacts/runtime-*`; each run prints its `diagnostics` directory.
+`pnpm test:runtime -- <unpatched Zen application folder>` requires a Zen application folder without an installed Zennia theme or another AutoConfig loader. It makes an isolated application copy and fresh profile, uses the production version gates, disables updates only in that copy, runs native browser checks, captures browser chrome on success or failure, and verifies removal. A browser-side watchdog requests graceful shutdown on timeout. It never force-kills Zen or changes the source application or your personal profile. Temporary copies remain under ignored `artifacts/runtime-*`; each run prints its `diagnostics` directory.
 
 On Windows, fetch an exact supported build and run the same checks as CI:
 
@@ -177,7 +181,7 @@ The included Geist fonts retain their license in `payload/content/Geist-LICENSE.
 
 ### Release updates
 
-Arc UI checks the public GitHub releases API 30 seconds after a normal browser window opens, at most once every six hours. Private windows do not poll or show the sidebar update button. Their settings can change the shared release track without making a network request. Choose **Stable** or **Beta** in **Arc UI settings > Updates > Release track**. Stable offers stable releases only; Beta also includes prereleases. The default follows the installed version until you choose a track. Changing it saves your preference, clears any update offered for the previous track, and checks again. It never downgrades the installed version. The selector is disabled while a download or installer launch is in progress. The Updates tab is available with native Library settings in Zen 1.23.3b and newer. On Zen 1.22.3b, set the string preference `arc-ui.updates.track` to `stable` or `beta` in `about:config`. Only releases with an installer for the current platform and a checksum file are offered.
+Zennia checks the public GitHub releases API 30 seconds after a normal browser window opens, at most once every six hours. Private windows do not poll or show the sidebar update button. Their settings can change the shared release track without making a network request. Choose **Stable** or **Beta** in **Zennia settings > Updates > Release track**. Stable offers stable releases only; Beta also includes prereleases. The default follows the installed version until you choose a track. Changing it saves your preference, clears any update offered for the previous track, and checks again. It never downgrades the installed version. The selector is disabled while a download or installer launch is in progress. The Updates tab is available with native Library settings in Zen 1.23.3b and newer. On Zen 1.22.3b, set the string preference `zennia.updates.track` to `stable` or `beta` in `about:config`. Only releases with an installer for the current platform and a checksum file are offered.
 
 When an update is available, hover or focus the circular download button beside the gift icon to read its changelog. Click once to download the theme bundle, verify it against SHA256SUMS.txt, and apply it in place. Click **Restart to apply** when it finishes. Zen clears its startup caches during the restart. The updater does not launch an installer or change browser data. It checks ownership, supported Zen versions, and installed file hashes before writing, and rolls back failed writes. In-place bundle format 1 preserves the existing startup loader and managed preferences; releases that change either are rejected without modifying the installation. An interrupted update journal is recovered before the next update check. Releases without a theme bundle are skipped.
 

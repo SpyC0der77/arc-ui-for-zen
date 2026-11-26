@@ -2,15 +2,15 @@
 {
   /* Providers own list structure, entry titles and canonical URLs. Ordinary
      folders and tabs keep their native menus, including after detachment. */
-  :root[data-arc-ui]
-    #zenFolderActions[data-arc-provider-owned]
+  :root[data-zennia]
+    #zenFolderActions[data-zennia-provider-owned]
     :is(
       #context_zenFolderUnpack,
       #context_zenFolderNewSubfolder,
       #context_zenFolderToSpace
     ),
-  :root[data-arc-ui]
-    #tabContextMenu[data-arc-provider-owned]
+  :root[data-zennia]
+    #tabContextMenu[data-zennia-provider-owned]
     :is(
       #context_zen-edit-tab-title,
       #context_zen-edit-pinned-page,

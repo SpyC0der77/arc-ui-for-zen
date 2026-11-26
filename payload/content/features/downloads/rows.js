@@ -1,5 +1,5 @@
 /* Render native or debug downloads with the same rows and actions. No download state is stored here. */
-var ArcDownloadRows = {
+var ZenniaDownloadRows = {
   install(window, dependencies) {
     const { PathUtils, el, icon, downloadButton, runDownloadAction } =
       dependencies;
@@ -37,7 +37,7 @@ var ArcDownloadRows = {
           const { row } = cached;
           if (!download.stopped && download.hasProgress) {
             row.querySelector('progress').value = download.progress;
-            row.querySelector('.arc-download-meta').textContent =
+            row.querySelector('.zennia-download-meta').textContent =
               `${size(download.currentBytes)} of ${size(download.totalBytes)}`;
           }
           if (list.children[index] !== row) list.insertBefore(row, list.children[index] || null);
@@ -45,15 +45,15 @@ var ArcDownloadRows = {
           index++;
           continue;
         }
-        const row = el("li", { class: "arc-download-row" });
+        const row = el("li", { class: "zennia-download-row" });
         const name = PathUtils.filename(download.target.path);
         const main = el("button", {
           type: "button",
-          class: "arc-download-main",
+          class: "zennia-download-main",
           "aria-label": download.succeeded ? `Open ${name}` : name,
         });
         const fileIcon = el("span", {
-          class: "arc-download-icon",
+          class: "zennia-download-icon",
           "aria-hidden": "true",
         });
         fileIcon.append(
@@ -71,7 +71,7 @@ var ArcDownloadRows = {
         );
         main.append(fileIcon);
         const fileImage = el("img", {
-          class: "arc-download-file-icon",
+          class: "zennia-download-file-icon",
           alt: "",
           loading: "lazy",
           src: `moz-icon://${download.target.path}?size=32${download.succeeded ? "&state=normal" : ""}`,
@@ -92,7 +92,7 @@ var ArcDownloadRows = {
         fileIcon.append(fileImage);
         if (download.succeeded && /\.(png|jpe?g|gif|webp|avif)$/i.test(name)) {
           const preview = el("img", {
-            class: "arc-download-preview",
+            class: "zennia-download-preview",
             alt: "",
             loading: "lazy",
             decoding: "async",
@@ -118,9 +118,9 @@ var ArcDownloadRows = {
           "click",
           () => void runDownloadAction(download, "open"),
         );
-        const label = el("span", { class: "arc-download-label" });
+        const label = el("span", { class: "zennia-download-label" });
         label.append(
-          el("span", { class: "arc-download-name", title: name }, name),
+          el("span", { class: "zennia-download-name", title: name }, name),
         );
         const meta = download.succeeded
           ? downloadAge(download)
@@ -133,7 +133,7 @@ var ArcDownloadRows = {
               : download.hasProgress
                 ? `${size(download.currentBytes)} of ${size(download.totalBytes)}`
                 : "Downloading";
-        const detail = el("span", { class: "arc-download-meta" }, meta);
+        const detail = el("span", { class: "zennia-download-meta" }, meta);
         if (download.succeeded) {
           const time = new Date(
             download.endTime || download.startTime,
@@ -188,10 +188,10 @@ var ArcDownloadRows = {
       }
       for (const [download, cached] of previous)
         if (!current.has(download)) cached.row.remove();
-      for (const empty of list.querySelectorAll('.arc-download-empty')) empty.remove();
+      for (const empty of list.querySelectorAll('.zennia-download-empty')) empty.remove();
       lists.set(list, current);
       if (!downloads.length) {
-        const empty = el("li", { class: "arc-download-empty" });
+        const empty = el("li", { class: "zennia-download-empty" });
         empty.textContent = "No downloads yet";
         list.append(empty);
       }

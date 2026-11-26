@@ -1,19 +1,19 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
-  .arc-ui {
-    font-family: var(--arc-font);
+  .zennia {
+    font-family: var(--zennia-font);
     font-size: 14px;
     font-weight: 500;
     color: light-dark(#141414, #f0edf3);
     box-sizing: border-box;
   }
-  .arc-ui *,
-  .arc-ui *::before,
-  .arc-ui *::after {
+  .zennia *,
+  .zennia *::before,
+  .zennia *::after {
     box-sizing: border-box;
   }
-  .arc-ui button,
-  button.arc-ui {
+  .zennia button,
+  button.zennia {
     appearance: none;
     font: inherit;
     color: inherit;
@@ -22,18 +22,18 @@
     background: transparent;
     border-radius: 6px;
   }
-  .arc-ui button:hover,
-  button.arc-ui:hover {
+  .zennia button:hover,
+  button.zennia:hover {
     background: #14141418;
   }
-  .arc-ui button:disabled {
+  .zennia button:disabled {
     opacity: 0.4;
   }
-  .arc-ui button:focus-visible {
+  .zennia button:focus-visible {
     outline: 2px solid light-dark(#65556f, #e4d2f5);
     outline-offset: -2px;
   }
-  .arc-ui svg {
+  .zennia svg {
     width: 18px;
     height: 18px;
     flex-shrink: 0;
@@ -41,7 +41,7 @@
   }
   /* Native Zen press feedback must not resize the control or its background.
      Keep color feedback and leave child icon animations independent. */
-  :root[data-arc-ui]:not([customizing])
+  :root[data-zennia]:not([customizing])
     :is(.toolbarbutton-1, .urlbar-page-action, .identity-box-button,
         .zen-interactive-button) {
     transform: none !important;

@@ -20,7 +20,7 @@ evidence = ROOT / 'artifacts/debug-mode'
 evidence.mkdir(parents=True, exist_ok=True)
 
 try:
-    assert m.execute_script('return !!window.ZenArc?.debug?.available'), (
+    assert m.execute_script('return !!window.Zennia?.debug?.available'), (
         'Debug mode is unavailable; use a regular disposable window with Workspaces enabled')
     for opened in [True, False]:
         result = m.execute_async_script("""
@@ -31,13 +31,13 @@ try:
               for(let i=0;i<60&&library.hasAttribute('transitioning');i++)await new Promise(r=>setTimeout(r,25));
             }
             library.activeTab='downloads';
-            await ZenArc.setRail(opened);
+            await Zennia.setRail(opened);
             await settle();
-            await ZenArc.debug.toggle();
-            await ZenArc.debug.reset();
-            await ZenArc.debug.disable();
+            await Zennia.debug.toggle();
+            await Zennia.debug.reset();
+            await Zennia.debug.disable();
             await settle();
-            done({rail:ZenArc.diagnostics().rail,section:library.activeTab});
+            done({rail:Zennia.diagnostics().rail,section:library.activeTab});
           })().catch(e=>done({error:String(e)}));
         """, script_args=[opened])
         assert result == {'rail': opened, 'section': 'downloads'}, result
@@ -54,16 +54,16 @@ try:
         library.activeTab='history';await library.updateComplete;
         const section=library.querySelector('zen-library-history-section');
         section.activeFilters.delete('source:closed');section.activeFilters.add('source:history');
-        section.onFiltersChanged();await ZenArc.setRail(true);
+        section.onFiltersChanged();await Zennia.setRail(true);
         await new Promise(r=>setTimeout(r,400));
-        await ZenArc.debug.toggle();
+        await Zennia.debug.toggle();
         gURLBar.search('archive');const context=await gURLBar.lastQueryContextPromise;
         const result=context.results.find(r=>r.payload.commandId==='archive');
         gURLBar.view.selectedRowIndex=result.rowIndex;
         gURLBar.handleCommand(new KeyboardEvent('keydown',{key:'Enter',code:'Enter'}));
         for(let i=0;i<40&&!section.activeFilters.has('source:closed');i++)await new Promise(r=>setTimeout(r,25));
         const ranArchive=Services.prefs.getBoolPref('zen.library.history.closed-tabs');
-        await ZenArc.debug.disable();await library.updateComplete;
+        await Zennia.debug.disable();await library.updateComplete;
         done({ranArchive,closed:Services.prefs.getBoolPref('zen.library.history.closed-tabs'),
           history:section.activeFilters.has('source:history'),archive:section.activeFilters.has('source:closed')});
       })().catch(e=>done({error:String(e)}));
@@ -85,15 +85,15 @@ try:
           reached();await gate;return space;
         };
         try {
-          const activation=ZenArc.debug.toggle().catch(error=>String(error));
+          const activation=Zennia.debug.toggle().catch(error=>String(error));
           await paused;
-          ZenArc.debug.destroy();
+          Zennia.debug.destroy();
           release();
           const error=await activation;
-          await ZenArc.debug.disable();
+          await Zennia.debug.disable();
           done({calls,baseline,spaces:manager.getWorkspaces().length,
-            enabled:ZenArc.debug.enabled,
-            journal:Services.prefs.getStringPref('arc-ui.debug.owned-data',''),error});
+            enabled:Zennia.debug.enabled,
+            journal:Services.prefs.getStringPref('zennia.debug.owned-data',''),error});
         } finally {manager.createAndSaveWorkspace=original;release();}
       })().catch(e=>done({error:String(e)}));
     """)

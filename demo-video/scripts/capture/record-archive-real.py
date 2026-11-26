@@ -31,13 +31,13 @@ try:
   if not js('return window.demoRealIdle.linkedBrowser.isLoadingDocument'):break
   time.sleep(.1)
  shot('JavaScript reference as a background tab',duration=3.5)
- source=Path('payload/arc.uc.js').read_text(encoding='utf-8')
+ source=Path('payload/zennia.uc.js').read_text(encoding='utf-8')
  info=source[source.index('  function archiveTabInfo'):source.index('  // Zen keeps the table')]
  announce=source[source.index('  function announceArchive'):source.index('  if (!PrivateBrowsingUtils.isWindowPrivate(window))',source.index('  function announceArchive'))]
- js("const fixture={};Services.scriptloader.loadSubScript('chrome://arc-ui/content/archive.js',fixture,'UTF-8');const later=(fn,ms)=>window.setTimeout(fn,ms);const animate=(node,frames,options)=>node.animate(frames,options).finished;"+info+announce+"window.demoRealIdle._lastAccessed=Date.now()-13*3600000;window.demoRealArchiveStop=fixture.ArcArchive.start({tabs:()=>[archiveTabInfo(window.demoRealIdle)],close:row=>gBrowser.removeTab(row.tab,{animate:false}),announce:announceArchive,getHours:()=>12,schedule:later,cancel:clearTimeout,delay:600,interval:3600000});")
+ js("const fixture={};Services.scriptloader.loadSubScript('chrome://zennia/content/archive.js',fixture,'UTF-8');const later=(fn,ms)=>window.setTimeout(fn,ms);const animate=(node,frames,options)=>node.animate(frames,options).finished;"+info+announce+"window.demoRealIdle._lastAccessed=Date.now()-13*3600000;window.demoRealArchiveStop=fixture.ZenniaArchive.start({tabs:()=>[archiveTabInfo(window.demoRealIdle)],close:row=>gBrowser.removeTab(row.tab,{animate:false}),announce:announceArchive,getHours:()=>12,schedule:later,cancel:clearTimeout,delay:600,interval:3600000});")
  shot('Auto archive JavaScript reference',duration=4)
- shot('Archive library',"document.querySelector('zen-library').activeTab='history';ZenArc.setRail(true)",4)
- shot('Restore JavaScript reference',"const row=[...document.querySelectorAll('zen-library .zen-library-row')].find(e=>e.textContent.includes('JavaScript'));if(row)row.click();window.setTimeout(()=>ZenArc.setRail(false),450)",4.5)
+ shot('Archive library',"document.querySelector('zen-library').activeTab='history';Zennia.setRail(true)",4)
+ shot('Restore JavaScript reference',"const row=[...document.querySelectorAll('zen-library .zen-library-row')].find(e=>e.textContent.includes('JavaScript'));if(row)row.click();window.setTimeout(()=>Zennia.setRail(false),450)",4.5)
  shot('Finish on Work',"gBrowser.selectedTab=window.demoTabs.find(t=>t.title==='CSS').tab",3.5)
 finally:
  ff.stdin.close();ff.wait();(DEMO/'timeline'/'archive-real-shots.json').write_text(json.dumps(shots,indent=2));m.delete_session()

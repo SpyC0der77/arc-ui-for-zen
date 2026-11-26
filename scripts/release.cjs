@@ -39,7 +39,7 @@ function releaseChanges(repo, tag, request = args => JSON.parse(execFileSync('gh
 function prepare(directory = 'release', notesFile = 'release-notes.md', changes = '') {
   const names = fs.readdirSync(directory).filter(name => /\.(exe|dmg|zip|AppImage)$/.test(name)).sort();
   for (const platform of ['Windows.exe', 'macOS-.*\\.dmg', 'macOS-.*\\.zip', 'Linux-.*\\.AppImage']) {
-    if (!names.some(name => new RegExp(`^Arc-UI-Zen-${version.replaceAll('.', '\\.')}\-${platform}$`).test(name))) {
+    if (!names.some(name => new RegExp(`^Zennia-${version.replaceAll('.', '\\.')}\-${platform}$`).test(name))) {
       throw new Error(`Missing release asset for ${platform}`);
     }
   }
@@ -54,7 +54,7 @@ function prepare(directory = 'release', notesFile = 'release-notes.md', changes 
     }
   }
   collect(payload);
-  const updateName = `Arc-UI-Zen-${version}-Update.json`;
+  const updateName = `Zennia-${version}-Update.json`;
   fs.writeFileSync(path.join(directory, updateName), JSON.stringify({format:1, version, supported:require('../installer/engine.cjs').SUPPORTED_VERSIONS, files}));
   names.push(updateName); names.sort();
   const checksums = names.map(name => `${crypto.createHash('sha256').update(fs.readFileSync(path.join(directory, name))).digest('hex')}  ${name}\n`).join('');
