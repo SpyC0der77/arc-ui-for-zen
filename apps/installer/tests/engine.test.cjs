@@ -109,7 +109,7 @@ function otf(tag){
 }
 test('the SF Pro family imports every Text and Display face and uses heavier cuts off macOS',async t=>{
  const f=await fixture(t);
- const {FAMILY,STYLES}=require('../installer/custom-font.cjs');
+ const {FAMILY,STYLES,stylesheet,readFamily}=require('../installer/custom-font.cjs');
  const installed=relative=>path.join(f.profile,'chrome','zennia',relative);
  const folder=path.join(f.root,'San-Francisco-Pro-Fonts-master');
  await fs.mkdir(folder);
@@ -121,11 +121,12 @@ test('the SF Pro family imports every Text and Display face and uses heavier cut
  for(const file of files)assert.deepEqual(await fs.readFile(installed(path.join(FAMILY,file))),otf(file));
  await assert.rejects(fs.access(installed(path.join(FAMILY,'SF-Pro-Rounded-Regular.otf'))),{code:'ENOENT'});
  const css=await fs.readFile(installed(STYLES),'utf8');
- // The file each @font-face uses for a family, weight and style.
+ const offMac=stylesheet(await readFamily(folder),'win32').toString();
+ // The file each @font-face uses for a family, weight and style, off macOS.
  const face=(family,weight,style='normal')=>{
   const rule=`@font-face { font-family: "${family}"; src: url("sf-pro/`;
   const tail=`") format("opentype"); font-weight: ${weight}; font-style: ${style}; }`;
-  return css.split('\n').map(line=>line.trim()).find(line=>line.startsWith(rule)&&line.endsWith(tail))?.slice(rule.length,-tail.length);
+  return offMac.split('\n').map(line=>line.trim()).find(line=>line.startsWith(rule)&&line.endsWith(tail))?.slice(rule.length,-tail.length);
  };
  // Off macOS, regular text is drawn with the Medium cut; semibold and bold keep their own.
  assert.equal(face('Zennia Custom',400),'SF-Pro-Text-Medium.otf');
