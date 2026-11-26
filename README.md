@@ -21,7 +21,7 @@ Run `pnpm install` once at the root. `pnpm test`, `pnpm start`, `pnpm cli`, `pnp
 
 Open the installer, select your Zen application and profile, close Zen, then click **Install**. Use **Open Zen** afterward. On first launch after Zen onboarding, a local preview page opens. Its Download button plays the file animation without downloading anything.
 
-On the installer's **Appearance** tab, choose **Default**, **Geist**, **SF Pro**, or **Custom file…** under **Browser font**. Geist is bundled. For SF Pro, use **Open SF-Pro.ttf on GitHub** and import the downloaded file. Custom files can be OTF, TTF, or WOFF2. Zennia applies the chosen font across Zen's interface and built-in pages and keeps it through theme updates. Choose **Default** and reinstall to restore the default font.
+On the installer's **Appearance** tab, choose a **Browser font**: **Default**, **Geist** (bundled), **SF Pro**, **SF Pro family (all weights)**, or **Custom file…** (OTF, TTF, or WOFF2). On macOS, Default already is SF Pro, so the SF Pro choices stay hidden unless one is already installed. Elsewhere, SF Pro uses **Open SF-Pro.ttf on GitHub** and the downloaded file, and the family uses the unzipped GitHub folder that holds the Text and Display weights. Zennia applies the chosen font across Zen's interface and built-in pages and keeps it through theme updates. Choose **Default** and reinstall to restore the default font.
 
 ### Upgrading from Arc UI for Zen
 
@@ -120,7 +120,7 @@ Undocking hides the sidebar even on Zen's empty new-tab page. After clicking Und
 
 ### Typography
 
-Native tab labels, the address field, menus and added controls share one UI font stack. macOS uses its system face; Windows and Linux use the bundled Geist regular, medium and semibold faces. Tab labels and added controls use medium weight for legibility; folder names use semibold. Website font families and page zoom remain unchanged.
+Native tab labels, the address field, menus and added controls share one UI font stack. By default macOS uses its system face, and Windows and Linux use the bundled Geist regular, medium and semibold faces. The **Browser font** choice on the Appearance tab (see Install) replaces that stack for Zen's interface and built-in pages. Tab labels and added controls use medium weight for legibility; folder names use semibold. Website font families and page zoom remain unchanged.
 
 On Windows the installer also applies a profile-local DirectWrite preset: Natural Symmetric rendering (`rendering_mode=5`), grayscale preference (`cleartype_level=0`), moderate contrast (`enhanced_contrast=50`) and gamma 2.2 (`gamma=2200`). These are supported [Mozilla rendering preferences](https://github.com/mozilla-firefox/firefox/blob/main/modules/libpref/init/all.js). They affect browser and website text where the graphics backend honors them. The result depends on display scaling, GPU and font; it approximates macOS rather than replacing DirectWrite with CoreText. No Windows registry or system-wide ClearType settings are changed. macOS and Linux keep their native rasterization settings.
 
@@ -150,7 +150,7 @@ Install and removal use atomic file writes and rollback on ordinary write failur
 
 ## Build and verify
 
-From the repository root, with Node.js and pnpm (the `dist` commands and the commands below run from `apps/installer`):
+From the repository root, with Node.js and pnpm (the `dist` commands run from `apps/installer`):
 
 ```sh
 pnpm install --frozen-lockfile

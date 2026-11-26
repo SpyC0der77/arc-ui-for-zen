@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Add an Appearance **Browser font** choice: Default, bundled Geist, SF Pro, the SF Pro family (every Text and Display weight from a downloaded folder), or a custom OTF, TTF or WOFF2 file. The SF Pro choices are hidden on macOS, where Default is labelled **Default (SF Pro)**.
 - Turn the repository into a pnpm workspace: the installer, theme payload, tests and developer notes move to `apps/installer`; local `zen-instances/` and `artifacts/` stay at the repository root.
 - Add the project website in `apps/website`, built with Next.js from the installer's own version data, changelog and screenshots.
 - Make Liquid Glass sliders widen into a refracting lens while held, and make dropdown lists stretch out of their trigger before opening.
