@@ -75,7 +75,27 @@ app.whenReady().then(async()=>{
  assert.equal(await run('document.activeElement.id'),'appearance-tab');
  assert.equal(await run('document.getElementById("appearance-panel").hidden'),false);
  assert.equal(await run('document.getElementById("installation-panel").hidden'),true);
+ // Off macOS, Default is Zen's own font, so offer the closest SF Pro match once.
+ await choosePreset('default');
+ assert.equal(await run('document.getElementById("font-suggestion").hidden'),false,'Default off macOS suggests the SF Pro family');
+ await run('document.getElementById("use-sf-pro-family").click()');
+ assert.equal(await run('document.getElementById("font-preset").value'),'sf-pro-family','The suggestion selects the SF Pro family');
+ assert.equal(await run('document.getElementById("font-suggestion").hidden'),true,'Using the suggestion hides it');
+ assert.equal(await run('document.activeElement.id'),'font-preset','Focus stays on the font choice after the suggestion hides');
+ // Rescanning resets the font choice and reactivates the Installation tab.
+ discovery.platform='darwin';
+ await run('document.getElementById("search-again").click()');
+ for(let i=0;i<100;i++){if(await run('document.querySelector("#font-preset option[value=default]").textContent==="Default (SF Pro)"'))break;await delay(50);}
+ await choosePreset('default');
+ assert.equal(await run('document.getElementById("font-suggestion").hidden'),true,'macOS never suggests the SF Pro family');
+ discovery.platform=process.platform;
+ await run('document.getElementById("search-again").click()');
+ for(let i=0;i<100;i++){if(await run('document.querySelector("#font-preset option[value=default]").textContent==="Default"'))break;await delay(50);}
+ await run('document.getElementById("appearance-tab").click()');
+ await choosePreset('default');
+ assert.equal(await run('document.getElementById("font-suggestion").hidden'),false,'Restoring the platform brings the suggestion back');
  await choosePreset('geist');
+ assert.equal(await run('document.getElementById("font-suggestion").hidden'),true,'Other choices hide the suggestion');
  assert.equal(await run('document.getElementById("font-preview").hidden'),false);
  await choosePreset('sf-pro');
  await run('document.getElementById("install").click()');
@@ -106,6 +126,8 @@ app.whenReady().then(async()=>{
  await assert.rejects(fs.access(engine.receiptFile(profile)));
  await assert.rejects(fs.access(path.join(profile,'chrome','zennia','content','custom-font','face')));
  discovery.apps=[];discovery.profiles=[];discovery.instances=[];
+ // "Removed." appears before the remove operation finishes refreshing versions; wait for it to end.
+ for(let i=0;i<100&&await window.webContents.executeJavaScript('document.getElementById("search-again").disabled');i++)await delay(50);
  await window.webContents.executeJavaScript('document.getElementById("search-again").click()');
  for(let i=0;i<100;i++){if(await window.webContents.executeJavaScript('document.getElementById("status").textContent.startsWith("No Zen found")'))break;await delay(50);}
  assert.equal(await window.webContents.executeJavaScript('document.getElementById("manual-installation").open'),true,'An empty search offers manual selection');

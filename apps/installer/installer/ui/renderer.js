@@ -153,12 +153,21 @@ function renderFont(){
  $('choose-font').textContent=imports?.choose||'Choose file…';
  $('font-name').textContent=$('font-name').title=name||imports?.empty||'No file selected';
  $('font-preview').hidden=choice!=='geist'&&!previewFace;
+ // Default is Zen's own font off macOS, so point those users at the closest SF Pro match.
+ $('font-suggestion').hidden=!(platform&&!mac&&choice==='default');
 }
 $('font-preset').addEventListener('change',()=>{
  resetFontChoice();
  fontChoice=$('font-preset').value;
  renderFont();
  status('Font choice updated. Install to apply it.');
+});
+$('use-sf-pro-family').addEventListener('click',()=>{
+ const field=$('font-preset');
+ field.value='sf-pro-family';
+ field.dispatchEvent(new Event('change'));
+ // The button hides with the suggestion, so keep keyboard focus on the select.
+ field.focus();
 });
 $('font-source').addEventListener('click',()=>void execute(async()=>unwrap(await api.openFontSource($('font-preset').value))));
 $('choose-font').addEventListener('click',()=>void execute(async()=>{
