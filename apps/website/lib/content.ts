@@ -36,17 +36,31 @@ export function installerVersion(): string {
 
 export type Change = { release: string; text: string };
 
+const changelog = () => readFileSync(path.join(repo, 'CHANGES.md'), 'utf8');
+
 /** Changelog bullets from CHANGES.md, newest release first, markdown removed. */
 export function changes(): Change[] {
-  const source = readFileSync(path.join(repo, 'CHANGES.md'), 'utf8');
   const result: Change[] = [];
   let release = '';
-  for (const line of source.split(/\r?\n/)) {
+  for (const line of changelog().split(/\r?\n/)) {
     const heading = line.match(/^##\s+(.+)/);
     if (heading) release = heading[1].trim();
     const bullet = line.match(/^-\s+(.+)/);
     if (bullet && release) result.push({ release, text: bullet[1].replace(/`([^`]+)`/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1') });
   }
   return result;
+}
+
+/**
+ * The bullets for the installer's current release: its `## v<version>` section, or
+ * `## Unreleased` while that version is not yet written down. Fails the build when neither exists,
+ * so a renamed heading cannot silently produce an empty changelog.
+ */
+export function recentChanges(): Change[] {
+  const headings = new Set([...changelog().matchAll(/^##\s+(.+)$/gm)].map(match => match[1].trim()));
+  const version = `v${installerVersion()}`;
+  const release = headings.has(version) ? version : headings.has('Unreleased') ? 'Unreleased' : null;
+  if (!release) throw new Error(`CHANGES.md needs a "## ${version}" or "## Unreleased" heading for the website changelog.`);
+  return changes().filter(change => change.release === release);
 }
 

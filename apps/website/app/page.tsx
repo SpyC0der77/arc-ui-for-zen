@@ -1,13 +1,13 @@
 import Image from 'next/image';
 import { Compatibility } from '@/components/compatibility';
 import { Features } from '@/components/features';
-import { changes, DOWNLOAD, GITHUB, installerVersion, zenVersions } from '@/lib/content';
+import { DOWNLOAD, GITHUB, installerVersion, recentChanges, zenVersions } from '@/lib/content';
 
 export default function Home() {
   const versions = zenVersions();
   const range = `${versions[0].version} to ${versions.at(-1)!.version}`;
   const version = installerVersion();
-  const recent = changes().filter(change => change.release === `v${version}`);
+  const recent = recentChanges();
 
   return (
     <>
