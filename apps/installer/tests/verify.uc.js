@@ -36,6 +36,8 @@
     gURLBar.focusedViaMousedown=true;
     gURLBar.focus();
     await gURLBar.startQuery({allowAutofill:false});
+    // Slow CI runners can take longer than a fixed delay to float the field, so wait for it.
+    for(let i=0;i<60&&!(gURLBar.hasAttribute('zen-floating-urlbar')&&gURLBar.hasAttribute('open'));i++)await wait(50);
     await wait(250);
     check(gURLBar.hasAttribute('zen-floating-urlbar')&&gURLBar.hasAttribute('open'),'mouse-focused address field opens native centered search');
     const searchRect=gURLBar.getBoundingClientRect();
