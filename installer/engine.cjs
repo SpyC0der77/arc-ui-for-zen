@@ -6,7 +6,9 @@ const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const run = promisify(execFile);
 const VERSION = '0.1.8-beta.10';
-const SUPPORTED_VERSIONS = Object.freeze(['1.22.3b', '1.23.3b', '1.23.4b', '1.24b', '1.24.1b']);
+// Supported Zen versions are the data files in payload/zen-versions.
+const versions = require('./versions.cjs');
+const SUPPORTED_VERSIONS = versions.SUPPORTED_VERSIONS;
 const SUPPORTED = SUPPORTED_VERSIONS.join(', ');
 const BEGIN = '// BEGIN Zennia';
 const END = '// END Zennia';
@@ -138,16 +140,15 @@ async function install(installation,profile,{payload=path.join(__dirname,'..','p
   const userBytes=await fs.readFile(userPath).catch(e=>{if(e.code==='ENOENT')return null;throw e;});
   const user=userBytes?utf8(userBytes):'';
   if(LAYOUTS.some(names=>user.includes(names.begin)||user.includes(names.end)))throw new Error('An existing Zennia settings block has no installation receipt. Restore that installation before continuing.');
-  const settings=JSON.parse(await fs.readFile(path.join(payload,'settings.json'),'utf8'));
-  // DirectWrite tuning is Windows-only. Keep CoreText/FreeType native elsewhere.
-  if((options.platform||process.platform)==='win32')Object.assign(settings,JSON.parse(await fs.readFile(path.join(payload,'settings.windows.json'),'utf8')));
+  // Managed preferences come from this Zen version's data, plus platform-only tuning.
+  const settings=versions.settings(target.version,options.platform||process.platform,payload);
   const block=BEGIN+'\n'+Object.entries(settings).map(([k,v])=>`user_pref(${JSON.stringify(k)}, ${JSON.stringify(v)});`).join('\n')+'\n'+END;
   const writes=new Map();
   writes.set(path.join(prefDir,'zennia-autoconfig.js'),await fs.readFile(path.join(payload,'zennia-autoconfig.js')));
   writes.set(path.join(target.resources,'zennia.cfg'),await fs.readFile(path.join(payload,'zennia.cfg')));
   writes.set(path.join(target.resources,'zennia-owner.json'),Buffer.from(JSON.stringify({profile:target.profile,version:VERSION})));
   for(const relative of await walk(payload)) {
-    if(['settings.json','settings.windows.json','zennia.cfg','zennia-autoconfig.js'].includes(relative))continue;
+    if(['zennia.cfg','zennia-autoconfig.js'].includes(relative))continue;
     writes.set(path.join(target.profile,'chrome','zennia',relative),await fs.readFile(path.join(payload,relative)));
   }
   writes.set(userPath,Buffer.from(user+(user&&!user.endsWith('\n')?'\n':'')+block+'\n'));

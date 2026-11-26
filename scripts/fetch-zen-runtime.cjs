@@ -8,13 +8,15 @@ const { createWriteStream } = require('node:fs');
 const { promisify } = require('node:util');
 const run = promisify(require('node:child_process').execFile);
 const { SUPPORTED_VERSIONS, parseIni } = require('../installer/engine.cjs');
-const builds = require('./zen-runtime-builds.json');
+const versions = require('../installer/versions.cjs');
+// Pinned official Windows installers, one per payload/zen-versions file.
+const builds = SUPPORTED_VERSIONS.map(version => ({ version, ...versions.resolve(version).runtime['windows-x64'] }));
 
 function validateManifest(entries = builds) {
   if (!Array.isArray(entries) || entries.length !== SUPPORTED_VERSIONS.length ||
       new Set(entries.map(entry => entry.version)).size !== entries.length ||
       SUPPORTED_VERSIONS.some(version => !entries.some(entry => entry.version === version))) {
-    throw new Error('Runtime manifest must match engine.SUPPORTED_VERSIONS exactly.');
+    throw new Error('Runtime builds must match the supported Zen versions exactly.');
   }
   for (const entry of entries) {
     if (entry.url !== `https://github.com/zen-browser/desktop/releases/download/${entry.version}/zen.installer.exe` ||
@@ -88,4 +90,4 @@ if (require.main === module) {
     catch (error) { console.error(error.message); process.exitCode = 1; }
   } else fetchRuntime(args[0]).then(core => console.log(core)).catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { validateManifest, selectBuild, verifyChecksum, validateApplication };
+module.exports = { builds, validateManifest, selectBuild, verifyChecksum, validateApplication };

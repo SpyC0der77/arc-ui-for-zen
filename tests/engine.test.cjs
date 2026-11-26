@@ -74,9 +74,12 @@ for(const version of engine.SUPPORTED_VERSIONS)test('installs and removes suppor
  await assert.rejects(fs.access(engine.receiptFile(f.profile)));
 });
 test('loader and installer enforce the same exact versions',async()=>{
+ // The loader accepts a Zen version only when its data file was installed.
  const cfg=await fs.readFile(path.join(__dirname,'../payload/zennia.cfg'),'utf8');
- const versions=JSON.parse(cfg.match(/if \(!(?<versions>\[[^\]]+\])\.includes\(Services\.appinfo\.version\)\)/).groups.versions);
- assert.deepEqual(versions,engine.SUPPORTED_VERSIONS);
+ assert.match(cfg,/data\.append\("zen-versions"\); data\.append\(version \+ "\.json"\);/);
+ assert.match(cfg,/!data\.exists\(\)\) return;/);
+ const files=(await fs.readdir(path.join(__dirname,'../payload/zen-versions'))).filter(name=>name!=='base.json').map(name=>name.replace(/\.json$/,''));
+ assert.deepEqual(files.sort(),[...engine.SUPPORTED_VERSIONS].sort());
 });
 test('rejects unsupported versions before modifying',async t=>{const f=await fixture(t);await fs.writeFile(path.join(f.resources,'application.ini'),'[App]\nVersion=99\n');await assert.rejects(engine.install(f.app,f.profile,f.options),/supports Zen/);await assert.rejects(fs.access(engine.receiptFile(f.profile)));});
 test('refuses existing startup loaders',async t=>{const f=await fixture(t);const dir=path.join(f.resources,'defaults','pref');await fs.mkdir(dir,{recursive:true});await fs.writeFile(path.join(dir,'other.js'),'pref("general.config.filename", "other.cfg");');await assert.rejects(engine.install(f.app,f.profile,f.options),/Another AutoConfig/);await assert.rejects(fs.access(engine.receiptFile(f.profile)));});

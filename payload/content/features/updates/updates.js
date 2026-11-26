@@ -1,5 +1,5 @@
 var ZenniaUpdates = {
-  install(window, { el, icon, PrivateBrowsingUtils }) {
+  install(window, { el, icon, PrivateBrowsingUtils, zen }) {
     if (PrivateBrowsingUtils.isWindowPrivate(window)) return { destroy() {} };
     const { ZenniaUpdater: updater } = window.ChromeUtils.importESModule('chrome://zennia/content/updater.sys.mjs');
     const { document } = window;
@@ -15,7 +15,7 @@ var ZenniaUpdates = {
     popup.append(title, message, progress, notes, action, link);
     document.body.append(popup);
     const place = () => {
-      const footer = document.getElementById('zen-sidebar-foot-buttons');
+      const footer = document.getElementById(zen.name('zen-sidebar-foot-buttons'));
       const gift = document.getElementById('zennia-gift-button');
       if (footer && gift?.parentNode === footer && gift.nextElementSibling !== button) gift.after(button);
       else if (footer && button.parentNode !== footer) footer.append(button);

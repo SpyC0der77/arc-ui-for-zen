@@ -2,11 +2,11 @@
 var ZenniaCompactSidebar = {
   install(window, dependencies = {}) {
     const { document, DOMRect } = window;
-    const { el, createMotion, hideDownloads, updateNav } = dependencies;
+    const { el, createMotion, hideDownloads, updateNav, zen } = dependencies;
     const getComputedStyle = window.getComputedStyle.bind(window);
     const root = document.documentElement;
     const toolbox = document.getElementById("navigator-toolbox");
-    const content = document.getElementById("zen-tabbox-wrapper");
+    const content = document.getElementById(zen.name("zen-tabbox-wrapper"));
     const compactMode = window.gZenCompactModeManager;
     let destroyed = false;
     const motion = createMotion(window);
@@ -21,12 +21,12 @@ var ZenniaCompactSidebar = {
     const expandSidebar = (compactMode._setElementExpandAttribute = function (
       element,
       value,
-      attr = "zen-has-hover",
+      attr = zen.name("zen-has-hover"),
     ) {
       if (
         element === toolbox &&
         value &&
-        attr === "zen-has-hover" &&
+        attr === zen.name("zen-has-hover") &&
         sidebarRearmBounds
       )
         return;
@@ -49,7 +49,7 @@ var ZenniaCompactSidebar = {
       const before = content.getBoundingClientRect(),
         sideBefore = toolbox.getBoundingClientRect();
       const wasCompact = this.preference;
-      const panel = document.getElementById("zen-toolbar-background");
+      const panel = document.getElementById(zen.name("zen-toolbar-background"));
       const panelBefore = panel.getBoundingClientRect(),
         panelStyle = getComputedStyle(panel);
       const peekVisible =
@@ -109,7 +109,7 @@ var ZenniaCompactSidebar = {
         if (!wasCompact) {
           this.clearFlashTimeout("has-hover" + toolbox.id);
           originalExpand.call(this, toolbox, false);
-          toolbox.removeAttribute("zen-user-show");
+          toolbox.removeAttribute(zen.name("zen-user-show"));
         }
         if (!reduced())
           root.setAttribute(

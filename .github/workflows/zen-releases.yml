@@ -1,0 +1,128 @@
+name: Watch Zen releases
+# Daily: for each new stable Zen release without a version file, test Zennia on
+# it with a draft file copied from the newest supported version, and open one
+# issue saying whether it works without changes.
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: zen-releases
+  cancel-in-progress: false
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+    outputs:
+      releases: ${{ steps.find.outputs.releases }}
+      count: ${{ steps.find.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: find
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/zen-release-watch.cjs find
+  report:
+    needs: find
+    if: needs.find.outputs.count != '0'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        release: ${{ fromJSON(needs.find.outputs.releases) }}
+    env:
+      VERSION: ${{ matrix.release.version }}
+      RELEASE: ${{ toJSON(matrix.release) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install native pointer test driver
+        run: python -m pip install --target artifacts/test-python -r tests/runtime-requirements.txt
+      # Each check records its exit code instead of failing the job, so the
+      # issue reports every result. An empty status means the step did not run.
+      - name: Download the release with a draft version file
+        id: fetch
+        if: matrix.release.sha256 != ''
+        shell: bash
+        run: |
+          node scripts/zen-release-watch.cjs draft "$RELEASE"
+          set +e
+          node scripts/fetch-zen-runtime.cjs "$VERSION" > check.log 2>&1
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+      - name: Check Zen internals
+        id: check
+        if: steps.fetch.outputs.status == '0'
+        shell: bash
+        run: |
+          set +e
+          node scripts/zen-surface.cjs "$VERSION" > check.log 2>&1
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+      - name: Run the browser test suite
+        id: runtime
+        if: steps.fetch.outputs.status == '0'
+        shell: bash
+        run: |
+          set +e
+          node tests/runtime.cjs "artifacts/zen-builds/$VERSION/core" --pointer > runtime.log 2>&1
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+      - name: Upload logs and browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zen-${{ matrix.release.version }}-check
+          if-no-files-found: ignore
+          # Only explicit diagnostic outputs, never application copies or profiles.
+          path: |
+            check.log
+            runtime.log
+            zen-instances/runtime-*/diagnostics/*.json
+            zen-instances/runtime-*/diagnostics/*.log
+            zen-instances/runtime-*/diagnostics/*.png
+      - name: Open issue
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHECK_LOG: check.log
+          # A failed download is reported as a failed surface check.
+          CHECK_STATUS: ${{ steps.check.outputs.status || steps.fetch.outputs.status }}
+          RUNTIME_LOG: runtime.log
+          RUNTIME_STATUS: ${{ steps.runtime.outputs.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Support Zen $VERSION"
+          # A run that overlapped with another may already have reported it.
+          if gh issue list --state all --search "\"$title\" in:title" --json title --jq '.[].title' | grep -Fxq "$title"; then
+            echo "Already reported: $title"; exit 0
+          fi
+          node scripts/zen-release-watch.cjs body "$RELEASE" > body.md
+          case "$(node -e "console.log(require('./scripts/zen-release-watch.cjs').verdict({check:{status:process.env.CHECK_STATUS},runtime:{status:process.env.RUNTIME_STATUS}}))")" in
+            unchanged) label=zen-works-unchanged; color=2da44e; about="Runs on this Zen release with only a version file" ;;
+            changes) label=zen-needs-changes; color=d1242f; about="Fails checks on this Zen release" ;;
+            *) label=zen-unchecked; color=8c959f; about="Zen release could not be checked automatically" ;;
+          esac
+          gh label create zen-version --color 8f7ab8 --description "Support for a Zen release" 2>/dev/null || true
+          gh label create "$label" --color "$color" --description "$about" 2>/dev/null || true
+          gh issue create --title "$title" --body-file body.md --label zen-version --label "$label"

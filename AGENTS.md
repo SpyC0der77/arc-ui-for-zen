@@ -2,7 +2,9 @@
 
 ## Personal and development Zen instances
 
-Keep one personal Zen at `/Applications/Zen.app` with its personal profile untouched. Keep one reusable development application and separate profile per tested Zen version under this checkout, at `zen-instances/dev-zen/<version>/Zen.app` and `zen-instances/dev-zen/<version>/profile`. The current macOS development version is `1.24b`; add another version only when testing that version actually requires it.
+Keep one personal Zen at `/Applications/Zen.app` with its personal profile untouched. Keep one reusable development application and separate profile per tested Zen version under this checkout, at `zen-instances/dev-zen/<version>/Zen.app` and `zen-instances/dev-zen/<version>/profile`. The current macOS development version is `1.24b` and the Windows one is `1.24.1b`; add another version only when testing that version actually requires it.
+
+Development apps must not update themselves: Zen silently upgrades in place, which leaves a folder named for one version running another. After creating or replacing a development app, run `pnpm dev:lock` (`node scripts/dev-zen.cjs`). It writes a `DisableAppUpdate` enterprise policy into each app under `zen-instances/dev-zen/` and warns when a folder's name does not match the Zen version inside it.
 
 Always reuse the existing versioned development instance for testing and screenshots. Do not create another random `chrome-session-*` application/profile or launch a temporary app outside the checkout when a reusable instance exists. Legacy copies under `zen-instances/retired-dev-zen/` are backups, not testing targets; do not launch them. Do not reuse personal profiles, change the personal installation, or close personal Zen for development testing.
 

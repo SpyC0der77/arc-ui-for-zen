@@ -2,19 +2,19 @@
 var ZenniaSidebarWidth = {
   install(window, dependencies = {}) {
     const { document } = window;
-    const { Services } = dependencies;
+    const { Services, zen } = dependencies;
     // Keep Zen's native splitter and persisted width after the initial theme setup.
     if (!Services.prefs.getBoolPref("zennia.width-initialized", false)) {
       const toolbox = document.getElementById("navigator-toolbox");
       toolbox.style.width = "264px";
-      toolbox.style.setProperty("--zen-sidebar-width", "264px");
+      toolbox.style.setProperty(zen.name("--zen-sidebar-width"), "264px");
       toolbox.setAttribute("width", "264px");
       Services.prefs.setBoolPref("zennia.width-initialized", true);
     }
     // Zen resets the sidebar to its platform default on splitter double-click.
     // Intercept only that gesture; leave native pointer-based resizing intact.
     function preventSidebarWidthReset(event) {
-      if (event.button !== 0 || event.target.id !== "zen-sidebar-splitter")
+      if (event.button !== 0 || event.target.id !== zen.name("zen-sidebar-splitter"))
         return;
       event.preventDefault();
       event.stopImmediatePropagation();

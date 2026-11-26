@@ -9,19 +9,24 @@
   const { PrivateBrowsingUtils } = ChromeUtils.importESModule(
     "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   );
+  // Everything that differs between Zen versions comes from zen-versions/.
+  const { zen } = ChromeUtils.importESModule(
+    "chrome://zennia/content/zen.sys.mjs",
+  );
+  zen.attach(window);
   const root = document.documentElement;
   // Before any feature reads its settings.
   load("shared/legacy-prefs", "ZenniaLegacyPrefs").migrate(Services.prefs);
   if (
     !document.getElementById("navigator-toolbox") ||
-    !document.getElementById("zen-tabbox-wrapper") ||
+    !document.getElementById(zen.name("zen-tabbox-wrapper")) ||
     !window.gZenCompactModeManager
   ) {
     throw new Error("Unsupported Zen window layout");
   }
 
   window.windowUtils.loadSheetUsingURIString(
-    "chrome://zennia-runtime/content/zennia.css",
+    zen.stylesheet("chrome://zennia-runtime/content/zennia.css"),
     window.windowUtils.USER_SHEET,
   );
   root.setAttribute("data-zennia", "0.1.0");
@@ -38,10 +43,17 @@
     return scope[name];
   }
   const cleanups = [];
+  // A feature that fails to install is skipped; the others still load. Wiring
+  // below tolerates a missing feature, so one Zen change cannot take down the rest.
   function install(path, name, dependencies = {}) {
-    const feature = load(path, name).install(window, dependencies);
-    cleanups.push(() => feature.destroy());
-    return feature;
+    try {
+      const feature = load(path, name).install(window, { zen, ...dependencies });
+      cleanups.push(() => feature.destroy());
+      return feature;
+    } catch (error) {
+      console.error(`[Zennia] ${name} unavailable on Zen ${zen.version}`, error);
+      return null;
+    }
   }
 
   const createMotion = (browserWindow) =>
@@ -77,14 +89,14 @@
     el,
     icon,
     button,
-    rememberAddress: address.rememberAddress,
-    toggleDock: () => sidebar.toggleDock(),
+    rememberAddress: (...args) => address?.rememberAddress(...args),
+    toggleDock: () => sidebar?.toggleDock(),
   });
   const library = install("features/library/library", "ZenniaLibrary", {
     icon,
     nudge,
     report,
-    hideDownloads: () => downloads.hideDownloads(),
+    hideDownloads: () => downloads?.hideDownloads(),
   });
   downloads = install("features/downloads/downloads", "ZenniaDownloads", {
     Services,
@@ -99,39 +111,39 @@
     status,
     report,
     createRows: load("features/downloads/rows", "ZenniaDownloadRows").install,
-    gift: library.gift,
-    isLibraryOpen: library.isOpen,
+    gift: library?.gift,
+    isLibraryOpen: () => !!library?.isOpen(),
   });
   sidebar = install("features/sidebar/compact-mode", "ZenniaCompactSidebar", {
     el,
     createMotion,
-    hideDownloads: downloads.hideDownloads,
-    updateNav: navigation.updateNav,
+    hideDownloads: () => downloads?.hideDownloads(),
+    updateNav: () => navigation?.updateNav(),
   });
 
   // Keep the public interface stable for commands, debug mode, and runtime tests.
   let archive;
   window.Zennia = {
     version: "0.1.0",
-    previewDownload: downloads.flight,
-    toggleDock: sidebar.toggleDock,
-    setRail: library.setRail,
-    openDownloads: downloads.openDownloads,
-    hideDownloads: downloads.hideDownloads,
+    previewDownload: (...args) => downloads?.flight(...args),
+    toggleDock: (...args) => sidebar?.toggleDock(...args),
+    setRail: async (...args) => library?.setRail(...args),
+    openDownloads: (...args) => downloads?.openDownloads(...args),
+    hideDownloads: (...args) => downloads?.hideDownloads(...args),
     diagnostics: () => ({
       version: "0.1.0",
       browser: Services.appinfo.version,
       compact: window.gZenCompactModeManager.preference,
-      sidebarHoverBlocked: sidebar.isHoverBlocked(),
-      ...downloads.diagnostics(),
+      sidebarHoverBlocked: !!sidebar?.isHoverBlocked(),
+      ...downloads?.diagnostics(),
       debug: !!window.Zennia.debug?.enabled,
       private: PrivateBrowsingUtils.isWindowPrivate(window),
-      rail: library.isOpen(),
+      rail: !!library?.isOpen(),
       archiveHours: archive ? archive.hours() : null,
     }),
   };
-  navigation.updateNav();
-  downloads.renderDownloads();
+  navigation?.updateNav();
+  downloads?.renderDownloads();
   archive = install("features/archive/auto-archive", "ZenniaAutoArchive", {
     Services,
     PrivateBrowsingUtils,
@@ -139,15 +151,23 @@
   });
 
   // These existing modules already own their behavior and return cleanup.
-  const stopNativeActions = load("native-actions", "ZenniaNativeActions").install({
-    document,
-    contextTabs: () => {
-      const tab = window.TabContextMenu.contextTab;
-      return tab?.multiselected ? [...gBrowser.selectedTabs] : [tab];
-    },
-  });
-  cleanups.push(stopNativeActions);
-  cleanups.push(load("split-actions", "ZenniaSplitActions").install(window));
+  try {
+    cleanups.push(load("native-actions", "ZenniaNativeActions").install({
+      document,
+      zen,
+      contextTabs: () => {
+        const tab = window.TabContextMenu.contextTab;
+        return tab?.multiselected ? [...gBrowser.selectedTabs] : [tab];
+      },
+    }));
+  } catch (error) {
+    console.error("[Zennia] Native action limits unavailable", error);
+  }
+  try {
+    cleanups.push(load("split-actions", "ZenniaSplitActions").install(window));
+  } catch (error) {
+    console.error("[Zennia] Split actions unavailable", error);
+  }
   try {
     const debug = ChromeUtils.importESModule(
       "chrome://zennia/content/debug.sys.mjs",
@@ -159,7 +179,7 @@
     window.Zennia.debug = debug.install(window, {
       html,
       isPrivate: PrivateBrowsingUtils.isWindowPrivate(window),
-      setDownloads: downloads.setDebugDownloads,
+      setDownloads: (...args) => downloads?.setDebugDownloads(...args),
       announce: (message) => {
         status.textContent = message;
       },

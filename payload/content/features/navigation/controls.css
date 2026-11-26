@@ -44,7 +44,7 @@
       gap: 0;
       min-width: 0;
     }
-    :root[data-zennia] #zennia-navigation-controls > :is(button, #PanelUI-menu-button, #zen-appmenu-button) {
+    :root[data-zennia] #zennia-navigation-controls > :is(button, #PanelUI-menu-button) {
       width: 28px !important;
       min-width: 24px !important;
     }
@@ -61,8 +61,7 @@
     display: flex;
     gap: 4px;
   }
-  #zennia-navigation-controls > #PanelUI-menu-button,
-  #zennia-navigation-controls > #zen-appmenu-button {
+  #zennia-navigation-controls > #PanelUI-menu-button {
     appearance: none !important;
     background: transparent !important;
     border: 0 !important;
@@ -80,12 +79,12 @@
     -moz-window-dragging: no-drag !important;
   }
   #zennia-navigation-controls
-    > :is(#PanelUI-menu-button, #zen-appmenu-button)
+    > #PanelUI-menu-button
     .toolbarbutton-text {
     display: none !important;
   }
   #zennia-navigation-controls
-    > :is(#PanelUI-menu-button, #zen-appmenu-button)
+    > #PanelUI-menu-button
     .toolbarbutton-icon {
     width: 18px !important;
     height: 18px !important;
@@ -93,7 +92,7 @@
   }
   /* Native toolbar hover surfaces must not paint over the shared row hover. */
   #zennia-navigation-controls
-    > :is(#PanelUI-menu-button, #zen-appmenu-button)
+    > #PanelUI-menu-button
     :is(.toolbarbutton-badge-stack, .toolbarbutton-icon) {
     appearance: none !important;
     background: transparent !important;
@@ -102,11 +101,11 @@
     padding: 0 !important;
   }
   #zennia-navigation-controls
-    > :is(#PanelUI-menu-button, #zen-appmenu-button):hover {
+    > #PanelUI-menu-button:hover {
     background: #14141418 !important;
   }
   #zennia-navigation-controls
-    > :is(#PanelUI-menu-button, #zen-appmenu-button):focus-visible {
+    > #PanelUI-menu-button:focus-visible {
     outline: 2px solid light-dark(#65556f, #e4d2f5) !important;
     outline-offset: -2px;
   }

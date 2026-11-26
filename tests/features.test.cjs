@@ -3,6 +3,8 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { zenFor } = require("./zen.cjs");
+const zen = zenFor();
 const content = path.join(__dirname, "../payload/content");
 function load(file, name) {
   const scope = {};
@@ -26,11 +28,11 @@ function clock() {
     },
   };
 }
-test("legacy browsers keep idle tabs open when native Archive storage is absent", () => {
+test("Zen versions without the native Archive keep idle tabs open", () => {
   let started = false;
   const feature = load("features/archive/auto-archive.js", "ZenniaAutoArchive").install({
     document: {querySelector: () => null},
-  }, {createMotion() { started = true; throw Error("must not start timers"); }});
+  }, {zen: zenFor("1.22.3b"), createMotion() { started = true; throw Error("must not start timers"); }});
   assert.equal(feature.hours(), null);
   assert.equal(started, false);
   feature.destroy();
@@ -123,7 +125,7 @@ function widthFixture(prefs) {
   };
   const feature = load("features/sidebar/width.js", "ZenniaSidebarWidth").install(
     window,
-    { Services: { prefs } },
+    { Services: { prefs }, zen },
   );
   return { feature, toolbox, listeners, values };
 }
@@ -190,7 +192,7 @@ test("a failed sidebar measurement does not block the next dock attempt", async 
     addEventListener() {}, removeEventListener() {},
   };
   const feature = load('features/sidebar/compact-mode.js', 'ZenniaCompactSidebar').install(window, {
-    createMotion: () => ({reduced: () => true, destroy() {}}), updateNav() {},
+    createMotion: () => ({reduced: () => true, destroy() {}}), updateNav() {}, zen,
   });
   await assert.rejects(manager._updateEvent());
   missing = false;
@@ -214,7 +216,7 @@ test('application menu placement respects nonzero screen work-area edges', () =>
   const feature = load('features/menus/create-menu.js', 'ZenniaMenus').install({
     document, mozInnerScreenX: 0, mozInnerScreenY: 0,
     screen: {availLeft: 40, availTop: 60, availWidth: 1200, availHeight: 900},
-  });
+  }, {zen});
   listeners.get('popupshown')();
   assert.deepEqual(position, {x: 48, y: 68});
   popup.getBoundingClientRect = () => ({left: 1100, top: 800, width: 332, height: 700});

@@ -1,0 +1,25 @@
+{
+  "version": "1.23b",
+  "notes": "First release with the native library, but it is created the first time it opens rather than at startup, and its history has no closed tabs. Zennia therefore uses the 1.22 menu, keeps idle tabs open and turns off debug mode, as on 1.22.x. The library's file-type helpers live in ZenLibraryFileTypes.sys.mjs, renamed ZenLibraryUtils.sys.mjs in 1.23.1b.",
+  "features": {
+    "library": "menu",
+    "archive": false,
+    "debugMode": false
+  },
+  "renames": {
+    "urls": {
+      "moz-src:///zen/library/ZenLibraryUtils.sys.mjs": "moz-src:///zen/library/ZenLibraryFileTypes.sys.mjs"
+    }
+  },
+  "unavailable": {
+    "archive": ["zen.library.history.closed-tabs"],
+    "library space background": ["zen-library-space-background"],
+    "color editor window": ["zen-keep-opener-active"]
+  },
+  "runtime": {
+    "windows-x64": {
+      "url": "https://github.com/zen-browser/desktop/releases/download/1.23b/zen.installer.exe",
+      "sha256": "acdaf65f599eddf0fabb144f69596240b1ebab12f5fca2d9e55950d0aba0bc5d"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "$comment": "Shared by every supported Zen version. Each <version>.json lists only what differs from this file; see dev/ZEN-VERSIONS.md.",
+  "features": {
+    "library": "native",
+    "archive": true,
+    "debugMode": true,
+    "liveFolders": true,
+    "boosts": true
+  },
+  "prefs": {
+    "zen.view.use-single-toolbar": true,
+    "zen.view.sidebar-expanded": true,
+    "zen.tabs.vertical.right-side": false,
+    "zen.view.compact.animate-sidebar": false,
+    "zen.view.compact.sidebar-keep-hover.duration": 160,
+    "zen.downloads.download-animation": false,
+    "zen.urlbar.replace-newtab": true,
+    "zen.urlbar.behavior": "float",
+    "zen.theme.content-element-separation": 10,
+    "zen.theme.essentials-favicon-bg": false,
+    "browser.sessionstore.max_tabs_undo": 100
+  },
+  "platformPrefs": {
+    "windows": {
+      "gfx.font_rendering.cleartype_params.rendering_mode": 5,
+      "gfx.font_rendering.cleartype_params.cleartype_level": 0,
+      "gfx.font_rendering.cleartype_params.enhanced_contrast": 50,
+      "gfx.font_rendering.cleartype_params.gamma": 2200
+    }
+  },
+  "apis": {
+    "gZenCompactModeManager": ["_updateEvent", "_setElementExpandAttribute", "preference", "sidebarIsOnRight", "toggle"],
+    "zen-library": [
+      "animateProgress",
+      "openProgress",
+      "libraryOnRight",
+      "isLibrarySlightlyOpen",
+      "activeTab",
+      "updateComplete"
+    ],
+    "zen-library-history-section": ["activeFilters", "onFiltersChanged", "requestUpdate", "searchQuery", "activeWhenDays"],
+    "ZenLiveFoldersManager": ["createFolder", "getFolder", "liveFolders", "stateRestored"]
+  },
+  "renames": {
+    "names": {},
+    "globals": {},
+    "members": {},
+    "prefs": {},
+    "urls": {}
+  },
+  "unavailable": {}
+}

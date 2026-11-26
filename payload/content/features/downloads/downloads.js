@@ -17,6 +17,7 @@ var ZenniaDownloads = {
       report,
       createMotion,
       createRows,
+      zen,
     } = dependencies;
     const root = document.documentElement;
     const toolbox = document.getElementById("navigator-toolbox");
@@ -74,14 +75,14 @@ var ZenniaDownloads = {
       const r = gift.getBoundingClientRect();
       const sidebar = toolbox.getBoundingClientRect();
       if (list.querySelector(".zennia-download-empty")) {
-        const footerNode = document.getElementById("zen-sidebar-foot-buttons");
+        const footerNode = document.getElementById(zen.name("zen-sidebar-foot-buttons"));
         const footer = footerNode.getBoundingClientRect();
         if (footer.width > 0 && footer.height > 0) {
           // The footer is inset from the sidebar surface. Cover the whole
           // surface, including the margins beside its buttons. In compact
           // mode the visible surface is Zen's floating background panel.
           const background = document
-            .getElementById("zen-toolbar-background")
+            .getElementById(zen.name("zen-toolbar-background"))
             ?.getBoundingClientRect();
           const surface = background?.width > 0 ? background : sidebar;
           popup.style.width = `${surface.width}px`;

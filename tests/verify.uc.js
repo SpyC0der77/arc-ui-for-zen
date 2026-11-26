@@ -8,6 +8,9 @@
     if(!window.Zennia)throw new Error('Zennia did not initialize');
     check(!matchMedia('(prefers-reduced-motion: reduce)').matches,'runtime baseline explicitly enables motion');
     const nativeLibrary=document.querySelector('zen-library');
+    // Version differences come from payload/zen-versions, like the theme itself.
+    const zenFeatures=ChromeUtils.importESModule('chrome://zennia/content/zen.sys.mjs').zen.features;
+    const nativeArchive=!!nativeLibrary&&zenFeatures.archive;
     const {ProvidersManager}=ChromeUtils.importESModule('moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs');
     const commandProvider=ProvidersManager.getInstanceForSap('urlbar').getProvider('ZenniaCommandProvider');
     check(!!commandProvider,'native command provider registered');
@@ -99,8 +102,8 @@
       liveFolders.onLiveFolderFetch(prFolder,[]);await wait(500);
       check(!nativeFolder.tabs.some(t=>t.hasAttribute('zen-live-folder-item-id')),'GitHub entry disappears when it no longer matches');
     }
-    check(Zennia.diagnostics().archiveHours===(nativeLibrary?12:null),'auto-archive requires native Archive storage');
-    if(nativeLibrary)check(Services.prefs.getBoolPref('zen.library.history.closed-tabs',false),'library Archive view enabled');
+    check(Zennia.diagnostics().archiveHours===(nativeArchive?12:null),'auto-archive requires native Archive storage');
+    if(nativeArchive)check(Services.prefs.getBoolPref('zen.library.history.closed-tabs',false),'library Archive view enabled');
     else check(!Services.prefs.prefHasUserValue('zennia.archive-initialized'),'legacy startup does not initialize native Archive');
     const toggleRect=document.getElementById('zennia-sidebar-toggle').getBoundingClientRect();
     const controlsRect=document.getElementById('zennia-top-controls').getBoundingClientRect();

@@ -2,7 +2,7 @@
 var ZenniaAddressLabel = {
   install(window, dependencies = {}) {
     const { document, gURLBar, ResizeObserver, MutationObserver } = window;
-    const { el } = dependencies;
+    const { el, zen } = dependencies;
     const getComputedStyle = window.getComputedStyle.bind(window);
     // The native URL bar moves into the popover. Keep its last sidebar text behind.
     const addressContainer = document.getElementById("urlbar-container");
@@ -27,7 +27,7 @@ var ZenniaAddressLabel = {
     }
     function rememberAddress() {
       if (
-        gURLBar.hasAttribute("zen-floating-urlbar") ||
+        gURLBar.hasAttribute(zen.name("zen-floating-urlbar")) ||
         gURLBar.hasAttribute("breakout-extend")
       ) {
         positionAddressLabel();
@@ -130,7 +130,7 @@ var ZenniaAddressLabel = {
     });
     addressObserver.observe(gURLBar, {
       attributes: true,
-      attributeFilter: ["zen-floating-urlbar", "open", "breakout-extend"],
+      attributeFilter: [zen.name("zen-floating-urlbar"), "open", "breakout-extend"],
     });
 
     return {

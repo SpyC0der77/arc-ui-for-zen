@@ -120,10 +120,11 @@ var ZenniaLibrary = {
   },
   install(window, dependencies = {}) {
     const { document, MutationObserver } = window;
-    const { icon, nudge, hideDownloads, report } = dependencies;
+    const { icon, nudge, hideDownloads, report, zen } = dependencies;
     const toolbox = document.getElementById("navigator-toolbox");
-    const library = document.querySelector("zen-library");
-    if (typeof library?.constructor.animateProgress !== "function")
+    const library = document.querySelector(zen.name("zen-library"));
+    // Zen versions without the native library (features.library "menu") get a menu instead.
+    if (zen.features.library !== "native" || !library)
       return this.installLegacy(window, dependencies);
     const footerButtons = new Set();
     const { Services } = window;
@@ -622,15 +623,15 @@ var ZenniaLibrary = {
     const pickerRoot = pickerHost.attachShadow({ mode: "open" });
     const pickerStyles = html("link", "");
     pickerStyles.rel = "stylesheet";
-    pickerStyles.href = "chrome://browser/content/zen-styles/zen-boosts.css";
+    pickerStyles.href = zen.url("chrome://browser/content/zen-styles/zen-boosts.css");
     const field = html("div", "");
-    field.className = "zen-boost-color-picker-gradient";
+    field.className = zen.name("zen-boost-color-picker-gradient");
     // Keep the native Boosts inset, translucent veil, dotted texture and
     // blurred spectrum. Overriding these with a radial gradient exposes the
     // saturated conic layer and loses the native picker appearance.
-    field.style.cssText = "width:152px;height:152px;min-height:0;margin:0 auto;touch-action:none;--zen-boosts-color-picker-background:light-dark(#fbfbfdea,#1c1c1eea);--zen-boosts-color-picker-pattern-color:light-dark(#e3e9e4,#3a3a3a)";
+    field.style.cssText = zen.name("width:152px;height:152px;min-height:0;margin:0 auto;touch-action:none;--zen-boosts-color-picker-background:light-dark(#fbfbfdea,#1c1c1eea);--zen-boosts-color-picker-pattern-color:light-dark(#e3e9e4,#3a3a3a)");
     const dot = html("div", "");
-    dot.className = "zen-boost-color-picker-dot";
+    dot.className = zen.name("zen-boost-color-picker-dot");
     dot.style.pointerEvents = "none";
     field.append(dot);
     pickerRoot.append(pickerStyles, field);
@@ -652,7 +653,7 @@ var ZenniaLibrary = {
       const angle = (hue - 90) * Math.PI / 180;
       dot.style.left = `${50 + Math.cos(angle) * saturation * 43}%`;
       dot.style.top = `${50 + Math.sin(angle) * saturation * 43}%`;
-      dot.style.setProperty("--zen-theme-picker-dot-color", hex.value);
+      dot.style.setProperty(zen.name("--zen-theme-picker-dot-color"), hex.value);
     }
     function saveColor(value) {
       value = "#" + value.trim().replace(/^#/, "");
@@ -1108,7 +1109,7 @@ var ZenniaLibrary = {
     }
     const donateImages = new Map();
     function syncLibraryFooter() {
-      const footer = library.querySelector("#zen-library-footer");
+      const footer = library.querySelector(zen.name("#zen-library-footer"));
       const donate = footer?.querySelector(
         '[data-l10n-id="library-footer-donate-button"]',
       );
@@ -1139,9 +1140,11 @@ var ZenniaLibrary = {
     footerObserver.observe(library, { childList: true, subtree: true });
     syncLibraryFooter();
     const NativeLibrary = library.constructor;
-    const content = document.getElementById("zen-appcontent-wrapper");
+    const content = document.getElementById(zen.name("zen-appcontent-wrapper"));
+    // Replaced at the descriptor level, so this uses the version's member name.
+    const openProgress = zen.member("zen-library", "openProgress");
     const progressDescriptor = Object.getOwnPropertyDescriptor(
-      NativeLibrary.prototype, "openProgress",
+      NativeLibrary.prototype, openProgress,
     );
     const root = document.documentElement;
     const resizeProgress = function (value) {
@@ -1155,7 +1158,7 @@ var ZenniaLibrary = {
       root.toggleAttribute("data-zennia-library-resize", value > 0 && !!match);
     };
     if (progressDescriptor?.configurable && progressDescriptor.set) {
-      Object.defineProperty(NativeLibrary.prototype, "openProgress", {
+      Object.defineProperty(NativeLibrary.prototype, openProgress, {
         ...progressDescriptor, set: resizeProgress,
       });
     }
@@ -1177,7 +1180,7 @@ var ZenniaLibrary = {
     const gift = document.createXULElement("toolbarbutton");
     gift.id = "zennia-gift-button";
     gift.className =
-      "toolbarbutton-1 zen-sidebar-action-button zennia-icon-button zennia";
+      zen.name("toolbarbutton-1 zen-sidebar-action-button zennia-icon-button zennia");
     gift.setAttribute("aria-label", "Library (hover for downloads)");
     gift.append(icon("gift"));
     gift.addEventListener("command", () => {
@@ -1200,7 +1203,7 @@ var ZenniaLibrary = {
       attributes: true,
       attributeFilter: ["open", "hidden", "transitioning"],
     });
-    (document.getElementById("zen-sidebar-foot-buttons") || toolbox).prepend(
+    (document.getElementById(zen.name("zen-sidebar-foot-buttons")) || toolbox).prepend(
       gift,
     );
 
@@ -1209,8 +1212,8 @@ var ZenniaLibrary = {
       setRail,
       isOpen: () => NativeLibrary.isLibrarySlightlyOpen,
       destroy() {
-        if (Object.getOwnPropertyDescriptor(NativeLibrary.prototype, "openProgress")?.set === resizeProgress)
-          Object.defineProperty(NativeLibrary.prototype, "openProgress", progressDescriptor);
+        if (Object.getOwnPropertyDescriptor(NativeLibrary.prototype, openProgress)?.set === resizeProgress)
+          Object.defineProperty(NativeLibrary.prototype, openProgress, progressDescriptor);
         root.removeAttribute("data-zennia-library-resize");
         root.style.removeProperty("--zennia-library-left");
         root.style.removeProperty("--zennia-library-right");
@@ -1244,11 +1247,11 @@ var ZenniaLibrary = {
       },
     };
   },
-  installLegacy(window, { icon, nudge, hideDownloads, report }) {
+  installLegacy(window, { icon, nudge, hideDownloads, report, zen }) {
     const { document } = window;
     const gift = document.createXULElement("toolbarbutton");
     gift.id = "zennia-gift-button";
-    gift.className = "toolbarbutton-1 zen-sidebar-action-button zennia-icon-button zennia";
+    gift.className = zen.name("toolbarbutton-1 zen-sidebar-action-button zennia-icon-button zennia");
     gift.setAttribute("aria-label", "Library (hover for downloads)");
     gift.setAttribute("aria-haspopup", "menu");
     gift.setAttribute("aria-expanded", "false");
@@ -1299,7 +1302,7 @@ var ZenniaLibrary = {
     gift.addEventListener("command", () => { void setRail(!isOpen()).catch(report); });
     gift.addEventListener("pointerdown", event => { if (event.button === 0) nudge(gift, "gift"); });
     document.getElementById("mainPopupSet").append(popup);
-    (document.getElementById("zen-sidebar-foot-buttons") || document.getElementById("navigator-toolbox")).prepend(gift);
+    (document.getElementById(zen.name("zen-sidebar-foot-buttons")) || document.getElementById("navigator-toolbox")).prepend(gift);
     return { gift, setRail, isOpen, destroy() { popup.hidePopup(); popup.remove(); gift.remove(); } };
   },
 };

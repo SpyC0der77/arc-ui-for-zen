@@ -1,5 +1,5 @@
 // Shared by the browser updater and filesystem regression tests.
-export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode, browserVersion, platform, version}) {
+export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode, zenData, browserVersion, platform, version}) {
   const {profile, resources, join} = paths;
   const root = join(profile, 'chrome', 'zennia');
   const receiptPath = join(profile, 'chrome', 'zennia.install.json');
@@ -18,8 +18,12 @@ export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode,
   }
   // This bundle format updates the theme without changing the startup loader or
   // managed preferences. Refuse incompatible setup changes instead of guessing.
-  const settings = JSON.parse(new TextDecoder().decode(data.get('settings.json')));
-  if (platform === 'WINNT') Object.assign(settings, JSON.parse(new TextDecoder().decode(data.get('settings.windows.json'))));
+  const json = relative => {
+    if (!data.has(relative)) throw new Error('This update has no data for this Zen version.');
+    return JSON.parse(new TextDecoder().decode(data.get(relative)));
+  };
+  const versionData = zenData.resolve(json('zen-versions/base.json'), json(`zen-versions/${browserVersion}.json`));
+  const settings = zenData.prefsFor(versionData, platform === 'WINNT' ? 'windows' : platform === 'Darwin' ? 'macos' : 'linux');
   if (Object.keys(settings).length !== Object.keys(receipt.settings).length || Object.entries(settings).some(([key,value]) => receipt.settings[key] !== value)) throw new Error('This update changes managed preferences and is incompatible with in-place update format 1.');
   const appFiles = [join(resources,'zennia.cfg'), join(resources,'defaults','pref','zennia-autoconfig.js'), ownerPath];
   const userPath = join(profile,'user.js');
@@ -37,6 +41,7 @@ export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode,
   for (const [relative, target] of [['zennia.cfg',appFiles[0]],['zennia-autoconfig.js',appFiles[1]]]) {
     if (await hash(data.get(relative)) !== await hash(await io.read(target))) throw new Error('This update requires a different startup loader; no files were changed.');
   }
+  // settings*.json are only in bundles for updaters that predate zen-versions/.
   const skip = new Set(['zennia.cfg','zennia-autoconfig.js','settings.json','settings.windows.json']);
   const writes = new Map(), nextFiles = receipt.files.filter(file => !underRoot(file.path));
   for (const [relative, bytes] of data) {

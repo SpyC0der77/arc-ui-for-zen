@@ -20,7 +20,6 @@
     --zen-main-browser-background-toolbar: light-dark(#cec7d4, #292630) !important;
     --zen-main-browser-background-old: light-dark(#cec7d4, #292630) !important;
     --zen-main-browser-background-toolbar-old: light-dark(#cec7d4, #292630) !important;
-    --zen-themed-toolbar-bg: light-dark(#cec7d4, #292630) !important;
     --zen-themed-toolbar-bg-transparent: light-dark(#cec7d4, #292630) !important;
     background: light-dark(#cec7d4, #292630) !important;
     --toolbar-bgcolor: light-dark(#cec7d4, #292630) !important;
@@ -40,9 +39,8 @@
     color: var(--zennia-text) !important;
     --toolbarbutton-icon-fill: var(--zennia-text) !important;
     --lwt-text-color: var(--zennia-text) !important;
-    --zen-sidebar-themed-text-color: var(--zennia-text) !important;
   }
-  :root[data-zennia] zen-workspace :is(.tab-text, .tab-label, .zen-workspace-name) {
+  :root[data-zennia] zen-workspace :is(.tab-text, .tab-label) {
     color: var(--zennia-text) !important;
   }
   :root[data-zennia] zen-folder {

@@ -54,8 +54,14 @@ function prepare(directory = 'release', notesFile = 'release-notes.md', changes 
     }
   }
   collect(payload);
+  // Updaters released before zen-versions/ read managed preferences from these
+  // files. They then refuse this bundle cleanly because its startup loader changed.
+  const versions = require('../installer/versions.cjs');
+  const shared = versions.base();
+  files['settings.json'] = Buffer.from(JSON.stringify(shared.prefs)).toString('base64');
+  files['settings.windows.json'] = Buffer.from(JSON.stringify(shared.platformPrefs.windows)).toString('base64');
   const updateName = `Zennia-${version}-Update.json`;
-  fs.writeFileSync(path.join(directory, updateName), JSON.stringify({format:1, version, supported:require('../installer/engine.cjs').SUPPORTED_VERSIONS, files}));
+  fs.writeFileSync(path.join(directory, updateName), JSON.stringify({format:1, version, supported:versions.SUPPORTED_VERSIONS, files}));
   names.push(updateName); names.sort();
   const checksums = names.map(name => `${crypto.createHash('sha256').update(fs.readFileSync(path.join(directory, name))).digest('hex')}  ${name}\n`).join('');
   fs.writeFileSync(path.join(directory, 'SHA256SUMS.txt'), checksums);

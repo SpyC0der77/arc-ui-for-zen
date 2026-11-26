@@ -1,7 +1,8 @@
 /* Create-menu labels and commands, plus styles inside native popup shadow roots. */
 var ZenniaMenus = {
   install(window, dependencies = {}) {
-    const { document, gBrowser, ChromeUtils } = window;
+    const { document, gBrowser } = window;
+    const { zen } = dependencies;
     const HTML = "http://www.w3.org/1999/xhtml";
     const cleanups = [];
     const styledPopups = new Set();
@@ -21,7 +22,7 @@ var ZenniaMenus = {
       appMenu.addEventListener("popupshown", insetAppMenu);
       cleanups.push(() => appMenu.removeEventListener("popupshown", insetAppMenu));
     }
-    const createMenu = document.getElementById("zenCreateNewPopup");
+    const createMenu = document.getElementById(zen.name("zenCreateNewPopup"));
     if (createMenu) {
       // Cocoa menus bypass our popup styles. Render this menu in Gecko on all
       // platforms so macOS uses the same custom surface as Windows.
@@ -31,13 +32,13 @@ var ZenniaMenus = {
         if (originalNative === null) createMenu.removeAttribute("nonnative");
         else createMenu.setAttribute("nonnative", originalNative);
       });
-      const { gZenBoostsManager } = ChromeUtils.importESModule(
-        "resource:///modules/zen/boosts/ZenBoostsManager.sys.mjs",
-      );
+      const gZenBoostsManager = zen.features.boosts
+        ? zen.import("resource:///modules/zen/boosts/ZenBoostsManager.sys.mjs", "gZenBoostsManager")
+        : null;
       const items = [
-        ["cmd_zenOpenWorkspaceCreation", "New Space", "new-space"],
-        ["cmd_zenOpenFolderCreation", "New Folder", "new-folder"],
-        ["cmd_zenNewEmptySplit", "New Split", "new-split"],
+        [zen.name("cmd_zenOpenWorkspaceCreation"), "New Space", "new-space"],
+        [zen.name("cmd_zenOpenFolderCreation"), "New Folder", "new-folder"],
+        [zen.name("cmd_zenNewEmptySplit"), "New Split", "new-split"],
         ["cmd_newNavigatorTab", "New Tab", "new-tab"],
       ];
       for (const [command, label, image] of items) {
@@ -68,7 +69,7 @@ var ZenniaMenus = {
           item.setAttribute("key", "key_newNavigatorTab");
       }
       const split = createMenu.querySelector(
-        '[command="cmd_zenNewEmptySplit"]',
+        zen.name('[command="cmd_zenNewEmptySplit"]'),
       );
       const tab = createMenu.querySelector('[command="cmd_newNavigatorTab"]');
       if (split) {
@@ -76,27 +77,28 @@ var ZenniaMenus = {
         split.removeAttribute("command");
         const runSplit = () => {
           if (!split.disabled)
-            document.getElementById("cmd_zenNewEmptySplit")?.dispatchEvent(
+            document.getElementById(zen.name("cmd_zenNewEmptySplit"))?.dispatchEvent(
               new window.Event("command", { bubbles: true }),
             );
         };
         split.addEventListener("command", runSplit);
         cleanups.push(() => {
           split.removeEventListener("command", runSplit);
-          split.setAttribute("command", "cmd_zenNewEmptySplit");
+          split.setAttribute("command", zen.name("cmd_zenNewEmptySplit"));
         });
       }
       const boost = document.createXULElement("menuitem");
       boost.id = "zennia-new-boost";
       boost.classList.add("menuitem-iconic");
       boost.setAttribute("label", "New Boost");
+      boost.hidden = !gZenBoostsManager;
       boost.setAttribute(
         "image",
         "chrome://zennia/content/menu-icons/new-boost.svg",
       );
       function createBoost() {
         const uri = gBrowser.currentURI;
-        if (!gZenBoostsManager.canBoostSite(uri)) return;
+        if (!gZenBoostsManager?.canBoostSite(uri)) return;
         const entry = gZenBoostsManager.createNewBoost(uri.host);
         gZenBoostsManager.openBoostWindow(window, entry, uri);
       }
@@ -115,10 +117,10 @@ var ZenniaMenus = {
         const uri = gBrowser.currentURI;
         const hasPage = !!gBrowser.selectedTab && !!uri &&
           !["about:blank", "about:newtab", "about:home"].includes(uri.spec) &&
-          !document.getElementById("navigator-toolbox")?.hasAttribute("zen-has-empty-tab");
-        boost.disabled = !hasPage || !gZenBoostsManager.canBoostSite(uri);
+          !document.getElementById("navigator-toolbox")?.hasAttribute(zen.name("zen-has-empty-tab"));
+        boost.disabled = !hasPage || !gZenBoostsManager?.canBoostSite(uri);
         if (split) {
-          const command = document.getElementById("cmd_zenNewEmptySplit");
+          const command = document.getElementById(zen.name("cmd_zenNewEmptySplit"));
           split.disabled = !hasPage || command?.getAttribute("disabled") === "true";
         }
       }

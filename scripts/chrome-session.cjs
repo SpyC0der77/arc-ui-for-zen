@@ -42,6 +42,8 @@ const engine = require('../installer/engine.cjs');
   // Only this freshly created application copy is modified. A running personal
   // Zen is unrelated; the installer's normal conflict/receipt checks still run.
   await engine.install(app, profile, {checkClosed:async () => {}});
+  // Keep this copy on the version it was made from.
+  require('./dev-zen.cjs').disableUpdates(app);
   if (process.platform === 'darwin') {
     // Installing startup resources invalidates the publisher's bundle seal.
     // Sign only this new disposable copy, retaining local browser capabilities

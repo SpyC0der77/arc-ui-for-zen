@@ -12,7 +12,7 @@ function fixture() {
   const document={getElementById:id=>id===folder.id?folder:tabs,
     addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)};
   let selection=[];
-  const stop=scope.ZenniaNativeActions.install({document,contextTabs:()=>selection});
+  const stop=scope.ZenniaNativeActions.install({document,zen:require('./zen.cjs').zenFor(),contextTabs:()=>selection});
   return {folder,tabs,listeners,stop,select:rows=>selection=rows,
     show:target=>listeners.get('popupshowing')({target}),
     blocked(menu,id){let blocked=false;listeners.get('command')({target:{id,closest:()=>menu},preventDefault(){blocked=true;},stopImmediatePropagation(){}});return blocked;}};

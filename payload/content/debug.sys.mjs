@@ -1,6 +1,7 @@
 /* Window-local view fixtures, plus explicitly owned native tabs and Spaces. */
 import {PAGE,PAGES,ownsPage,createDownloads} from "chrome://zennia/content/debug-data.mjs";
 import {actionIcon} from "chrome://zennia/content/download-icons.sys.mjs";
+import {zen} from "chrome://zennia/content/zen.sys.mjs";
 const JOURNAL="zennia.debug.owned-data";
 const TAB_KEY="zennia.debug.token";
 const PLACEHOLDER_KEY="zennia.debug.placeholder";
@@ -39,7 +40,7 @@ async function removeOwned(win,j) {
       const mock=(tagged&&ownsPage(url,j.token))||placeholder;
       if(mock)w.gBrowser.removeTab(tab,{animate:false,skipPermitUnload:true,skipSessionStore:true});
       else {
-        if(owned.has(tab.getAttribute("zen-workspace-id")))w.gZenWorkspaces.moveTabToWorkspace(tab,destination.uuid);
+        if(owned.has(tab.getAttribute(zen.name("zen-workspace-id"))))w.gZenWorkspaces.moveTabToWorkspace(tab,destination.uuid);
         if(tagged){for(const key of [TAB_KEY,PLACEHOLDER_KEY,LEGACY_TAB_KEY,LEGACY_PLACEHOLDER_KEY])SessionStore.deleteCustomTabValue(tab,key);tab.removeAttribute("zennia-debug-token");tab.removeAttribute("arc-debug-token");}
       }
     }
@@ -57,9 +58,9 @@ async function removeOwned(win,j) {
 
 export function install(win,{html,setDownloads,announce,isPrivate=false}) {
   const {document}=win;
-  const library=document.querySelector("zen-library");
+  const library=document.querySelector(zen.name("zen-library"));
   const {SessionStore}=ChromeUtils.importESModule("moz-src:///browser/components/sessionstore/SessionStore.sys.mjs");
-  const available=!!library&&!isPrivate&&win.gZenWorkspaces.workspaceEnabled;
+  const available=zen.features.debugMode&&!!library&&!isPrivate&&win.gZenWorkspaces.workspaceEnabled;
   let enabled=false,destroyed=false,queue=Promise.resolve(),observer=null,data=null,downloads=[],files=[],tabs=[],originalTab=null,originalLibraryTab=null,originalRail=false,originalHistoryPref=null;
   const patches=new Map(),viewStates=new Map(),optInStates=new Map();
   const enqueue=fn=>(queue=queue.catch(()=>{}).then(fn));
@@ -72,7 +73,7 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
   const refresh=()=>{
     if(!enabled)return;
     setDownloads(downloads);
-    for(const section of library.querySelectorAll(".zen-library-section"))section.requestUpdate?.();
+    for(const section of library.querySelectorAll(zen.name(".zen-library-section")))section.requestUpdate?.();
   };
   const mockAction=message=>announce(message);
   function pageURL(page){const u=new URL(PAGE);u.searchParams.set("debug",data.token);u.searchParams.set("title",page.title);u.searchParams.set("text",page.text||"Local sample content.");return u.href;}
@@ -120,22 +121,22 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
     return items.filter(item=>!query||key(item).toLowerCase().includes(query));
   }
   function row(title,subtitle,icon,click,action=null) {
-    return html`<div class="zen-library-row" data-zennia-debug="true" @click=${click}>
-      <img class="zen-library-row-icon" src=${icon} alt=""/>
-      <div class="zen-library-row-text"><span class="zen-library-row-title">${title}</span><span class="zen-library-row-subtitle">${subtitle}</span></div>
+    return html`<div class=${zen.name("zen-library-row")} data-zennia-debug="true" @click=${click}>
+      <img class=${zen.name("zen-library-row-icon")} src=${icon} alt=""/>
+      <div class=${zen.name("zen-library-row-text")}><span class=${zen.name("zen-library-row-title")}>${title}</span><span class=${zen.name("zen-library-row-subtitle")}>${subtitle}</span></div>
       ${action||""}</div>`;
   }
   function renderDownloads(section) {
-    const {fileGroupOf}=ChromeUtils.importESModule("moz-src:///zen/library/ZenLibraryUtils.sys.mjs");
+    const {fileGroupOf}=ChromeUtils.importESModule(zen.url("moz-src:///zen/library/ZenLibraryUtils.sys.mjs"));
     let items=visible(downloads,section,d=>PathUtils.filename(d.target.path));
     const types=[...section.activeFilters].filter(f=>f.startsWith("type:")).map(f=>f.slice(5));
     if(types.length)items=items.filter(d=>types.includes(fileGroupOf(PathUtils.filename(d.target.path))));
     if(section.activeWhenDays)items=items.filter(d=>Date.now()-d.startTime<section.activeWhenDays*86400000);
     if(!items.length)return empty();
-    return html`<div class="zen-library-group">${[...items].reverse().map(d=>row(PathUtils.filename(d.target.path),
+    return html`<div class=${zen.name("zen-library-group")}>${[...items].reverse().map(d=>row(PathUtils.filename(d.target.path),
       d.succeeded?"Completed · Mock download":d.error?"Failed · Mock connection interrupted":d.canceled?(d.hasPartialData?"Paused · 38%":"Cancelled"):"Downloading · 38%",
       `moz-icon:${PathUtils.toFileURI(d.target.path)}?size=32`,()=>mockAction("Mock download selected"),
-      html`<div class="zen-library-row-actions">${!d.succeeded?downloadAction(d):""}</div>`))}</div>`;
+      html`<div class=${zen.name("zen-library-row-actions")}>${!d.succeeded?downloadAction(d):""}</div>`))}</div>`;
   }
   function downloadAction(d) {
     const resume=d.stopped&&d.canceled&&d.hasPartialData;
@@ -147,33 +148,33 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
     const closed=section.activeFilters.has("source:closed");
     const pages=visible(PAGES,section);
     if(!pages.length)return empty();
-    return html`<div class="zen-library-group"><div class="zen-library-group-header">${closed?"Archived today":"Today"}</div>${pages.map((page,index)=>row(page.title,
+    return html`<div class=${zen.name("zen-library-group")}><div class="zennia-debug-group-header">${closed?"Archived today":"Today"}</div>${pages.map((page,index)=>row(page.title,
       `${closed?"Archived":"Visited"} ${index+2} minutes ago · Mock page`,"chrome://zennia/content/spaces.svg",()=>openPage(page)))}</div>`;
   }
   function renderMedia(section) {
     const media=files.map((path,i)=>({path,title:["Design overview","Components","Reading list","Release plan","Space layout","Download states"][i]}));
     const items=visible(media,section);
     if(!items.length)return empty();
-    return html`<div class="zen-library-media-grid">${items.map(item=>html`<button class="zen-library-media-item zennia-debug-media-item" title=${item.title} @click=${()=>openPage({title:item.title,text:"Local mock media preview."})}><div class="zen-library-media-frame"><img class="zen-library-media-thumb" src=${PathUtils.toFileURI(item.path)} alt=${item.title}/></div></button>`)}</div>`;
+    return html`<div class=${zen.name("zen-library-media-grid")}>${items.map(item=>html`<button class=${zen.name("zen-library-media-item zennia-debug-media-item")} title=${item.title} @click=${()=>openPage({title:item.title,text:"Local mock media preview."})}><div class=${zen.name("zen-library-media-frame")}><img class=${zen.name("zen-library-media-thumb")} src=${PathUtils.toFileURI(item.path)} alt=${item.title}/></div></button>`)}</div>`;
   }
   const boosts=[{title:"Quiet reading",domain:"reading.example",on:true},{title:"Larger type",domain:"docs.example",on:true},{title:"Reduced page chrome",domain:"news.example",on:false}];
   function renderBoosts(section) {
     const items=visible(boosts,section,b=>b.title+" "+b.domain);
     if(!items.length)return empty();
-    return html`<div class="zen-library-group">${items.map(b=>row(b.title,`${b.domain} · Mock boost`,"chrome://zennia/content/spaces.svg",()=>{b.on=!b.on;refresh();},
-      html`<div class="zen-library-row-actions"><moz-toggle ?pressed=${b.on} aria-label=${b.title} @click=${e=>e.stopPropagation()} @toggle=${()=>{b.on=!b.on;refresh();}}></moz-toggle></div>`))}</div>`;
+    return html`<div class=${zen.name("zen-library-group")}>${items.map(b=>row(b.title,`${b.domain} · Mock boost`,"chrome://zennia/content/spaces.svg",()=>{b.on=!b.on;refresh();},
+      html`<div class=${zen.name("zen-library-row-actions")}><moz-toggle ?pressed=${b.on} aria-label=${b.title} @click=${e=>e.stopPropagation()} @toggle=${()=>{b.on=!b.on;refresh();}}></moz-toggle></div>`))}</div>`;
   }
-  function empty(){return html`<div class="zen-library-empty">No matching mock data</div>`;}
+  function empty(){return html`<div class=${zen.name("zen-library-empty")}>No matching mock data</div>`;}
   const renderers={downloads:renderDownloads,history:renderHistory,media:renderMedia,boosts:renderBoosts};
   function attachViews() {
     if(!enabled)return;
-    for(const section of library.querySelectorAll(".zen-library-section")) {
+    for(const section of library.querySelectorAll(zen.name(".zen-library-section"))) {
       const render=renderers[section.dataset.section];
       if(!render||patches.has(section))continue;
       viewStates.set(section,{query:section.searchQuery,filters:new Set(section.activeFilters)});
       section.searchQuery="";
       if(section.dataset.section==="downloads")section.activeFilters.clear();
-      const input=section.querySelector(".zen-library-search-box input");if(input)input.value="";
+      const input=section.querySelector(zen.name(".zen-library-search-box input"));if(input)input.value="";
       patch(section,"renderItems",()=>render(section));
       if(section.dataset.section==="media") {
         const base=Object.getPrototypeOf(Object.getPrototypeOf(section));
@@ -194,7 +195,7 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
     if(destroyed||win.closed)return;
     originalTab=win.gBrowser.selectedTab;originalLibraryTab=library.activeTab;
     originalRail=preservedRail??!!win.Zennia.diagnostics().rail;
-    originalHistoryPref={user:Services.prefs.prefHasUserValue("zen.library.history.closed-tabs"),value:Services.prefs.getBoolPref("zen.library.history.closed-tabs",false)};
+    originalHistoryPref={user:Services.prefs.prefHasUserValue(zen.pref("zen.library.history.closed-tabs")),value:Services.prefs.getBoolPref(zen.pref("zen.library.history.closed-tabs"),false)};
     data={token:Services.uuid.generateUUID().toString().slice(1,-1),spaces:[],originalSpace:win.gZenWorkspaces.activeWorkspace};
     writeJournal(data);enabled=true;active=controller;
     boosts.forEach((boost,index)=>{boost.on=index<2;});
@@ -245,14 +246,14 @@ export function install(win,{html,setDownloads,announce,isPrivate=false}) {
       const state=viewStates.get(node);
       if(state&&!destroyed&&!win.closed) {
         node.searchQuery=state.query;node.activeFilters.clear();for(const filter of state.filters)node.activeFilters.add(filter);
-        const input=node.querySelector(".zen-library-search-box input");if(input)input.value=state.query;
+        const input=node.querySelector(zen.name(".zen-library-search-box input"));if(input)input.value=state.query;
         node.onFiltersChanged();
       }
       if(!destroyed&&!win.closed)node.requestUpdate?.();
     }
     patches.clear();viewStates.clear();if(!destroyed&&!win.closed)setDownloads(null);
-    if(originalHistoryPref.user)Services.prefs.setBoolPref("zen.library.history.closed-tabs",originalHistoryPref.value);
-    else Services.prefs.clearUserPref("zen.library.history.closed-tabs");
+    if(originalHistoryPref.user)Services.prefs.setBoolPref(zen.pref("zen.library.history.closed-tabs"),originalHistoryPref.value);
+    else Services.prefs.clearUserPref(zen.pref("zen.library.history.closed-tabs"));
     for(const [section,needed] of optInStates) {
       if(destroyed||win.closed)break;
       if(needed)section.setAttribute("needs-opt-in","");else section.removeAttribute("needs-opt-in");

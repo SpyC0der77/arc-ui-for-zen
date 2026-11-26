@@ -2,10 +2,10 @@
 var ZenniaAutoArchive = {
   install(window, dependencies = {}) {
     const { document, gBrowser } = window;
-    const { Services, PrivateBrowsingUtils, createMotion } = dependencies;
-    // Older Zen has no persistent Archive. Do not close idle tabs into its
-    // bounded undo history and imply they have the newer Archive's retention.
-    if (!document.querySelector("zen-library"))
+    const { Services, PrivateBrowsingUtils, createMotion, zen } = dependencies;
+    // Zen versions without a persistent Archive (features.archive) must not close
+    // idle tabs into their bounded undo history, implying the Archive's retention.
+    if (!zen.features.archive)
       return { hours: () => null, destroy() {} };
     const motion = createMotion(window);
     const { later, clear, animate } = motion;
@@ -16,12 +16,12 @@ var ZenniaAutoArchive = {
         tab,
         closed: tab.closed,
         pinned: tab.pinned,
-        essential: tab.hasAttribute("zen-essential"),
+        essential: tab.hasAttribute(zen.name("zen-essential")),
         selected: tab.selected,
         multiselected: tab.hasAttribute("multiselected"),
         splitview: !!tab.splitview,
         grouped: !!tab.group,
-        folded: !!tab.closest("zen-folder"),
+        folded: !!tab.closest(zen.name("zen-folder")),
         audible: tab.audible || tab.hasAttribute("soundplaying"),
         busy: tab.hasAttribute("busy"),
         attention: tab.hasAttribute("attention"),
@@ -31,10 +31,10 @@ var ZenniaAutoArchive = {
     }
     // Zen keeps the table for the library's Archive tab; reuse it instead of a second store.
     function announceArchive(count) {
-      const container = document.getElementById("zen-toast-container");
+      const container = document.getElementById(zen.name("zen-toast-container"));
       if (!container) return;
       const toast = document.createXULElement("hbox");
-      toast.className = "zen-toast";
+      toast.className = zen.name("zen-toast");
       const box = document.createXULElement("vbox"),
         label = document.createXULElement("label");
       label.textContent =
@@ -74,7 +74,7 @@ var ZenniaAutoArchive = {
         // Show the Archive view by default once; switching the library back to
         // History is the user's choice and survives the next start.
         if (!Services.prefs.getBoolPref("zennia.archive-initialized", false)) {
-          Services.prefs.setBoolPref("zen.library.history.closed-tabs", true);
+          Services.prefs.setBoolPref(zen.pref("zen.library.history.closed-tabs"), true);
           Services.prefs.setBoolPref("zennia.archive-initialized", true);
         }
         stopArchive = archiveAPI.start({

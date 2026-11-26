@@ -5,14 +5,13 @@ const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
-const { validateManifest, selectBuild, verifyChecksum, validateApplication } = require('../scripts/fetch-zen-runtime.cjs');
-const builds = require('../scripts/zen-runtime-builds.json');
+const { builds, validateManifest, selectBuild, verifyChecksum, validateApplication } = require('../scripts/fetch-zen-runtime.cjs');
 const { SUPPORTED_VERSIONS } = require('../installer/engine.cjs');
 
 test('pinned Windows builds match the supported engine allowlist', () => {
   assert.deepEqual(validateManifest().map(entry => entry.version), [...SUPPORTED_VERSIONS]);
   for (const version of SUPPORTED_VERSIONS) assert.equal(selectBuild(version).version, version);
-  for (const version of ['latest', '../1.24b', '1.23b', undefined]) {
+  for (const version of ['latest', '../1.24b', '1.21b', undefined]) {
     assert.throws(() => selectBuild(version), /Unsupported Zen version/);
   }
 });

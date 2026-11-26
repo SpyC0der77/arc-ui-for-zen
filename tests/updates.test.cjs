@@ -14,7 +14,7 @@ test('release polling repeats six hours after the first check and stops on teard
   const window={document,ChromeUtils:{importESModule:()=>({ZenniaUpdater:updater})},MutationObserver:class {observe() {} disconnect() {}},setTimeout,clearTimeout,setInterval,clearInterval};
   const scope={};
   require('node:vm').runInNewContext(require('node:fs').readFileSync(require.resolve('../payload/content/features/updates/updates.js'),'utf8'),scope);
-  const feature=scope.ZenniaUpdates.install(window,{el:node,icon:node,PrivateBrowsingUtils:{isWindowPrivate:()=>false}});
+  const feature=scope.ZenniaUpdates.install(window,{el:node,icon:node,zen:require('./zen.cjs').zenFor(),PrivateBrowsingUtils:{isWindowPrivate:()=>false}});
   t.mock.timers.tick(30000);await new Promise(setImmediate);
   assert.deepEqual(requests,[30000]);
   t.mock.timers.tick(sixHours-30000);await new Promise(setImmediate);
@@ -25,7 +25,7 @@ test('release polling repeats six hours after the first check and stops on teard
   assert.equal(requests.length,2);
   let finish;
   updater.check = () => { requests.push(Date.now()); return new Promise(resolve=>{finish=resolve;}); };
-  const pending = scope.ZenniaUpdates.install(window,{el:node,icon:node,PrivateBrowsingUtils:{isWindowPrivate:()=>false}});
+  const pending = scope.ZenniaUpdates.install(window,{el:node,icon:node,zen:require('./zen.cjs').zenFor(),PrivateBrowsingUtils:{isWindowPrivate:()=>false}});
   t.mock.timers.tick(30000);assert.equal(requests.length,3);
   pending.destroy();finish();await new Promise(setImmediate);
   t.mock.timers.tick(sixHours);await new Promise(setImmediate);assert.equal(requests.length,3);
@@ -150,7 +150,7 @@ for (const platform of ['win32','darwin','linux']) test(`in-place update preserv
   async function collect(dir,prefix=''){for(const item of await fs.readdir(dir,{withFileTypes:true})){if(item.isDirectory())await collect(path.join(dir,item.name),prefix+item.name+'/');else files[prefix+item.name]=(await fs.readFile(path.join(dir,item.name))).toString('base64');}}
   await collect(path.join(__dirname,'../payload'));
   const bundle={format:1,version:'9.0.0',supported:['1.24b'],files};
-  const context={paths:{profile,resources:target.resources,join:path.join,separator:path.sep},version:'9.0.0',browserVersion:'1.24b',platform:platform==='win32'?'WINNT':platform==='darwin'?'Darwin':'Linux',decode:s=>Buffer.from(s,'base64'),encode:s=>Buffer.from(s),hash:async b=>crypto.createHash('sha256').update(b).digest('hex'),io:{exists:p=>fs.access(p).then(()=>true,()=>false),readJSON:async p=>JSON.parse(await fs.readFile(p,'utf8')),read:p=>fs.readFile(p),write:async(p,b)=>{await fs.mkdir(path.dirname(p),{recursive:true});await fs.writeFile(p,b);},remove:p=>fs.rm(p,{force:true}),assertPath:async p=>{assert.equal(path.resolve(p),p);}}};
+  const context={paths:{profile,resources:target.resources,join:path.join,separator:path.sep},zenData:require('../payload/content/shared/zen-data.js'),version:'9.0.0',browserVersion:'1.24b',platform:platform==='win32'?'WINNT':platform==='darwin'?'Darwin':'Linux',decode:s=>Buffer.from(s,'base64'),encode:s=>Buffer.from(s),hash:async b=>crypto.createHash('sha256').update(b).digest('hex'),io:{exists:p=>fs.access(p).then(()=>true,()=>false),readJSON:async p=>JSON.parse(await fs.readFile(p,'utf8')),read:p=>fs.readFile(p),write:async(p,b)=>{await fs.mkdir(path.dirname(p),{recursive:true});await fs.writeFile(p,b);},remove:p=>fs.rm(p,{force:true}),assertPath:async p=>{assert.equal(path.resolve(p),p);}}};
   const managed=path.join(profile,'chrome','zennia','zennia.uc.js'), original=await fs.readFile(managed);
   const receiptPath=engine.receiptFile(profile), receiptBefore=await fs.readFile(receiptPath);
   const userBefore=await fs.readFile(path.join(profile,'user.js'));
@@ -161,6 +161,12 @@ for (const platform of ['win32','darwin','linux']) test(`in-place update preserv
   assert.deepEqual(await fs.readFile(managed),original);assert.deepEqual(await fs.readFile(receiptPath),receiptBefore);
   context.io.write=write;
   files['../outside']='eA==';await assert.rejects(applyThemeUpdate(bundle,context),/payload path/);delete files['../outside'];
+  // Managed preferences come from the bundle's data for the running Zen version.
+  const versionFile=files['zen-versions/1.24b.json'];
+  files['zen-versions/1.24b.json']=Buffer.from(JSON.stringify({...JSON.parse(Buffer.from(versionFile,'base64')),prefs:{'zen.urlbar.behavior':'normal'}})).toString('base64');
+  await assert.rejects(applyThemeUpdate(bundle,context),/managed preferences/);
+  delete files['zen-versions/1.24b.json'];await assert.rejects(applyThemeUpdate(bundle,context),/no data for this Zen version/);
+  files['zen-versions/1.24b.json']=versionFile;
   await fs.appendFile(managed,'edited');await assert.rejects(applyThemeUpdate(bundle,context),/edited/);await fs.writeFile(managed,original);
   await applyThemeUpdate(bundle,context);
   assert.equal((await context.io.readJSON(receiptPath)).version,'9.0.0');

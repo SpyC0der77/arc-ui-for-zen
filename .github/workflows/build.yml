@@ -47,6 +47,8 @@ jobs:
         run: python -m pip install --target artifacts/test-python -r tests/runtime-requirements.txt
       - name: Fetch pinned Zen runtime
         run: pnpm fetch:zen -- ${{ matrix.version }}
+      - name: Check Zen internals against zen-versions data
+        run: pnpm check:zen -- ${{ matrix.version }}
       - name: Verify isolated Zen runtime
         run: pnpm test:runtime -- "artifacts/zen-builds/${{ matrix.version }}/core" --pointer
       - name: Upload runtime diagnostics
@@ -57,10 +59,9 @@ jobs:
           if-no-files-found: ignore
           # Only explicit diagnostic outputs, never application copies or profiles.
           path: |
-            artifacts/runtime-*/results.json
-            artifacts/runtime-*/diagnostics/*.json
-            artifacts/runtime-*/diagnostics/*.log
-            artifacts/runtime-*/diagnostics/*.png
+            zen-instances/runtime-*/diagnostics/*.json
+            zen-instances/runtime-*/diagnostics/*.log
+            zen-instances/runtime-*/diagnostics/*.png
   build:
     strategy:
       fail-fast: false

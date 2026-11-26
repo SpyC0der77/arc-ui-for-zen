@@ -122,8 +122,10 @@ export const ZenniaUpdater = {
         value.init(value.SHA256); value.update(bytes, bytes.length);
         return Array.from(value.finish(false), c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
       };
+      const zenData = {};
+      Services.scriptloader.loadSubScript('chrome://zennia/content/shared/zen-data.js', zenData, 'UTF-8');
       await applyThemeUpdate(bundle, {
-        ...updateContext(),
+        ...updateContext(), zenData: zenData.ZenniaZenData,
         hash:hashBytes, decode: text => Uint8Array.from(atob(text), c => c.charCodeAt(0)), encode:text => new TextEncoder().encode(text),
         browserVersion:Services.appinfo.version, platform:Services.appinfo.OS, version:this.release.tag_name.replace(/^v/,'')
       });

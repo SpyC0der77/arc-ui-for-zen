@@ -30,6 +30,18 @@ debug mode, and browser tests. Keep UI implementations out of that file.
 The existing command, debug, archive, provider, and split-action modules retain
 their file paths so current imports and tests continue to work.
 
+## Zen versions
+
+Feature code writes Zen names as they appear in `../zen-versions/base.json` and
+passes DOM names, preferences and URLs through the `zen` helpers it receives in
+its dependencies (`zen.name()`, `zen.pref()`, `zen.url()`, `zen.import()`).
+`zen.features` holds the switches that differ between versions. Never compare
+Zen version numbers in feature code. See `dev/ZEN-VERSIONS.md`.
+
+`zennia.uc.js` installs each feature separately. A feature that throws during
+installation is logged and skipped, and the callbacks between features tolerate
+its absence.
+
 ## Feature ownership
 
 A feature exports a named object with `install(window, dependencies)`. Browser

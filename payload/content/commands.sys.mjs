@@ -2,9 +2,9 @@
 export const ACTIONS = Object.freeze([
   {id:"archive", title:"Open Archive", aliases:["archive", "open archive", "view archive"], icon:"archive"},
   {id:"downloads", title:"Open Downloads", aliases:["downloads", "open downloads", "show downloads"], icon:"download"},
-  {id:"split", title:"Split View", aliases:["split", "split view", "add split view", "split side by side"], command:"cmd_zenSplitViewVertical", icon:"sidebars"},
-  {id:"split-horizontal", title:"Split View Top to Bottom", aliases:["split top to bottom", "split horizontal", "horizontal split"], command:"cmd_zenSplitViewHorizontal", icon:"sidebars"},
-  {id:"unsplit", title:"Unsplit View", aliases:["unsplit", "unsplit view", "close split view"], command:"cmd_zenSplitViewUnsplit", icon:"sidebars"},
+  {id:"split", title:"Split View", aliases:["split", "split view", "add split view", "split side by side"], command:"cmd_zenSplitViewVertical", icon:"sidebars"}, // zen.name() at use
+  {id:"split-horizontal", title:"Split View Top to Bottom", aliases:["split top to bottom", "split horizontal", "horizontal split"], command:"cmd_zenSplitViewHorizontal", icon:"sidebars"}, // zen.name() at use
+  {id:"unsplit", title:"Unsplit View", aliases:["unsplit", "unsplit view", "close split view"], command:"cmd_zenSplitViewUnsplit", icon:"sidebars"}, // zen.name() at use
   {id:"sidebar", title:"Toggle Sidebar", aliases:["sidebar", "toggle sidebar"], icon:"sidebars"},
   {id:"debug", title:"Toggle Debug Mode", aliases:["debug", "debug mode", "toggle debug", "toggle debug mode", "mock", "mock data"], icon:"debug"},
   {id:"debug-enable", title:"Enable Debug Mode", aliases:["enable debug"], icon:"debug"},
@@ -25,12 +25,16 @@ export function matchActions(input) {
 const windows=new Set();
 let provider=null, manager=null;
 
+// Zen-version data is read on use, so the action list stays importable in tests.
+const zenHelpers=()=>ChromeUtils.importESModule("chrome://zennia/content/zen.sys.mjs").zen;
+
 function available(action,win) {
   if(!win?.Zennia||win.closed)return false;
+  const zen=zenHelpers();
   if(["debug","debug-enable","debug-disable"].includes(action.id))return !!win.Zennia.debug?.available;
   if(action.id==="debug-reset")return !!win.Zennia.debug?.enabled;
   if(!action.command)return true;
-  const command=win.document.getElementById(action.command);
+  const command=win.document.getElementById(zen.name(action.command));
   if(!command||command.getAttribute("disabled")==="true")return false;
   if(action.id==="unsplit")return !!win.gZenViewSplitter?.splitViewActive;
   return win.gBrowser.visibleTabs.length>=2;
@@ -38,10 +42,11 @@ function available(action,win) {
 
 async function run(action,win) {
   if(!available(action,win))return;
+  const zen=zenHelpers();
   // Zen routes these through its commandset listener, not the browser's
   // controller dispatcher used by goDoCommand.
   if(action.command){
-    win.document.getElementById(action.command).dispatchEvent(new win.Event("command",{bubbles:true}));
+    win.document.getElementById(zen.name(action.command)).dispatchEvent(new win.Event("command",{bubbles:true}));
     return;
   }
   if(action.id==="sidebar"){win.Zennia.toggleDock();return;}
@@ -49,8 +54,8 @@ async function run(action,win) {
   if(action.id==="debug-enable"){await win.Zennia.debug.enable();return;}
   if(action.id==="debug-disable"){await win.Zennia.debug.disable();return;}
   if(action.id==="debug-reset"){await win.Zennia.debug.reset();return;}
-  const library=win.document.querySelector("zen-library");
-  if(!library){
+  const library=win.document.querySelector(zen.name("zen-library"));
+  if(zen.features.library!=="native"||!library){
     if(action.id==="downloads"){
       win.Zennia.hideDownloads();
       await win.Zennia.setRail(false);
@@ -60,10 +65,10 @@ async function run(action,win) {
   }
   if(action.id==="downloads")library.activeTab="downloads";
   else {
-    win.Services.prefs.setBoolPref("zen.library.history.closed-tabs",true);
+    win.Services.prefs.setBoolPref(zen.pref("zen.library.history.closed-tabs"),true);
     library.activeTab="history";
     await library.updateComplete;
-    const section=library.querySelector("zen-library-history-section");
+    const section=library.querySelector(zen.name("zen-library-history-section"));
     if(section){
       section.activeFilters.delete("source:history");
       section.activeFilters.add("source:closed");
@@ -93,13 +98,14 @@ export function install(win) {
       }
       async startQuery(context,add){
         const target=this.contexts.get(context);
+        const zen=zenHelpers();
         for(const [index,action] of matchActions(context.searchString).filter(a=>available(a,target)).entries()){
           add(this,new UrlbarResult({type:UrlbarShared.RESULT_TYPE.DYNAMIC,source:UrlbarShared.RESULT_SOURCE.OTHER_LOCAL,
             suggestedIndex:index+1,payload:{dynamicType:"zennia-command",commandId:action.id,title:action.id==="debug"?`${target.Zennia.debug.enabled?"Disable":"Enable"} Debug Mode`:action.title,input:context.searchString,
-              icon:action.icon==="archive"?"chrome://browser/content/zen-images/downloads/archive.svg":
+              icon:action.icon==="archive"?zen.url("chrome://browser/content/zen-images/downloads/archive.svg"):
                 action.icon==="download"?"chrome://browser/skin/downloads/downloads.svg":
                   action.icon==="debug"?"chrome://zennia/content/spaces.svg":
-                  action.id==="sidebar"?"chrome://browser/skin/zen-icons/sidebar.svg":"chrome://browser/skin/zen-icons/split.svg"}}));
+                  action.id==="sidebar"?zen.url("chrome://browser/skin/zen-icons/sidebar.svg"):zen.url("chrome://browser/skin/zen-icons/split.svg")}}));
         }
       }
       getViewTemplate(){

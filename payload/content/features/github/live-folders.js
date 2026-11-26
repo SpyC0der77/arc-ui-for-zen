@@ -1,15 +1,15 @@
 /* Connect the GitHub provider to native live folders; never run in private windows. */
 var ZenniaGitHubFolders = {
   install(window, dependencies = {}) {
-    const { ChromeUtils } = window;
-    const { Services, PrivateBrowsingUtils, createMotion } = dependencies;
+    const { Services, PrivateBrowsingUtils, createMotion, zen } = dependencies;
     const motion = createMotion(window);
     const { later, clear } = motion;
     let stopGithubSetup = () => {};
-    if (!PrivateBrowsingUtils.isWindowPrivate(window)) {
+    if (zen.features.liveFolders && !PrivateBrowsingUtils.isWindowPrivate(window)) {
       try {
-        const { ZenLiveFoldersManager } = ChromeUtils.importESModule(
+        const ZenLiveFoldersManager = zen.import(
           "resource:///modules/zen/ZenLiveFoldersManager.sys.mjs",
+          "ZenLiveFoldersManager",
         );
         const github = {};
         Services.scriptloader.loadSubScript(

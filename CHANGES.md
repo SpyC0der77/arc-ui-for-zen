@@ -1,5 +1,12 @@
 ## Unreleased
 
+- Describe each supported Zen version in its own file under `payload/zen-versions/`. The installer, startup loader, updater, CI and release notes read supported versions, managed preferences and feature switches from these files instead of separate hard-coded lists.
+- Let theme updates add support for new Zen versions without reinstalling, when the new version uses the same managed preferences.
+- Check every Zen name, global, member, preference and URL Zennia uses against each supported Zen build in CI, and remove references to five Zen names that no supported version has.
+- Keep loading the remaining features when one fails to install on a Zen release.
+- Support every Zen release from 1.22b to 1.24.3b: add 1.22b, 1.22.1b, 1.22.2b, 1.23b, 1.23.1b, 1.23.2b, 1.24.2b and 1.24.3b. 1.23b, whose native library is created only when first opened, uses the 1.22 library menu.
+- Check each new Zen release daily: run the surface check and the full browser test suite on it with a draft version file, and open an issue saying whether it works without changes.
+- Upload runtime diagnostics from CI again; the upload still pointed at the folder used before test instances moved to `zen-instances/`.
 - Rename the project from Arc UI for Zen to Zennia: installer, release files, settings window, menus and update source now use the new name.
 - Upgrade earlier Arc UI installations from the installer, keeping saved appearance settings and presets. Previously exported presets still import.
 - Import and export named appearance presets as versioned JSON files from Settings → Presets.

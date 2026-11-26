@@ -19,9 +19,7 @@ var ZenniaNavigation = {
         ? BrowserCommands.stop()
         : BrowserCommands.reload(),
     );
-    const appMenu =
-      document.getElementById("PanelUI-menu-button") ||
-      document.getElementById("zen-appmenu-button");
+    const appMenu = document.getElementById("PanelUI-menu-button");
     const appMenuParent = appMenu?.parentNode;
     const appMenuNext = appMenu?.nextSibling;
     const appMenuAttributes = appMenu

@@ -1,0 +1,50 @@
+{
+  "version": "1.22b",
+  "notes": "Predates Zen's native library and its Archive. The gift button opens a menu with Downloads, Bookmarks, History and recently closed tabs instead. Idle tabs stay open, debug mode is off, and the sidebar slides with Zen's own older transition. 1.22b also lacks the accent button colors added in 1.22.1b, so Zennia's values for them have no effect.",
+  "features": {
+    "library": "menu",
+    "archive": false,
+    "debugMode": false
+  },
+  "unavailable": {
+    "native library": [
+      "zen-library",
+      "zen-library-button",
+      "zen-library-section",
+      "zen-library-side",
+      "zen-library-footer",
+      "zen-library-download-list",
+      "zen-library-sprite",
+      "zen-library-space",
+      "zen-library-space-header",
+      "zen-library-space-background",
+      "zen-library-row-actions",
+      "zen-library-history-section",
+      "zen.library.history.closed-tabs"
+    ],
+    "debug mode fixtures": [
+      "zen-library-row",
+      "zen-library-row-icon",
+      "zen-library-row-text",
+      "zen-library-row-title",
+      "zen-library-row-subtitle",
+      "zen-library-group",
+      "zen-library-media-grid",
+      "zen-library-media-item",
+      "zen-library-media-frame",
+      "zen-library-media-thumb",
+      "zen-library-empty",
+      "zen-library-search-box",
+      "moz-src:///zen/library/ZenLibraryUtils.sys.mjs"
+    ],
+    "compact sidebar transition": ["--zen-compact-hidden-translate"],
+    "color editor window": ["zen-keep-opener-active"],
+    "accent button colors": ["--zen-accent-button-color", "--zen-accent-button-background"]
+  },
+  "runtime": {
+    "windows-x64": {
+      "url": "https://github.com/zen-browser/desktop/releases/download/1.22b/zen.installer.exe",
+      "sha256": "7b9b6c789d4a670f2b78ae69864b87366cb3bb859e6f51fe5eafd076f5f37e1c"
+    }
+  }
+}
