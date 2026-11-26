@@ -5,6 +5,8 @@ on:
     paths:
       - apps/website/**
       - apps/installer/payload/zen-versions/**
+      - apps/installer/installer/versions.cjs
+      - apps/installer/payload/content/shared/**
       - apps/installer/installer/ui/**
       - apps/installer/payload/content/geist-*.woff2
       - apps/installer/payload/content/Geist-LICENSE.txt
@@ -17,6 +19,8 @@ on:
     paths:
       - apps/website/**
       - apps/installer/payload/zen-versions/**
+      - apps/installer/installer/versions.cjs
+      - apps/installer/payload/content/shared/**
       - apps/installer/installer/ui/**
       - apps/installer/payload/content/geist-*.woff2
       - apps/installer/payload/content/Geist-LICENSE.txt
