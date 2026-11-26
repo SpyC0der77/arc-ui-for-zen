@@ -38,7 +38,7 @@ export default function Home() {
               <p className="platforms">Windows, macOS and Linux <span aria-hidden="true">·</span> Free</p>
             </div>
             <figure className="hero-preview">
-              <Image src="/product/sidebar.png" width={2048} height={1544} sizes="(min-width: 1184px) 656px, (min-width: 960px) 56vw, 100vw" alt="Zennia’s lavender sidebar with Figma, YouTube, and Spotify pinned and the Python documentation open" preload />
+              <Image src="/shared/product-sidebar.png" width={2048} height={1544} sizes="(min-width: 1184px) 656px, (min-width: 960px) 56vw, 100vw" alt="Zennia’s lavender sidebar with Figma, YouTube, and Spotify pinned and the Python documentation open" preload />
               <figcaption>Zennia’s sidebar in Zen Browser</figcaption>
             </figure>
           </div>

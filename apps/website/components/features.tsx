@@ -5,7 +5,7 @@ const features = [
   {
     title: 'A Space for each project',
     description: 'Keep work, personal tabs and reading lists in their own Spaces. Each one keeps its pinned tabs and folders. Hide the sidebar when you need more room and reveal it at the window edge.',
-    image: '/product/spaces.png',
+    image: '/shared/product-spaces.png',
     width: 1945,
     height: 1543,
     alt: 'The Spaces overview showing Work, Personal, and Reading side by side',
@@ -13,7 +13,7 @@ const features = [
   {
     title: 'Commands where you type',
     description: 'Open the centered address bar to search with Zen’s suggestions. Type Archive, Downloads, or Split View to run a command in the same place.',
-    image: '/product/commands.png',
+    image: '/shared/product-commands.png',
     width: 2048,
     height: 1544,
     alt: 'The centered command bar with the Open Archive command among its suggestions',
