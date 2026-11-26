@@ -195,6 +195,13 @@ void main() {
           const loc = Object.fromEntries(UNIFORMS.map(name => [name, gl.getUniformLocation(program, name)]));
           gl.uniform1i(loc.uBg, 0);
           renderer = { canvas, gl, loc, width: 0, height: 0, textures: new WeakMap() };
+          // A lost context cannot be drawn to, and its textures are gone. Stay on the CSS look: no
+          // event preventDefault, so the browser does not restore this context and rendererFor
+          // never hands it out again.
+          canvas.addEventListener("webglcontextlost", () => {
+            renderers.set(doc, null);
+            for (const item of controls) item.sync(false);
+          });
         }
       } catch (error) {
         console.error("[Zennia] Liquid Glass sliders fall back to CSS", error);
