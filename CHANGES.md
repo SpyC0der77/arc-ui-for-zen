@@ -14,6 +14,7 @@
 - Upgrade earlier Arc UI installations from the installer, keeping saved appearance settings and presets. Previously exported presets still import.
 - Import and export named appearance presets as versioned JSON files from Settings → Presets.
 - Validate imported appearance values, preview before applying, and preserve existing presets when names match.
+- On Windows, use thin overlay scrollbars that hide until used and momentum scrolling that eases like a Mac trackpad.
 
 ## v0.1.8-beta.10
 

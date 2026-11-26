@@ -58,6 +58,7 @@
     if(Services.appinfo.OS==='WINNT') {
       check(Services.prefs.getIntPref('gfx.font_rendering.cleartype_params.rendering_mode')===5&&Services.prefs.getIntPref('gfx.font_rendering.cleartype_params.cleartype_level')===0,'Windows natural symmetric rendering and grayscale preference');
       check(Services.prefs.getIntPref('gfx.font_rendering.cleartype_params.enhanced_contrast')===50,'Windows text contrast restores stroke strength');
+      check(Services.prefs.getIntPref('widget.non-native-theme.scrollbar.style')===1&&Services.prefs.getIntPref('ui.useOverlayScrollbars')===1&&Services.prefs.getBoolPref('general.smoothScroll.msdPhysics.enabled'),'Windows scrolling uses thin overlay scrollbars and macOS-style momentum');
     }
     check(!!document.getElementById('zennia-top-controls'),'navigation controls');
     const {ZenLiveFoldersManager:liveFolders}=ChromeUtils.importESModule('resource:///modules/zen/ZenLiveFoldersManager.sys.mjs');
