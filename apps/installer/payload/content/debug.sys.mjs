@@ -21,7 +21,8 @@ function journal() {
 function writeJournal(j){Services.prefs.setStringPref(JOURNAL,JSON.stringify(j));}
 
 async function removeOwned(win,j) {
-  const {SessionStore}=ChromeUtils.importESModule("moz-src:///browser/components/sessionstore/SessionStore.sys.mjs");
+  // The window global works on every Zen version; the module moved after 1.22.1b.
+  const {SessionStore}=win;
   const owned=new Set(j.spaces);
   for(const id of owned) {
     const space=win.gZenWorkspaces.getWorkspaces().find(s=>s.uuid===id);
@@ -59,7 +60,8 @@ async function removeOwned(win,j) {
 export function install(win,{html,setDownloads,announce,isPrivate=false}) {
   const {document}=win;
   const library=document.querySelector(zen.name("zen-library"));
-  const {SessionStore}=ChromeUtils.importESModule("moz-src:///browser/components/sessionstore/SessionStore.sys.mjs");
+  // The window global works on every Zen version; the module moved after 1.22.1b.
+  const {SessionStore}=win;
   const available=zen.features.debugMode&&!!library&&!isPrivate&&win.gZenWorkspaces.workspaceEnabled;
   let enabled=false,destroyed=false,queue=Promise.resolve(),observer=null,data=null,downloads=[],files=[],tabs=[],originalTab=null,originalLibraryTab=null,originalRail=false,originalHistoryPref=null;
   const patches=new Map(),viewStates=new Map(),optInStates=new Map();

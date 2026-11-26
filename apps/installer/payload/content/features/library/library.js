@@ -1376,9 +1376,12 @@ var ZenniaLibrary = {
       label.setAttribute("disabled", "true");
       popup.append(label);
       try {
-        const { RecentlyClosedTabsAndWindowsMenuUtils } = window.ChromeUtils.importESModule(
-          "moz-src:///browser/components/sessionstore/RecentlyClosedTabsAndWindowsMenuUtils.sys.mjs",
-        );
+        // Zen 1.22b and 1.22.1b still ship this module under resource:///modules/.
+        const load = url => window.ChromeUtils.importESModule(url);
+        let utils;
+        try { utils = load("moz-src:///browser/components/sessionstore/RecentlyClosedTabsAndWindowsMenuUtils.sys.mjs"); }
+        catch { utils = load("resource:///modules/sessionstore/RecentlyClosedTabsAndWindowsMenuUtils.sys.mjs"); }
+        const { RecentlyClosedTabsAndWindowsMenuUtils } = utils;
         const entries = RecentlyClosedTabsAndWindowsMenuUtils.getTabsFragment(window, "menuitem");
         if (entries.childNodes.length) popup.append(entries);
         else label.setAttribute("label", "No recently closed tabs");
