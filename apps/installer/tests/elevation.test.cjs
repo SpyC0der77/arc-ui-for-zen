@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const path=require('node:path');
 const os=require('node:os');
-const {apply,worker,elevate,elevationScript}=require('../installer/elevation.cjs');
+const {apply,worker,elevate,elevationScript,winQuote}=require('../installer/elevation.cjs');
 test('normal installs do not request administrator access',async()=>{
  assert.equal(await apply('install','app','profile',{engine:{install:async()=>42},platform:'win32',elevate:()=>assert.fail('unexpected elevation')}),42);
 });
@@ -39,6 +39,24 @@ test('the elevated install receives the selected font or explicit default',async
  await assert.rejects(worker(['install',root,root,path.join(root,'invalid.json'),'sf-pro'],engine),/Invalid/);
  await assert.rejects(worker(['install',root,root,path.join(root,'unknown.json'),root,'sf-pro-rounded'],engine),/Invalid/);
  assert.deepEqual(calls,[{customFont:file},{customFont:null},{customFont:'geist'},{customFont:file,fontPreset:'sf-pro'},{customFont:root,fontPreset:'sf-pro-family'}]);
+});
+test('elevate builds the font arguments for the elevated install',async()=>{
+ // The stub records the encoded PowerShell script; the missing result file then ends elevate().
+ const scripts=[];
+ const run=async(_file,args)=>{scripts.push(Buffer.from(args.at(-1),'base64').toString('utf16le'));};
+ const argumentsOf=script=>/-ArgumentList '((?:[^']|'')*)'/.exec(script)[1].replace(/''/g,"'");
+ const file=path.resolve('chosen-font.otf');
+ const cases=[
+  [{customFont:null},['--default-font']],
+  [{customFont:'chosen-font.otf'},[file]],
+  [{customFont:'geist'},['geist']],
+  [{customFont:'chosen-font.otf',fontPreset:'sf-pro'},[file,'sf-pro']],
+ ];
+ for(const [options,expected] of cases){
+  await assert.rejects(elevate('install','app','profile',{appPath:process.cwd(),run,...options}),/did not complete/);
+  const quoted=argumentsOf(scripts.at(-1));
+  assert.ok(quoted.endsWith(' '+expected.map(winQuote).join(' ')),`${JSON.stringify(options)} sent ${quoted}`);
+ }
 });
 test('elevation transports quoted paths as data in encoded PowerShell',()=>{
  const script=elevationScript("C:\\O'Brien\\installer.exe",['C:\\a b\\','p"q','$(not-code)']);
