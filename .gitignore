@@ -3,6 +3,9 @@ artifacts/
 release/
 node_modules/
 __pycache__/
-dev/references/arc/
+apps/installer/dev/references/arc/
 
 zen-instances/
+.next/
+out/
+*.tsbuildinfo

@@ -8,6 +8,11 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+defaults:
+  run:
+    # The installer is a workspace package; artifacts/ and zen-instances/ stay
+    # at the repository root.
+    working-directory: apps/installer
 concurrency:
   group: zen-releases
   cancel-in-progress: false
@@ -60,7 +65,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install native pointer test driver
-        run: python -m pip install --target artifacts/test-python -r tests/runtime-requirements.txt
+        run: python -m pip install --target ../../artifacts/test-python -r tests/runtime-requirements.txt
       # Each check records its exit code instead of failing the job, so the
       # issue reports every result. An empty status means the step did not run.
       - name: Download the release with a draft version file
@@ -86,7 +91,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          node tests/runtime.cjs "artifacts/zen-builds/$VERSION/core" --pointer > runtime.log 2>&1
+          node tests/runtime.cjs "../../artifacts/zen-builds/$VERSION/core" --pointer > runtime.log 2>&1
           echo "status=$?" >> "$GITHUB_OUTPUT"
       - name: Upload logs and browser diagnostics
         if: always()
@@ -96,8 +101,8 @@ jobs:
           if-no-files-found: ignore
           # Only explicit diagnostic outputs, never application copies or profiles.
           path: |
-            check.log
-            runtime.log
+            apps/installer/check.log
+            apps/installer/runtime.log
             zen-instances/runtime-*/diagnostics/*.json
             zen-instances/runtime-*/diagnostics/*.log
             zen-instances/runtime-*/diagnostics/*.png

@@ -1,2 +1,7 @@
+packages:
+  - apps/*
 onlyBuiltDependencies:
   - electron
+  - sharp
+ignoredBuiltDependencies:
+  - electron-winstaller

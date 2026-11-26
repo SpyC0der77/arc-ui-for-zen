@@ -1,0 +1,69 @@
+{
+  "name": "zennia-installer",
+  "version": "0.1.8-beta.10",
+  "private": true,
+  "description": "Cross-platform installer for the Zennia theme and behavior patches for Zen Browser",
+  "license": "UNLICENSED",
+  "main": "installer/main.cjs",
+  "scripts": {
+    "start": "node scripts/start.cjs",
+    "test": "node --test tests/elevation.test.cjs tests/engine.test.cjs tests/github.test.cjs tests/archive.test.cjs tests/native-actions.test.cjs tests/commands.test.cjs tests/debug.test.cjs tests/package.test.cjs tests/cli.test.cjs tests/split-actions.test.cjs tests/features.test.cjs tests/release.test.cjs tests/updates.test.cjs tests/runtime-runner.test.cjs tests/zen-runtime-builds.test.cjs tests/zen-versions.test.cjs tests/zen-release-watch.test.cjs",
+    "test:runtime": "node tests/runtime.cjs",
+    "fetch:zen": "node scripts/fetch-zen-runtime.cjs",
+    "check:zen": "node scripts/zen-surface.cjs",
+    "dev:lock": "node scripts/dev-zen.cjs",
+    "pack": "electron-builder --dir",
+    "verify:package": "node scripts/verify-package.cjs",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win portable",
+    "dist:mac": "electron-builder --mac dmg zip",
+    "dist:linux": "electron-builder --linux AppImage",
+    "cli": "node installer/cli.cjs"
+  },
+  "devDependencies": {
+    "@electron/asar": "3.4.1",
+    "electron": "45.0.0",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "dev.zennia.installer",
+    "productName": "Zennia",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "installer/**/*.cjs",
+      "installer/ui/**/*",
+      "payload/**/*",
+      "package.json",
+      "!dev{,/**/*}"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "requestedExecutionLevel": "asInvoker",
+      "artifactName": "Zennia-${version}-Windows.${ext}"
+    },
+    "mac": {
+      "identity": "-",
+      "hardenedRuntime": false,
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities",
+      "artifactName": "Zennia-${version}-macOS-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility",
+      "artifactName": "Zennia-${version}-Linux-${arch}.${ext}"
+    }
+  },
+  "bin": {
+    "zennia": "installer/cli.cjs"
+  }
+}

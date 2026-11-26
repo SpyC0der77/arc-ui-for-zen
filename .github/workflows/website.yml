@@ -1,0 +1,48 @@
+name: Build website
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/website/**
+      - apps/installer/payload/zen-versions/**
+      - apps/installer/installer/ui/**
+      - apps/installer/payload/content/geist-*.woff2
+      - apps/installer/payload/content/Geist-LICENSE.txt
+      - apps/installer/package.json
+      - CHANGES.md
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .github/workflows/website.yml
+  pull_request:
+    paths:
+      - apps/website/**
+      - apps/installer/payload/zen-versions/**
+      - apps/installer/installer/ui/**
+      - apps/installer/payload/content/geist-*.woff2
+      - apps/installer/payload/content/Geist-LICENSE.txt
+      - apps/installer/package.json
+      - CHANGES.md
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .github/workflows/website.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: website-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --filter zennia-website
+      - run: pnpm --filter zennia-website build

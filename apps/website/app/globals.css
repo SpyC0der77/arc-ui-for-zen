@@ -1,0 +1,98 @@
+@font-face {
+  font-family: Geist;
+  src: url('/shared/geist-400.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Geist;
+  src: url('/shared/geist-500.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Geist;
+  src: url('/shared/geist-600.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+
+:root {
+  --paper: #f8f7f5;
+  --lavender: #e7e0ed;
+  --ink: #292432;
+  --muted: #58505f;
+  --line: #d9d3db;
+  --action: #35263f;
+}
+
+* { box-sizing: border-box; }
+html { scroll-padding-top: 24px; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.6 Geist, sans-serif; }
+h1, h2, h3, p, figure, dl, dd { margin: 0; }
+h1, h2, h3 { font-weight: 600; text-wrap: balance; }
+img { display: block; }
+a { color: inherit; text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--action); outline-offset: 4px; }
+
+.container { width: min(calc(100% - 48px), 1136px); margin-inline: auto; }
+.skip-link { position: absolute; z-index: 2; top: 8px; left: 8px; background: var(--paper); padding: 8px 12px; }
+.skip-link:not(:focus) { clip-path: inset(50%); }
+.site-header { border-bottom: 1px solid var(--line); }
+.header-inner { min-height: 68px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; }
+.brand { display: flex; width: fit-content; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; text-decoration: none; }
+.site-header nav, .site-footer nav { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 14px; }
+.site-header nav a, .site-footer nav a { text-decoration: none; }
+.site-header nav a:hover, .site-footer nav a:hover { text-decoration: underline; }
+.header-install { justify-self: end; font-size: 14px; font-weight: 500; }
+
+.hero { background: var(--lavender); border-bottom: 1px solid var(--line); }
+.hero-inner { display: grid; gap: 36px; align-items: center; padding-block: clamp(44px, 7vw, 100px); }
+.hero-copy h1 { font-size: clamp(46px, 5.8vw, 80px); letter-spacing: -0.04em; line-height: 1.02; }
+.hero-copy > p { max-width: 38ch; margin-top: 24px; color: var(--muted); font-size: 18px; }
+.hero-copy > .platforms { margin-top: 12px; font-size: 13px; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 24px; }
+.button { display: inline-flex; min-height: 44px; align-items: center; padding: 8px 16px; border-radius: 8px; background: var(--action); color: white; font-size: 15px; font-weight: 500; text-decoration: none; }
+.button:hover { background: #4d3d58; }
+.text-link { font-size: 15px; font-weight: 500; }
+.text-link:hover { text-decoration-thickness: 2px; }
+.hero-preview { min-width: 0; }
+.hero-preview img, .feature img { width: 100%; height: auto; border-radius: 8px; border: 1px solid #978a9e55; }
+.hero-preview figcaption { margin-top: 8px; color: var(--muted); font-size: 13px; }
+
+.section { padding-block: clamp(48px, 7vw, 88px); }
+.section h2 { font-size: clamp(28px, 4vw, 42px); line-height: 1.12; letter-spacing: -0.035em; }
+.section-summary { margin: 14px 0 16px; max-width: 42ch; color: var(--muted); }
+.feature-grid { display: grid; gap: 32px 24px; margin-block: 24px; }
+.feature img { aspect-ratio: 4 / 3; object-fit: contain; background: var(--lavender); }
+.feature h3 { margin: 16px 0 4px; font-size: 19px; line-height: 1.3; }
+.feature p { max-width: 65ch; color: var(--muted); }
+.install-section { background: #f1edf3; border-block: 1px solid var(--line); }
+.section-split { display: grid; gap: 24px 48px; }
+.install-steps, .release-notes { margin: 0; padding-left: 24px; }
+.install-steps li + li, .release-notes li + li { margin-top: 12px; }
+.install-steps p, .compatibility-list dd { color: var(--muted); }
+.compatibility-list > div { padding-block: 12px; border-top: 1px solid var(--line); }
+.compatibility-list > div:last-child { border-bottom: 1px solid var(--line); }
+.compatibility-list dt { font-weight: 600; }
+.compatibility-list .version-list { margin-top: 6px; font-size: 14px; font-variant-numeric: tabular-nums; }
+#changes { border-top: 1px solid var(--line); }
+.site-footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+.footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; padding-block: 24px; }
+
+@media (min-width: 800px) {
+  .feature-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .section-split { grid-template-columns: 2fr 3fr; }
+}
+
+@media (min-width: 960px) {
+  .hero-inner { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+}
+
+@media (max-width: 560px) {
+  .container { width: calc(100% - 32px); }
+  .header-inner { grid-template-columns: 1fr auto; gap: 8px; padding-block: 12px; }
+  .site-header nav { grid-column: 1 / -1; grid-row: 2; gap: 8px 16px; }
+}

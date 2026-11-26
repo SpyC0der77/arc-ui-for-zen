@@ -8,6 +8,11 @@ on:
 
 permissions:
   contents: read
+defaults:
+  run:
+    # The installer is a workspace package; artifacts/ and zen-instances/ stay
+    # at the repository root.
+    working-directory: apps/installer
 
 concurrency:
   group: release-${{ github.ref }}
@@ -43,7 +48,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           pattern: zennia-*
-          path: release
+          path: apps/installer/release
           merge-multiple: true
       - name: Prepare compatibility notes and checksums
         env:

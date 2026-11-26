@@ -7,6 +7,11 @@ on:
   workflow_call:
 permissions:
   contents: read
+defaults:
+  run:
+    # The installer is a workspace package; artifacts/ and zen-instances/ stay
+    # at the repository root.
+    working-directory: apps/installer
 concurrency:
   group: installer-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -44,13 +49,13 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install native pointer test driver
-        run: python -m pip install --target artifacts/test-python -r tests/runtime-requirements.txt
+        run: python -m pip install --target ../../artifacts/test-python -r tests/runtime-requirements.txt
       - name: Fetch pinned Zen runtime
         run: pnpm fetch:zen -- ${{ matrix.version }}
       - name: Check Zen internals against zen-versions data
         run: pnpm check:zen -- ${{ matrix.version }}
       - name: Verify isolated Zen runtime
-        run: pnpm test:runtime -- "artifacts/zen-builds/${{ matrix.version }}/core" --pointer
+        run: pnpm test:runtime -- "../../artifacts/zen-builds/${{ matrix.version }}/core" --pointer
       - name: Upload runtime diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -94,13 +99,13 @@ jobs:
       - run: pnpm verify:package
       - name: Smoke-test packaged Windows installer
         if: matrix.target == 'win'
-        run: pnpm exec electron tests/installer-smoke.cjs "${{ github.workspace }}/release/win-unpacked/resources/app.asar"
+        run: pnpm exec electron tests/installer-smoke.cjs "${{ github.workspace }}/apps/installer/release/win-unpacked/resources/app.asar"
       - uses: actions/upload-artifact@v4
         with:
           name: zennia-${{ matrix.target }}
           if-no-files-found: error
           path: |
-            release/*.exe
-            release/*.dmg
-            release/*.zip
-            release/*.AppImage
+            apps/installer/release/*.exe
+            apps/installer/release/*.dmg
+            apps/installer/release/*.zip
+            apps/installer/release/*.AppImage
