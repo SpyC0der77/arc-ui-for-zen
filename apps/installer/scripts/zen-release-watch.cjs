@@ -81,7 +81,7 @@ function body(release, results = {}) {
   }
   lines.push(
     '',
-    `## Draft \`payload/zen-versions/${release.version}.json\``,
+    `## Draft \`apps/installer/payload/zen-versions/${release.version}.json\``,
     '',
     '```json', file, '```',
     '',
@@ -90,7 +90,7 @@ function body(release, results = {}) {
     `1. Add the file above, with notes on what is different about ${release.version}.`,
   );
   if (result !== 'unchanged') lines.push(
-    `2. On Windows, in \`apps/installer\`:\`pnpm fetch:zen -- ${release.version}\`, then \`pnpm check:zen -- ${release.version}\` until it passes.`,
+    `2. On Windows, in \`apps/installer\`: \`pnpm fetch:zen -- ${release.version}\`, then \`pnpm check:zen -- ${release.version}\` until it passes.`,
     `3. Run \`pnpm test\` and \`pnpm test:runtime -- ../../artifacts/zen-builds/${release.version}/core --pointer\`.`,
     '4. Update the supported range in the README.',
   );
