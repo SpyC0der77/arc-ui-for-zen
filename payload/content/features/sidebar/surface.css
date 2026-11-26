@@ -1,5 +1,40 @@
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
+  @media (-moz-platform: windows) {
+    :root[data-zennia] #navigator-toolbox[zen-sidebar-expanded="true"] {
+      --zennia-sidebar-scrollbar-gutter: 16px;
+      --zennia-sidebar-end-padding: calc(var(--zen-toolbox-padding) + var(--zennia-sidebar-scrollbar-gutter));
+      padding-inline-end: var(--zennia-sidebar-end-padding) !important;
+
+      /* Keep the scrollbox at the outer edge while the sidebar controls move in. */
+      & :is(#zen-tabs-wrapper, zen-workspace) {
+        width: calc(100% + var(--zen-toolbox-padding) * 2 + var(--zennia-sidebar-scrollbar-gutter)) !important;
+      }
+      & #tabbrowser-tabs {
+        overflow-clip-margin: var(--zennia-sidebar-end-padding) !important;
+      }
+      & .zen-current-workspace-indicator {
+        width: calc(100% - var(--zennia-sidebar-scrollbar-gutter)) !important;
+        min-width: 0 !important;
+      }
+      & .workspace-arrowscrollbox > .zen-workspace-tabs-section {
+        padding-inline-end: var(--zennia-sidebar-end-padding) !important;
+      }
+
+      /* Use one full-width footer divider at every scroll position. */
+      & #TabsToolbar-customization-target::after {
+        inset-inline: calc(-1 * var(--zen-toolbox-padding)) calc(-1 * var(--zennia-sidebar-end-padding)) !important;
+        width: auto !important;
+        bottom: 0 !important;
+        transform: none !important;
+        background-color: light-dark(rgb(0 0 0 / 8%), rgb(255 255 255 / 8%));
+        pointer-events: none;
+      }
+      & .workspace-arrowscrollbox[overflowing]::after {
+        opacity: 0 !important;
+      }
+    }
+  }
   :root[data-zennia] .browserSidebarContainer:not(.zen-glance-overlay) {
     border-radius: var(--zennia-content-radius, 10px) !important;
     box-shadow: 0 1px 9px #21172b66 !important;
