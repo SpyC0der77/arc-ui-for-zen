@@ -21,6 +21,23 @@ test('every supported version resolves from its own file on top of base.json', (
   assert.throws(() => versions.resolve('9.9b'), /Unsupported Zen version/);
 });
 
+test('Windows-only scrolling and text preferences apply to Windows and nothing else', () => {
+  const windowsOnly = {
+    'widget.non-native-theme.scrollbar.style': 1,
+    'ui.useOverlayScrollbars': 1,
+    'general.smoothScroll.msdPhysics.enabled': true,
+  };
+  for (const version of versions.SUPPORTED_VERSIONS) {
+    const windows = versions.settings(version, 'win32');
+    for (const [key, value] of Object.entries(windowsOnly)) assert.equal(windows[key], value, `${version} sets ${key} on Windows`);
+    assert.equal(windows['gfx.font_rendering.cleartype_params.rendering_mode'], 5, `${version} keeps the Windows text preset`);
+    for (const platform of ['darwin', 'linux']) {
+      const settings = versions.settings(version, platform);
+      for (const key of [...Object.keys(windowsOnly), 'gfx.font_rendering.cleartype_params.rendering_mode']) assert.equal(key in settings, false, `${version} leaves ${key} out on ${platform}`);
+    }
+  }
+});
+
 test('version files merge objects, replace lists and reject malformed data', () => {
   const base = versions.base();
   const entry = { version: '1.24b', runtime: versions.resolve('1.24b').runtime };
