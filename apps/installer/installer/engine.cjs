@@ -117,8 +117,18 @@ async function inspect(installation,profile) {
   const receipt=found?JSON.parse(await fs.readFile(found.file,'utf8')):null;
   if(receipt&&(!eq(receipt.profile,target.profile)||!eq(receipt.resources,target.resources)))throw new Error('The receipt belongs to a different installation or profile.');
   return {installedVersion:receipt?receipt.version||'Unknown':null,targetVersion:VERSION,
+    zenVersion:target.version,installerSupportsZen:SUPPORTED_VERSIONS.includes(target.version),
+    ...(receipt&&found.names===NAMES?await pausedReason(target):{}),
     ...(receipt?.customFont?{customFont:receipt.customFont}:{}),
     ...(font.PRESETS.has(receipt?.fontPreset)?{fontPreset:receipt.fontPreset}:{})};
+}
+// Why an installed Zennia is not loading, usually after Zen updated or was reinstalled.
+async function pausedReason(target) {
+  const startup=[path.join(target.resources,'defaults','pref',NAMES.autoconfig),path.join(target.resources,NAMES.cfg)];
+  if(!(await Promise.all(startup.map(exists))).every(Boolean))return {paused:'startup-files-missing'};
+  const data=path.join(target.profile,'chrome',NAMES.root,'zen-versions',target.version+'.json');
+  if(!versions.VERSION_PATTERN.test(target.version)||!await exists(data))return {paused:'unsupported-zen'};
+  return {};
 }
 function missingFont(){return new Error('The browser font from the previous install is missing. Choose the font again before reinstalling, or choose Default to remove it.');}
 async function install(installation,profile,{payload=path.join(__dirname,'..','payload'),customFont,fontPreset,...options}={}) {

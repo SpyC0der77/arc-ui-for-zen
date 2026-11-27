@@ -43,9 +43,14 @@ export function updateContext() {
   };
 }
 
+const UNSUPPORTED = 'zennia.updates.unsupported';
+const unsupportedKey = release => `${Services.appinfo.version} ${release.tag_name}`;
+
 // One coordinator per browser process, including when several windows are open.
 export const ZenniaUpdater = {
   state: 'idle', release: null, progress: null, error: '', listeners: new Set(),
+  // The newest release found not to support the running Zen version, if any.
+  unsupported: null,
   revision: 0,
   emit() { for (const listener of this.listeners) listener(); },
   async getTrack() {
@@ -83,7 +88,9 @@ export const ZenniaUpdater = {
       if (!Array.isArray(releases)) throw new Error('Invalid release list');
       if (revision !== this.revision) return;
       if (['downloading', 'applying', 'ready', 'restarting'].includes(this.state)) return;
-      const release = selectRelease(releases, receipt.version, Services.appinfo.OS, Services.appinfo.XPCOMABI, track);
+      let release = selectRelease(releases, receipt.version, Services.appinfo.OS, Services.appinfo.XPCOMABI, track);
+      // A release already found not to support this Zen version is not offered again.
+      if (release && Services.prefs.getStringPref(UNSUPPORTED, '') === unsupportedKey(release)) { this.unsupported = release.tag_name; release = null; }
       this.release = release || null; this.state = release ? 'available' : 'idle'; this.error = ''; this.emit();
     } catch (error) { console.warn('[Zennia updates]', error); }
     finally {
@@ -133,7 +140,10 @@ export const ZenniaUpdater = {
       await IOUtils.remove(directory, {recursive:true}).catch(() => {});
     } catch (error) {
       if (directory) await IOUtils.remove(directory, { recursive: true }).catch(() => {});
-      this.state = 'error'; this.error = error.message;
+      if (error.code === 'unsupported-zen') {
+        Services.prefs.setStringPref(UNSUPPORTED, unsupportedKey(this.release));
+        this.unsupported = this.release.tag_name; this.release = null; this.state = 'idle'; this.error = ''; this.progress = null;
+      } else { this.state = 'error'; this.error = error.message; }
     }
     this.emit();
   },

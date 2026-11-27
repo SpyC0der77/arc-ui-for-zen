@@ -8,7 +8,10 @@ export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode,
   const localFont = new Set(['content/custom-font/face', 'content/custom-font/style.css']);
   const localFontPaths = new Set([...localFont].map(file => join(root,...file.split('/'))));
   if (await io.exists(journalPath)) throw new Error('An interrupted update needs recovery before another update.');
-  if (bundle.format !== 1 || bundle.version !== version || !bundle.supported?.includes(browserVersion)) throw new Error('This update does not support this Zen version.');
+  // Marked so the updater stops offering a release that cannot run on this Zen.
+  const unsupported = message => Object.assign(new Error(message), {code:'unsupported-zen'});
+  if (bundle.format !== 1 || bundle.version !== version) throw new Error('This update does not support this Zen version.');
+  if (!bundle.supported?.includes(browserVersion)) throw unsupported('This update does not support this Zen version.');
   const receipt = await io.readJSON(receiptPath), owner = await io.readJSON(ownerPath);
   if (receipt.profile !== profile || receipt.resources !== resources || owner.profile !== profile || owner.version !== receipt.version) throw new Error('Update ownership does not match this installation and profile.');
   const files = bundle.files;
@@ -21,7 +24,7 @@ export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode,
   // This bundle format updates the theme without changing the startup loader or
   // managed preferences. Refuse incompatible setup changes instead of guessing.
   const json = relative => {
-    if (!data.has(relative)) throw new Error('This update has no data for this Zen version.');
+    if (!data.has(relative)) throw unsupported('This update has no data for this Zen version.');
     return JSON.parse(new TextDecoder().decode(data.get(relative)));
   };
   const versionData = zenData.resolve(json('zen-versions/base.json'), json(`zen-versions/${browserVersion}.json`));

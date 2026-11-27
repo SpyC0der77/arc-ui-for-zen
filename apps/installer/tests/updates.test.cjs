@@ -168,7 +168,7 @@ for (const platform of ['win32','darwin','linux']) test(`in-place update preserv
   const versionFile=files['zen-versions/1.24b.json'];
   files['zen-versions/1.24b.json']=Buffer.from(JSON.stringify({...JSON.parse(Buffer.from(versionFile,'base64')),prefs:{'zen.urlbar.behavior':'normal'}})).toString('base64');
   await assert.rejects(applyThemeUpdate(bundle,context),/managed preferences/);
-  delete files['zen-versions/1.24b.json'];await assert.rejects(applyThemeUpdate(bundle,context),/no data for this Zen version/);
+  delete files['zen-versions/1.24b.json'];await assert.rejects(applyThemeUpdate(bundle,context),error=>error.code==='unsupported-zen'&&/no data for this Zen version/.test(error.message));
   files['zen-versions/1.24b.json']=versionFile;
   await fs.appendFile(managed,'edited');await assert.rejects(applyThemeUpdate(bundle,context),/edited/);await fs.writeFile(managed,original);
   await applyThemeUpdate(bundle,context);
@@ -230,4 +230,166 @@ test('in-place updates keep an installed SF Pro family and its receipt entries',
  assert.deepEqual(await fs.readFile(stylesheet),css);
  await engine.remove(app,profile,{platform:'linux',checkClosed:async()=>{}});
  await assert.rejects(fs.access(familyFiles[0]),{code:'ENOENT'});
+});
+
+test('a release found not to support the running Zen version is not offered again', async () => {
+  const helpers = await import('../payload/content/update-data.mjs');
+  const fs = require('node:fs'), vm = require('node:vm');
+  const prefs = new Map();
+  const release = tag => ({tag_name:tag,prerelease:false,assets:[{name:helpers.assetName(tag)},{name:'SHA256SUMS.txt'}]});
+  let releases = [release('v0.1.9')];
+  const scope = {
+    ...helpers, Ci:{nsIFile:{}}, recoverThemeUpdate:async()=>{}, setTimeout, clearTimeout, AbortController, console,
+    Services:{dirsvc:{get:()=>({path:'/app'})},prefs:{getStringPref:(key,fallback)=>prefs.get(key)??fallback,setStringPref:(key,value)=>prefs.set(key,value)},appinfo:{OS:'WINNT',XPCOMABI:'x86_64',version:'1.25b'}},
+    IOUtils:{readJSON:async()=>({version:'0.1.8'})},PathUtils:{profileDir:'/profile',join:(...parts)=>parts.join('/')},
+    fetch:async()=>({ok:true,json:async()=>releases}),
+  };
+  vm.runInNewContext(fs.readFileSync(require.resolve('../payload/content/updater.sys.mjs'),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export function updateContext','function updateContext').replace('export const ZenniaUpdater =','globalThis.updater ='),scope);
+  const u = scope.updater;
+  await u.check({force:true});
+  assert.equal(u.release.tag_name,'v0.1.9');
+  prefs.set('zennia.updates.unsupported','1.25b v0.1.9');
+  await u.check({force:true});
+  assert.equal(u.release,null);assert.equal(u.state,'idle');assert.equal(u.unsupported,'v0.1.9');
+  // A newer release is offered, and so is the same release on another Zen version.
+  releases = [release('v0.1.10'),release('v0.1.9')];
+  await u.check({force:true});assert.equal(u.release.tag_name,'v0.1.10');
+  releases = [release('v0.1.9')];scope.Services.appinfo.version='1.25.1b';
+  await u.check({force:true});assert.equal(u.release.tag_name,'v0.1.9');
+});
+
+function toastMock() {
+  const box = {shown: [], current: null,
+    show(window, options) { box.current = options; box.shown.push(`${options.title}. ${options.description}`); },
+    close() { box.current = null; }};
+  return box;
+}
+const prefStore = () => {
+  const prefs = new Map();
+  return {prefs, api: {getStringPref: (k, f) => prefs.get(k) ?? f, setStringPref: (k, v) => prefs.set(k, v), getBoolPref: (k, f) => prefs.get(k) ?? f,
+    setBoolPref: (k, v) => prefs.set(k, v), clearUserPref: k => prefs.delete(k)}};
+};
+
+test('recovery installs a supporting release by itself and offers a restart', async t => {
+  t.mock.timers.enable({apis:['setInterval']});
+  const fs = require('node:fs'), vm = require('node:vm');
+  const {prefs, api} = prefStore(), box = toastMock(), listeners = {};
+  const updater = {state:'idle',release:null,error:'',listeners:new Set(),checks:0,downloads:0,restarts:0,
+    check() { this.checks++; return Promise.resolve(); }, download() { this.downloads++; this.state = 'downloading'; }, restart() { this.restarts++; },
+    emit() { for (const listener of this.listeners) listener(); }};
+  const guard = {released: 0, release() { this.released++; return Promise.resolve(); }};
+  const makeWindow = ({isPrivate = false} = {}) => {
+    const window = {gBrowser: {}, closed: false, setInterval, clearInterval, addEventListener: (type, fn) => { listeners[type] = fn; }, console,
+      ChromeUtils: {importESModule: url => url.includes('PrivateBrowsing') ? {PrivateBrowsingUtils: {isWindowPrivate: () => isPrivate}} : url.includes('browser-updates') ? {ZenniaBrowserUpdates: guard} : {ZenniaUpdater: updater}},
+      Services: {appinfo: {version: '1.25b'}, prefs: api, scriptloader: {loadSubScript: (url, scope) => { scope.ZenniaToast = box; }}}};
+    window.window = window;
+    return window;
+  };
+  const source = fs.readFileSync(require.resolve('../payload/content/features/updates/recovery.js'), 'utf8');
+  const run = window => vm.runInNewContext(source, window);
+  const settle = () => new Promise(setImmediate);
+  run(makeWindow({isPrivate: true}));await settle();
+  assert.equal(box.shown.length, 0);assert.equal(updater.checks, 0, 'Private windows stay untouched');
+  prefs.set('zennia.browserUpdates.held', '1.25b');
+  run(makeWindow());await settle();
+  assert.equal(guard.released, 1, 'Zen automatic updates are no longer held while Zennia is paused');
+  assert.equal(updater.checks, 1, 'Each start checks for a supporting release at once');
+  assert.match(box.shown.at(-1), /Zennia is paused\. It turns back on by itself once it supports Zen 1\.25b/);
+  // A release is installed without asking; only the restart is offered.
+  updater.state = 'available';updater.release = {tag_name: 'v0.1.9'};updater.emit();await settle();
+  assert.equal(updater.downloads, 1);
+  updater.state = 'ready';updater.emit();await settle();
+  assert.match(box.shown.at(-1), /Zennia supports Zen 1\.25b\. Restart Zen to turn it back on/);
+  box.current.action.run();assert.equal(updater.restarts, 1);
+  updater.state = 'error';updater.error = 'offline';updater.emit();await settle();
+  assert.match(box.shown.at(-1), /couldn't update\. offline/);assert.equal(box.current.kind, 'error');
+  box.current.action.run();assert.equal(updater.downloads, 2);
+  t.mock.timers.tick(60 * 60 * 1000);assert.equal(updater.checks, 2, 'Later checks run hourly and the updater limits them');
+  listeners.unload();assert.equal(updater.listeners.size, 0);
+  // On the next start, with nothing new, the waiting message is not repeated.
+  updater.state = 'idle';delete updater.recoveryCheck;box.shown.length = 0;run(makeWindow());await settle();
+  assert.equal(box.shown.length, 0);
+});
+
+function loadGuard({supported = ['1.24.1b', '1.24.3b'], auto = true, locked = false, pending = {}} = {}) {
+  const fs = require('node:fs'), vm = require('node:vm');
+  const {prefs, api} = prefStore(), calls = [], observers = {};
+  const state = {auto, supported: new Set(supported)};
+  const manager = {downloadingUpdate: pending.downloading ?? null, readyUpdate: pending.ready ?? null,
+    async cleanupDownloadingUpdate() { calls.push('cleanup-downloading'); manager.downloadingUpdate = null; },
+    async cleanupReadyUpdate() { calls.push('cleanup-ready'); manager.readyUpdate = null; }};
+  const service = {async stopDownload() { calls.push('stop'); }, async downloadUpdate(u) { calls.push('download ' + u.appVersion); }, checkForBackgroundUpdates() { calls.push('check'); }};
+  const menu = {notifications: [{id: 'update-available'}], removeNotification(pattern) { calls.push('hide'); menu.notifications = menu.notifications.filter(n => !pattern.test(n.id)); }};
+  const file = () => { const parts = []; return {append: p => parts.push(p), exists: () => parts.at(-2) === 'zen-versions' && state.supported.has(parts.at(-1).replace(/\.json$/, ''))}; };
+  const scope = {console, Ci: {nsIFile: {}, nsIUpdate: {}, nsIApplicationUpdateService: {}, nsIUpdateManager: {}},
+    Cc: {'@mozilla.org/updates/update-service;1': {getService: () => service}, '@mozilla.org/updates/update-manager;1': {getService: () => manager}},
+    Services: {prefs: api, appinfo: {version: '1.24.1b'}, dirsvc: {get: file}, obs: {addObserver: (o, topic) => { observers[topic] = o; }}},
+    AppMenuNotifications: menu,
+    UpdateUtils: {appUpdateAutoSettingIsLocked: () => locked, getAppUpdateAutoEnabled: async () => state.auto,
+      setAppUpdateAutoEnabled: async v => { calls.push('auto ' + v); state.auto = v; }}};
+  vm.runInNewContext(fs.readFileSync(require.resolve('../payload/content/browser-updates.sys.mjs'), 'utf8').replace(/^import .*;\r?\n/gm, '')
+    .replace('export function supports', 'function supports').replace('export const ZenniaBrowserUpdates =', 'globalThis.guard ='), scope);
+  const update = version => ({appVersion: version, QueryInterface() { return this; }});
+  const settle = async () => { for (let i = 0; i < 5; i++) await new Promise(setImmediate); };
+  const fire = async (topic, version) => { observers[topic].observe(version && update(version), topic); await settle(); };
+  return {guard: scope.guard, prefs, calls, state, manager, menu, fire, update, settle};
+}
+
+test('Zen updates to supported versions go ahead untouched', async () => {
+  const g = loadGuard();
+  g.guard.start();await g.settle();
+  await g.fire('update-downloading', '1.24.3b');
+  assert.deepEqual(g.calls, []);assert.equal(g.guard.held, null);
+});
+
+test('an unsupported Zen update is cancelled and held until the user allows it', async () => {
+  const g = loadGuard();
+  g.guard.start();
+  const notices = [];g.guard.listeners.add(() => notices.push(g.guard.held));
+  g.manager.downloadingUpdate = g.update('1.25b');
+  await g.fire('update-downloading', '1.25b');
+  assert.deepEqual(g.calls, ['stop', 'cleanup-downloading', 'auto false', 'hide']);
+  assert.equal(g.guard.held, '1.25b');assert.equal(g.prefs.get('zennia.browserUpdates.held'), '1.25b');
+  assert.equal(g.prefs.get('zennia.browserUpdates.restoreAuto'), true);assert.deepEqual(notices, ['1.25b']);
+  // Zen's own update prompt stays hidden while the update is held.
+  g.menu.notifications.push({id: 'update-available'});await g.fire('appMenu-notifications');
+  assert.equal(g.menu.notifications.length, 0);
+  // With automatic updates paused, a new download was started by the user: allow it.
+  g.calls.length = 0;
+  await g.fire('update-downloading', '1.25b');
+  assert.deepEqual(g.calls, ['auto true', 'download 1.25b']);
+  assert.equal(g.prefs.get('zennia.browserUpdates.allowed'), '1.25b');assert.equal(g.guard.held, null);assert.equal(g.guard.allowed, '1.25b');
+  assert.equal(g.prefs.has('zennia.browserUpdates.held'), false);assert.equal(g.prefs.has('zennia.browserUpdates.restoreAuto'), false);
+});
+
+test('a held Zen update goes ahead once Zennia supports its version', async () => {
+  const g = loadGuard();
+  g.guard.start();await g.fire('update-available', '1.25b');
+  assert.equal(g.guard.held, '1.25b');
+  g.calls.length = 0;g.state.supported.add('1.25b');
+  // Zen offers it again after Zennia updated in place: automatic updates resume and it downloads.
+  await g.fire('update-available', '1.25b');
+  assert.deepEqual(g.calls, ['auto true', 'download 1.25b']);assert.equal(g.guard.held, null);
+  // After a restart, the stored hold is released the same way.
+  const h = loadGuard({supported: ['1.24.1b', '1.25b'], auto: false});
+  h.prefs.set('zennia.browserUpdates.held', '1.25b');h.prefs.set('zennia.browserUpdates.restoreAuto', true);
+  h.guard.start();await h.settle();
+  assert.deepEqual(h.calls, ['auto true']);assert.equal(h.guard.held, null);
+});
+
+test('the hold respects locked and manual Zen update settings and cancels pending updates', async () => {
+  // Manual updates: Zen only prompts. The prompt is held without changing the setting.
+  const manual = loadGuard({auto: false});
+  manual.guard.start();await manual.fire('update-available', '1.25b');
+  assert.deepEqual(manual.calls, ['hide']);assert.equal(manual.prefs.has('zennia.browserUpdates.restoreAuto'), false);
+  // Automatic updates locked on by policy: every download is cancelled, none counts as consent.
+  const locked = loadGuard({locked: true});
+  locked.guard.start();
+  for (let i = 0; i < 2; i++) { locked.manager.downloadingUpdate = locked.update('1.25b'); await locked.fire('update-downloading', '1.25b'); }
+  assert.deepEqual(locked.calls.filter(c => c !== 'hide'), ['stop', 'cleanup-downloading', 'stop', 'cleanup-downloading']);
+  assert.equal(locked.prefs.has('zennia.browserUpdates.allowed'), false);
+  // An unsupported update downloaded before Zennia started is removed before it installs.
+  const pending = loadGuard({pending: {ready: {appVersion: '1.25b'}}});
+  pending.guard.start();await pending.settle();
+  assert.deepEqual(pending.calls.slice(0, 2), ['cleanup-ready', 'auto false']);assert.equal(pending.guard.held, '1.25b');
 });

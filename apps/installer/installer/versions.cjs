@@ -43,4 +43,4 @@ function settings(version, platform = process.platform, payload = DEFAULT_PAYLOA
 }
 
 const SUPPORTED_VERSIONS = Object.freeze(list());
-module.exports = { SUPPORTED_VERSIONS, base, list, resolve, settings, compare, platformKey };
+module.exports = { SUPPORTED_VERSIONS, VERSION_PATTERN: data.VERSION_PATTERN, base, list, resolve, settings, compare, platformKey };

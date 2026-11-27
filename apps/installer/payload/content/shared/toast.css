@@ -1,0 +1,96 @@
+/* Zennia toasts, after T3 Code's: an opaque card with a status icon, title,
+   muted description, one compact action and a round dismiss button on its corner.
+   Self-contained so it also works while the rest of Zennia is paused. */
+#zennia-toasts {
+  --toast-surface: light-dark(#fff, #252525);
+  --toast-text: light-dark(#27272a, #e4e4e4);
+  --toast-muted: light-dark(#71717a, #b0b0b0);
+  --toast-border: light-dark(#e4e4e7, #414141);
+  --toast-hover: light-dark(#f4f4f5, #323232);
+  --toast-accent: light-dark(#725366, #b3a3c2);
+  --toast-accent-hover: light-dark(#624657, #c0b1cf);
+  --toast-on-accent: light-dark(#fff, #181818);
+  --toast-info: var(--toast-accent);
+  --toast-success: light-dark(#15803d, #a5b29a);
+  --toast-error: light-dark(#b91c1c, #dfa09a);
+  position: fixed;
+  inset: auto 16px 16px auto;
+  margin: 0;
+  padding: 6px 6px 0 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 356px;
+  max-width: calc(100vw - 32px);
+  font: 13px/1.5 var(--zennia-font, system-ui, sans-serif);
+  -moz-osx-font-smoothing: grayscale;
+}
+#zennia-toasts .zennia-toast {
+  position: relative;
+  border: 1px solid var(--toast-border);
+  border-radius: 8px;
+  background: var(--toast-surface);
+  color: var(--toast-text);
+  box-shadow: 0 10px 28px -6px rgb(0 0 0 / 0.18), 0 2px 6px rgb(0 0 0 / 0.06);
+  transition: transform 500ms cubic-bezier(.22, 1, .36, 1), opacity 500ms ease;
+}
+#zennia-toasts .zennia-toast[data-entering],
+#zennia-toasts .zennia-toast[data-ending] { opacity: 0; transform: translateY(12px) scale(0.98); }
+#zennia-toasts .zennia-toast[data-ending] { pointer-events: none; transition-duration: 200ms; }
+#zennia-toasts .zennia-toast-body { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+#zennia-toasts .zennia-toast-content { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 2px; }
+#zennia-toasts .zennia-toast-message { display: flex; min-width: 0; align-items: flex-start; gap: 8px; }
+#zennia-toasts svg { flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#zennia-toasts .zennia-toast-icon { width: 16px; height: 1lh; color: var(--toast-info); }
+#zennia-toasts .zennia-toast[data-kind="success"] .zennia-toast-icon { color: var(--toast-success); }
+#zennia-toasts .zennia-toast[data-kind="error"] .zennia-toast-icon { color: var(--toast-error); }
+#zennia-toasts p { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+#zennia-toasts .zennia-toast-title { font-weight: 500; }
+#zennia-toasts .zennia-toast-description { color: var(--toast-muted); }
+#zennia-toasts button {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+#zennia-toasts .zennia-toast-action {
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-height: 24px;
+  margin: 0;
+  padding: 2px 8px;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 500;
+  border: 1px solid var(--toast-accent);
+  border-radius: 6px;
+  background: var(--toast-accent);
+  color: var(--toast-on-accent);
+}
+#zennia-toasts .zennia-toast-action:hover { background: var(--toast-accent-hover); border-color: var(--toast-accent-hover); }
+#zennia-toasts .zennia-toast-dismiss {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--toast-border);
+  border-radius: 50%;
+  background: var(--toast-surface);
+  color: var(--toast-muted);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+#zennia-toasts .zennia-toast-dismiss svg { width: 12px; height: 12px; }
+#zennia-toasts .zennia-toast-dismiss:hover { background: var(--toast-hover); color: var(--toast-text); }
+#zennia-toasts button:focus-visible { outline: 2px solid var(--toast-accent); outline-offset: 1px; }
+@media (prefers-reduced-motion: reduce) {
+  #zennia-toasts .zennia-toast, #zennia-toasts button { transition: none; }
+}
