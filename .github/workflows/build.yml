@@ -5,6 +5,11 @@ on:
   pull_request:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      release:
+        description: Compress the installers fully for publishing.
+        type: boolean
+        default: false
 permissions:
   contents: read
 defaults:
@@ -36,26 +41,31 @@ jobs:
       matrix: ${{ fromJSON(needs.runtime-matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.29.3
+      # The runtime scripts use only Node built-ins and repository files, so
+      # this job skips pnpm and the dependency install.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
       - uses: actions/setup-python@v5
+        id: python
         with:
           python-version: '3.12'
+      # The driver includes compiled modules, so the key names the exact Python.
+      - name: Restore native pointer test driver
+        id: pointer-driver
+        uses: actions/cache@v4
+        with:
+          path: artifacts/test-python
+          key: pointer-driver-${{ runner.os }}-${{ runner.arch }}-py${{ steps.python.outputs.python-version }}-${{ hashFiles('apps/installer/tests/runtime-requirements.txt') }}
       - name: Install native pointer test driver
-        run: python -m pip install --target ../../artifacts/test-python -r tests/runtime-requirements.txt
+        if: steps.pointer-driver.outputs.cache-hit != 'true'
+        run: python -m pip install --disable-pip-version-check --target ../../artifacts/test-python -r tests/runtime-requirements.txt
       - name: Fetch pinned Zen runtime
-        run: pnpm fetch:zen -- ${{ matrix.version }}
+        run: node scripts/fetch-zen-runtime.cjs ${{ matrix.version }}
       - name: Check Zen internals against zen-versions data
-        run: pnpm check:zen -- ${{ matrix.version }}
+        run: node scripts/zen-surface.cjs ${{ matrix.version }}
       - name: Verify isolated Zen runtime
-        run: pnpm test:runtime -- "../../artifacts/zen-builds/${{ matrix.version }}/core" --pointer
+        run: node tests/runtime.cjs "../../artifacts/zen-builds/${{ matrix.version }}/core" --pointer
       - name: Upload runtime diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -67,6 +77,26 @@ jobs:
             zen-instances/runtime-*/diagnostics/*.json
             zen-instances/runtime-*/diagnostics/*.log
             zen-instances/runtime-*/diagnostics/*.png
+  # Unit tests run beside packaging rather than before it. The release
+  # workflow still needs every job here, tests included, to pass.
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
   build:
     strategy:
       fail-fast: false
@@ -90,7 +120,13 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+      # electron-builder always packs the Windows portable app at 7-Zip's
+      # maximum level, which took about 2.5 minutes. Pull request and branch
+      # builds only need a working installer; releases keep full compression.
+      - name: Use fast installer compression outside releases
+        if: ${{ !inputs.release }}
+        shell: bash
+        run: echo "ELECTRON_BUILDER_COMPRESSION_LEVEL=1" >> "$GITHUB_ENV"
       - run: pnpm dist:${{ matrix.target }} --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
@@ -104,6 +140,8 @@ jobs:
         with:
           name: zennia-${{ matrix.target }}
           if-no-files-found: error
+          # The installers are already compressed archives.
+          compression-level: 0
           path: |
             apps/installer/release/*.exe
             apps/installer/release/*.dmg
