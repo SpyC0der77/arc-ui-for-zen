@@ -35,6 +35,8 @@ function savedPref(profile, name) {
 
 const service = () => Cc['@mozilla.org/updates/update-service;1'].getService(Ci.nsIApplicationUpdateService);
 const manager = () => Cc['@mozilla.org/updates/update-manager;1'].getService(Ci.nsIUpdateManager);
+// The update manager has only async getters for these, in every supported Zen.
+const pending = async um => [await um.getDownloadingUpdate(), await um.getReadyUpdate()].filter(Boolean);
 
 export const ZenniaBrowserUpdates = {
   // The Zen version on hold, if any, and the update Zen offered for it.
@@ -59,7 +61,7 @@ export const ZenniaBrowserUpdates = {
       // The held download was discarded, so ask Zen to look for it again.
       if (this.held && supports(this.held) && await this.release()) service().checkForBackgroundUpdates();
       const um = manager();
-      for (const update of [um.downloadingUpdate, um.readyUpdate]) if (update) await this.review(update, 'pending');
+      for (const update of await pending(um)) await this.review(update, 'pending');
     } catch (error) { console.warn('[Zennia browser updates]', error); }
   },
 
@@ -89,11 +91,11 @@ export const ZenniaBrowserUpdates = {
   // Discards Zen's download of `version`, finished or not, so it cannot install.
   async cancel(version) {
     const um = manager();
-    if (um.downloadingUpdate?.appVersion === version) {
+    if ((await um.getDownloadingUpdate())?.appVersion === version) {
       await service().stopDownload();
       await um.cleanupDownloadingUpdate();
     }
-    if (um.readyUpdate?.appVersion === version) await um.cleanupReadyUpdate();
+    if ((await um.getReadyUpdate())?.appVersion === version) await um.cleanupReadyUpdate();
   },
 
   async hold(version) {
@@ -151,8 +153,8 @@ export const ZenniaBrowserUpdates = {
     const observer = { observe: subject => guard(subject?.QueryInterface?.(Ci.nsIUpdate)?.appVersion) };
     for (const topic of ['update-downloading', 'update-downloaded', 'update-staged']) Services.obs.addObserver(observer, topic);
     // An earlier task run may have left a download behind; it would install on the next start.
-    const um = manager();
-    for (const update of [um.downloadingUpdate, um.readyUpdate]) guard(update?.appVersion);
+    void pending(manager()).then(updates => { for (const update of updates) guard(update.appVersion); })
+      .catch(error => console.warn('[Zennia browser updates]', error));
   },
 
   hidePrompts() {

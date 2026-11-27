@@ -319,9 +319,11 @@ function loadGuard({supported = ['1.24.1b', '1.24.3b'], auto = true, locked = fa
   const fs = require('node:fs'), vm = require('node:vm');
   const {prefs, api} = prefStore(), calls = [], observers = {};
   const state = {auto, supported: new Set(supported)};
-  const manager = {downloadingUpdate: pending.downloading ?? null, readyUpdate: pending.ready ?? null,
-    async cleanupDownloadingUpdate() { calls.push('cleanup-downloading'); manager.downloadingUpdate = null; },
-    async cleanupReadyUpdate() { calls.push('cleanup-ready'); manager.readyUpdate = null; }};
+  // Like the real nsIUpdateManager: async getters only, no synchronous properties.
+  const manager = {pending: {downloading: pending.downloading ?? null, ready: pending.ready ?? null},
+    getDownloadingUpdate: async () => manager.pending.downloading, getReadyUpdate: async () => manager.pending.ready,
+    async cleanupDownloadingUpdate() { calls.push('cleanup-downloading'); manager.pending.downloading = null; },
+    async cleanupReadyUpdate() { calls.push('cleanup-ready'); manager.pending.ready = null; }};
   const service = {async stopDownload() { calls.push('stop'); }, async downloadUpdate(u) { calls.push('download ' + u.appVersion); }, checkForBackgroundUpdates() { calls.push('check'); }};
   const menu = {notifications: [{id: 'update-available'}], removeNotification(pattern) { calls.push('hide'); menu.notifications = menu.notifications.filter(n => !pattern.test(n.id)); }};
   const file = (parts = []) => ({parts, clone: () => file([...parts]), initWithPath: p => parts.push(p), append: p => parts.push(p),
@@ -354,7 +356,7 @@ test('an unsupported Zen update is cancelled and held until the user allows it',
   const g = loadGuard();
   g.guard.start();
   const notices = [];g.guard.listeners.add(() => notices.push(g.guard.held));
-  g.manager.downloadingUpdate = g.update('1.25b');
+  g.manager.pending.downloading = g.update('1.25b');
   await g.fire('update-downloading', '1.25b');
   assert.deepEqual(g.calls, ['stop', 'cleanup-downloading', 'auto false', 'hide']);
   assert.equal(g.guard.held, '1.25b');assert.equal(g.prefs.get('zennia.browserUpdates.held'), '1.25b');
@@ -396,7 +398,7 @@ test('the hold respects locked and manual Zen update settings and cancels pendin
   // Automatic updates locked on by policy: every download is cancelled, none counts as consent.
   const locked = loadGuard({locked: true});
   locked.guard.start();
-  for (let i = 0; i < 2; i++) { locked.manager.downloadingUpdate = locked.update('1.25b'); await locked.fire('update-downloading', '1.25b'); }
+  for (let i = 0; i < 2; i++) { locked.manager.pending.downloading = locked.update('1.25b'); await locked.fire('update-downloading', '1.25b'); }
   assert.deepEqual(locked.calls.filter(c => c !== 'hide'), ['stop', 'cleanup-downloading', 'stop', 'cleanup-downloading']);
   assert.equal(locked.prefs.has('zennia.browserUpdates.allowed'), false);
   // An unsupported update downloaded before Zennia started is removed before it installs.
@@ -415,11 +417,11 @@ test('while Zen is closed, its background update task cannot download an unsuppo
   g.guard.startWhileClosed('C:\\Zennia profile');
   assert.equal(g.guard.closedGuard.allowed, '1.26b', "the user's Update anyway choice is read from Zennia's prefs.js");
   assert.equal(g.state.readFrom, 'C:\\Zennia profile/prefs.js', "it reads Zennia's profile, not the task's temporary one");
-  for (const version of ['1.24.3b', '1.26b']) { g.manager.downloadingUpdate = g.update(version); await g.fire('update-downloading', version); }
+  for (const version of ['1.24.3b', '1.26b']) { g.manager.pending.downloading = g.update(version); await g.fire('update-downloading', version); }
   assert.deepEqual(g.calls, [], 'supported and allowed versions download as usual');
-  g.manager.downloadingUpdate = g.update('1.25b');
+  g.manager.pending.downloading = g.update('1.25b');
   await g.fire('update-downloading', '1.25b');
-  g.manager.readyUpdate = g.update('1.25b');
+  g.manager.pending.ready = g.update('1.25b');
   await g.fire('update-downloaded', '1.25b');
   assert.deepEqual(g.calls, ['stop', 'cleanup-downloading', 'cleanup-ready'], 'an unsupported download is discarded before it can install');
   assert.equal(g.prefs.size, 0, "the task's temporary profile is left alone");
