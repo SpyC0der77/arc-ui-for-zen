@@ -55,6 +55,9 @@
       "category": "public.app-category.utilities",
       "artifactName": "Zennia-${version}-macOS-${arch}.${ext}"
     },
+    "dmg": {
+      "writeUpdateInfo": false
+    },
     "linux": {
       "target": [
         "AppImage"
