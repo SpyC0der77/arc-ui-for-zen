@@ -294,7 +294,7 @@ test('recovery installs a supporting release by itself and offers a restart', as
   run(makeWindow());await settle();
   assert.equal(guard.released, 1, 'Zen automatic updates are no longer held while Zennia is paused');
   assert.equal(updater.checks, 1, 'Each start checks for a supporting release at once');
-  assert.match(box.shown.at(-1), /Zennia is paused\. It turns back on by itself once it supports Zen 1\.25b/);
+  assert.match(box.shown.at(-1), /Zennia is paused\. It updates itself once it supports Zen 1\.25b, then asks for a restart/);
   // A release is installed without asking; only the restart is offered.
   updater.state = 'available';updater.release = {tag_name: 'v0.1.9'};updater.emit();await settle();
   assert.equal(updater.downloads, 1);
@@ -360,6 +360,9 @@ test('an unsupported Zen update is cancelled and held until the user allows it',
   assert.deepEqual(g.calls, ['auto true', 'download 1.25b']);
   assert.equal(g.prefs.get('zennia.browserUpdates.allowed'), '1.25b');assert.equal(g.guard.held, null);assert.equal(g.guard.allowed, '1.25b');
   assert.equal(g.prefs.has('zennia.browserUpdates.held'), false);assert.equal(g.prefs.has('zennia.browserUpdates.restoreAuto'), false);
+  // A later hold on another version replaces the message about the allowed one.
+  await g.fire('update-available', '1.26b');
+  assert.equal(g.guard.held, '1.26b');assert.equal(g.guard.allowed, null);
 });
 
 test('a held Zen update goes ahead once Zennia supports its version', async () => {
@@ -392,4 +395,8 @@ test('the hold respects locked and manual Zen update settings and cancels pendin
   const pending = loadGuard({pending: {ready: {appVersion: '1.25b'}}});
   pending.guard.start();await pending.settle();
   assert.deepEqual(pending.calls.slice(0, 2), ['cleanup-ready', 'auto false']);assert.equal(pending.guard.held, '1.25b');
+  // A supported update does not end the hold on a different, unsupported version.
+  const mixed = loadGuard({pending: {downloading: {appVersion: '1.25b'}, ready: {appVersion: '1.24.3b'}}});
+  mixed.guard.start();await mixed.settle();
+  assert.equal(mixed.guard.held, '1.25b');assert.equal(mixed.state.auto, false);
 });

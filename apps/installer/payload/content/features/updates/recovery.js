@@ -31,7 +31,7 @@
       return { key: "error " + tag + updater.error, kind: "error", title: "Zennia couldn't update", description: updater.error, action: { label: "Try again", run: () => void updater.download() } };
     // Otherwise say once per Zen version that Zennia is waiting.
     if (Services.prefs.getStringPref(NOTIFIED, "") === browserVersion && shown !== "waiting") return null;
-    return { key: "waiting", title: "Zennia is paused", description: `It turns back on by itself once it supports Zen ${browserVersion}.` };
+    return { key: "waiting", title: "Zennia is paused", description: `It updates itself once it supports Zen ${browserVersion}, then asks for a restart.` };
   }
 
   function render() {

@@ -61,7 +61,8 @@ export const ZenniaBrowserUpdates = {
     if (!VERSION.test(version ?? '') || version === Services.appinfo.version) return;
     if (supports(version) || Services.prefs.getStringPref(ALLOWED, '') === version) {
       // Zen offered this update while its automatic updates were paused: download it now.
-      if (this.held && await this.release() && topic === 'update-available') await service().downloadUpdate(update);
+      // Only the held version's own update ends its hold; resume() releases one Zennia now supports.
+      if (this.held === version && await this.release() && topic === 'update-available') await service().downloadUpdate(update);
       return;
     }
     // While a version is held Zen's automatic updates are paused, so a new download
@@ -84,7 +85,7 @@ export const ZenniaBrowserUpdates = {
       await UpdateUtils.setAppUpdateAutoEnabled(false);
     }
     Services.prefs.setStringPref(HELD, version);
-    this.held = version;
+    this.held = version; this.allowed = null;
     this.hidePrompts();
     this.emit();
   },

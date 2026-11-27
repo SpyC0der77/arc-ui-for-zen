@@ -285,6 +285,11 @@ var ZenniaDownloads = {
     const downloadAge = rows.downloadAge;
     function renderDownloads() {
       rows.render(list, debugDownloads ?? records);
+      // The list can empty or fill while the popup is open: keep the tab fade in step.
+      if (popup.hidden || popupClosing) return;
+      const empty = !!list.querySelector(".zennia-download-empty");
+      if (empty && !veiled) veilTabs();
+      else if (!empty && veiled) unveilTabs();
     }
     // Initial list hydration renders existing files without replaying arrival effects.
     // Later additions animate only in the most recent browser window.
