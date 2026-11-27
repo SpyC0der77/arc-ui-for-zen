@@ -24,9 +24,11 @@ export async function applyThemeUpdate(bundle, {io, paths, hash, decode, encode,
   // This bundle format updates the theme without changing the startup loader or
   // managed preferences. Refuse incompatible setup changes instead of guessing.
   const json = relative => {
-    if (!data.has(relative)) throw unsupported('This update has no data for this Zen version.');
+    if (!data.has(relative)) throw new Error('Incomplete update bundle.');
     return JSON.parse(new TextDecoder().decode(data.get(relative)));
   };
+  // Only a missing version file means the release cannot run on this Zen.
+  if (!data.has(`zen-versions/${browserVersion}.json`)) throw unsupported('This update has no data for this Zen version.');
   const versionData = zenData.resolve(json('zen-versions/base.json'), json(`zen-versions/${browserVersion}.json`));
   const settings = zenData.prefsFor(versionData, platform === 'WINNT' ? 'windows' : platform === 'Darwin' ? 'macos' : 'linux');
   if (Object.keys(settings).length !== Object.keys(receipt.settings).length || Object.entries(settings).some(([key,value]) => receipt.settings[key] !== value)) throw new Error('This update changes managed preferences and is incompatible with in-place update format 1.');

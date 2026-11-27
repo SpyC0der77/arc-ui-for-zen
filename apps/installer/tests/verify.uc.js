@@ -26,8 +26,7 @@
     check(ChromeUtils.importESModule('chrome://zennia/content/browser-updates.sys.mjs').ZenniaBrowserUpdates.started,'Zen update guard is running');
     const selectedLabel=gBrowser.selectedTab.querySelector('.tab-label');
     check(selectedLabel&&getComputedStyle(selectedLabel).fontWeight==='500','the selected tab label uses medium weight');
-    const otherLabel=document.querySelector('.tabbrowser-tab:not([selected]) .tab-label');
-    check(!otherLabel||getComputedStyle(otherLabel).fontWeight==='400','other tab labels use regular weight');
+    check([...document.querySelectorAll('.tabbrowser-tab:not([selected]) .tab-label')].every(label=>getComputedStyle(label).fontWeight==='400'),'other tab labels use regular weight');
     check(document.fonts.check('14px Geist'),'bundled UI font loaded');
     const closedAddressBackground=getComputedStyle(gURLBar.querySelector('.urlbar-background')).backgroundColor;
     const closedSurface=gURLBar.querySelector('.urlbar-background').getBoundingClientRect();

@@ -44,7 +44,8 @@ export const ZenniaBrowserUpdates = {
     try {
       // A held version Zennia now supports goes ahead; so do updates that were
       // already downloading or downloaded before this check existed.
-      if (this.held && supports(this.held)) await this.release();
+      // The held download was discarded, so ask Zen to look for it again.
+      if (this.held && supports(this.held) && await this.release()) service().checkForBackgroundUpdates();
       const um = manager();
       for (const update of [um.downloadingUpdate, um.readyUpdate]) if (update) await this.review(update, 'pending');
     } catch (error) { console.warn('[Zennia browser updates]', error); }

@@ -1,7 +1,6 @@
 /* Loaded instead of Zennia when Zen runs a version Zennia has no data for, usually
    after the user chose to update Zen anyway. It leaves Zen's interface alone,
-   installs the first Zennia release that supports this version as soon as one
-   exists, and offers a restart to turn Zennia back on.
+   installs Zennia's newest release as soon as it supports this version, and offers a restart to turn Zennia back on.
    Kept to long-standing browser APIs, because it runs on untested Zen versions. */
 (() => {
   "use strict";

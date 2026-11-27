@@ -170,6 +170,10 @@ for (const platform of ['win32','darwin','linux']) test(`in-place update preserv
   await assert.rejects(applyThemeUpdate(bundle,context),/managed preferences/);
   delete files['zen-versions/1.24b.json'];await assert.rejects(applyThemeUpdate(bundle,context),error=>error.code==='unsupported-zen'&&/no data for this Zen version/.test(error.message));
   files['zen-versions/1.24b.json']=versionFile;
+  // A bundle missing shared data is broken, not unsupported, so it stays on offer.
+  const base=files['zen-versions/base.json'];delete files['zen-versions/base.json'];
+  await assert.rejects(applyThemeUpdate(bundle,context),error=>error.code!=='unsupported-zen'&&/Incomplete update bundle/.test(error.message));
+  files['zen-versions/base.json']=base;
   await fs.appendFile(managed,'edited');await assert.rejects(applyThemeUpdate(bundle,context),/edited/);await fs.writeFile(managed,original);
   await applyThemeUpdate(bundle,context);
   assert.equal((await context.io.readJSON(receiptPath)).version,'9.0.0');
@@ -377,7 +381,7 @@ test('a held Zen update goes ahead once Zennia supports its version', async () =
   const h = loadGuard({supported: ['1.24.1b', '1.25b'], auto: false});
   h.prefs.set('zennia.browserUpdates.held', '1.25b');h.prefs.set('zennia.browserUpdates.restoreAuto', true);
   h.guard.start();await h.settle();
-  assert.deepEqual(h.calls, ['auto true']);assert.equal(h.guard.held, null);
+  assert.deepEqual(h.calls, ['auto true', 'check'], 'Zen looks for the discarded update again');assert.equal(h.guard.held, null);
 });
 
 test('the hold respects locked and manual Zen update settings and cancels pending updates', async () => {

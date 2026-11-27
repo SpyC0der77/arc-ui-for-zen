@@ -139,7 +139,7 @@ To update an existing installation, close Zen, use the previous installer to Rem
 
 The installer adds two app startup files, `zennia.cfg` and `defaults/pref/zennia-autoconfig.js`. They register local chrome packages and hand each browser window to `chrome/zennia/zennia-start.js` only in the selected profile. That script loads `zennia.uc.js` when the running Zen version is supported. Because in-place theme updates cannot replace the startup files, they stay minimal and the version check lives in the profile. Scripts and fonts are bundled; no remote scripts are downloaded or executed.
 
-Each supported Zen version has a data file in `apps/installer/payload/zen-versions/` that records how it differs from the others: renamed or missing Zen internals, features it cannot support, and the preferences to manage. Zennia runs only when the running Zen version has a file, and feature code reads version differences from that file rather than checking version numbers. See [apps/installer/dev/ZEN-VERSIONS.md](apps/installer/dev/ZEN-VERSIONS.md).
+Each supported Zen version has a data file in `apps/installer/payload/zen-versions/` that records how it differs from the others: renamed or missing Zen internals, features it cannot support, and the preferences to manage. Zennia changes Zen only when the running Zen version has a file (on other versions only its small recovery script runs, to get a release that supports the version), and feature code reads version differences from that file rather than checking version numbers. See [apps/installer/dev/ZEN-VERSIONS.md](apps/installer/dev/ZEN-VERSIONS.md).
 
 The loader enables the unsandboxed **AutoConfig script context**, which gives these local scripts browser-level privileges. This does not disable web-content sandboxing, extension signatures, TLS checks or web security. The installer discloses this before installation and refuses to replace an existing AutoConfig loader, including Sine/fx-autoconfig installations.
 
@@ -153,7 +153,7 @@ On Windows, the graphical installer requests administrator permission when an in
 
 The payload checks the exact Zen version again at startup and does not run in Safe Mode.
 
-**Zen updates.** Zen still updates itself to versions Zennia supports. When Zen starts downloading a version Zennia does not support yet, Zennia cancels it, pauses Zen's automatic updates and says so in a notification. Once a Zennia release supports that version, Zen's automatic updates resume and the update goes ahead. **Update Zen anyway**, or updating from Zen's own About dialog, lets Zen update now: Zennia then pauses on the new version, installs the first release that supports it, and asks for a restart to turn back on. If Zen is replaced rather than updated, the installer's review step reports it and **Install** repairs it.
+**Zen updates.** Zen still updates itself to versions Zennia supports. When Zen starts downloading a version Zennia does not support yet, Zennia cancels it, pauses Zen's automatic updates and says so in a notification. Once a Zennia release supports that version, Zen's automatic updates resume and the update goes ahead. **Update Zen anyway**, or updating from Zen's own About dialog, lets Zen update now: Zennia then pauses on the new version and checks for its newest release; once that release supports the new version, Zennia installs it and asks for a restart to turn back on. If Zen is replaced rather than updated, the installer's review step reports it and **Install** repairs it.
 
 ## Remove and recover
 

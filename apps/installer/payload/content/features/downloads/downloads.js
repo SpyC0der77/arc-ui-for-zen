@@ -160,31 +160,35 @@ var ZenniaDownloads = {
     // With no downloads, the message sits over the last tabs and fades them out
     // (popup.css). The two take turns so the message never overlaps a tab: the
     // tabs fade before the message appears, and return after it has gone.
-    let veiled = null;
+    // Every Space's tab list is marked, so switching Spaces keeps the fade;
+    // popup.css fades only the active one.
+    let veiled = [];
     const VEIL_MS = 120;
     const VEIL_HIDDEN = { "--zennia-download-veil": 0 };
     const VEIL_SHOWN = { "--zennia-download-veil": 1 };
     // Returns how long the message should wait for the tabs.
     function veilTabs() {
       // Reopening while the tabs come back continues from where they are.
-      const from = veiled
-        ? Number(window.getComputedStyle(veiled).getPropertyValue("--zennia-download-veil")) || 0
+      const current = veiled.find((box) => box.parentElement?.hasAttribute("active")) ?? veiled[0];
+      const from = current
+        ? Number(window.getComputedStyle(current).getPropertyValue("--zennia-download-veil")) || 0
         : 0;
       unveilTabs();
       if (!list.querySelector(".zennia-download-empty")) return 0;
-      veiled = document.querySelector(zen.name("zen-workspace[active] > .workspace-arrowscrollbox"));
-      if (!veiled) return 0;
-      veiled.setAttribute("zennia-download-veil", "");
-      if (reduced() || from >= 1) return 0;
+      veiled = [...document.querySelectorAll(zen.name("zen-workspace > .workspace-arrowscrollbox"))];
+      for (const box of veiled) box.setAttribute("zennia-download-veil", "");
+      if (!veiled.length || reduced() || from >= 1) return 0;
       const duration = Math.round(VEIL_MS * (1 - from));
-      void animate(veiled, [{ "--zennia-download-veil": from }, VEIL_SHOWN], { duration, easing: "ease-out" });
+      for (const box of veiled)
+        void animate(box, [{ "--zennia-download-veil": from }, VEIL_SHOWN], { duration, easing: "ease-out" });
       return duration;
     }
     function unveilTabs() {
-      if (!veiled) return;
-      for (const animation of veiled.getAnimations()) animation.cancel();
-      veiled.removeAttribute("zennia-download-veil");
-      veiled = null;
+      for (const box of veiled) {
+        for (const animation of box.getAnimations()) animation.cancel();
+        box.removeAttribute("zennia-download-veil");
+      }
+      veiled = [];
     }
     function riseFromGift(row) {
       return gift.getBoundingClientRect().top - row.getBoundingClientRect().top;
@@ -201,7 +205,7 @@ var ZenniaDownloads = {
         popupClosing = false;
         unveilTabs();
       };
-      for (const node of [popup, ...list.children, ...(veiled ? [veiled] : [])])
+      for (const node of [popup, list, ...list.children, ...veiled])
         for (const animation of node.getAnimations()) animation.cancel();
       if (soft && !popup.hidden && !reduced()) {
         popupClosing = true;
@@ -214,15 +218,19 @@ var ZenniaDownloads = {
           { duration: 140, easing: "ease-in" },
         )
           .then(() => {
-            if (motion !== popupMotion || !veiled) return;
+            if (motion !== popupMotion || !veiled.length) return;
             // The message has gone: hide it, then bring the tabs back.
             if (popup.matches(":popover-open")) popup.hidePopover();
             popup.hidden = true;
-            return animate(veiled, [VEIL_SHOWN, VEIL_HIDDEN], {
-              duration: VEIL_MS,
-              easing: "ease-out",
-              fill: "forwards",
-            });
+            return Promise.all(
+              veiled.map((box) =>
+                animate(box, [VEIL_SHOWN, VEIL_HIDDEN], {
+                  duration: VEIL_MS,
+                  easing: "ease-out",
+                  fill: "forwards",
+                }),
+              ),
+            );
           })
           .then(finish);
       } else finish();
@@ -288,8 +296,17 @@ var ZenniaDownloads = {
       // The list can empty or fill while the popup is open: keep the tab fade in step.
       if (popup.hidden || popupClosing) return;
       const empty = !!list.querySelector(".zennia-download-empty");
-      if (empty && !veiled) veilTabs();
-      else if (!empty && veiled) unveilTabs();
+      if (empty && !veiled.length) {
+        // The message waits for the tabs, as when the popup opens.
+        const delay = veilTabs();
+        if (delay)
+          void animate(list, [{ opacity: 0 }, { opacity: 1 }], {
+            duration: 160,
+            delay,
+            easing: "ease-out",
+            fill: "backwards",
+          });
+      } else if (!empty && veiled.length) unveilTabs();
     }
     // Initial list hydration renders existing files without replaying arrival effects.
     // Later additions animate only in the most recent browser window.
