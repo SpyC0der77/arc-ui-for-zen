@@ -12,11 +12,25 @@ Before relocating an installed development app/profile, close only that developm
 
 Documentation-only changes do not require reinstalling the theme. The development-instance rules above take precedence over the older disposable-session and personal-restart instructions below. Fully isolated automated runtime tests may create fixtures when their isolation is required; clean up or retire their app copies afterward and never use them as additional everyday development instances.
 
+## Development loop
+
+Drive the development instance with `pnpm dev` (`apps/installer/scripts/dev.cjs`). Use it instead of hand-written close/reinstall/launch/capture commands:
+
+- `pnpm dev reload` after editing the payload: closes only the development Zen, reinstalls through the installer if any payload file differs from the installed receipt (`--force` always reinstalls), locks updates, relaunches in the background with Marionette and `-purgecaches`, then waits until Zennia loads and prints Zennia console errors. It skips the restart when the installed theme already matches the source.
+- `pnpm dev status` shows the version, process, Marionette state and which payload files differ from the installed theme.
+- `pnpm dev eval "<js>"` (or a `.js` file) runs chrome-context JavaScript and prints JSON. `pnpm dev errors` lists Zennia console errors.
+- `pnpm dev shot <name> [--size 1200x800] [--setup "<js>"] [--wait ms]` saves `artifacts/shots/<name>.png` through Marionette. Add `--native` on Windows to include open menus and popups (PrintWindow composite). Use the same `--size` and `--setup` for before and after captures.
+- `pnpm dev stop` / `pnpm dev start`.
+
+It never activates the window or makes it topmost, never force-kills Zen, refuses a Marionette port held by another profile, and keeps every installer receipt and edited-file check. Pass `--version <folder>` when more than one development instance exists. Write throwaway interaction scripts as `--setup` files rather than new launch or capture helpers.
+
 ## UI change screenshots
 
 Whenever you make a UI improvement or change, show before and after screenshots in the chat. Capture the affected UI before editing and again after applying the change, using the same view and interaction state so the comparison is clear. Embed both screenshots in the final response.
 
 ## Recovering Zen automation on Windows
+
+`pnpm dev shot` does not use the app-identity helper below. Try it on the development instance before any of these steps.
 
 If app capture reports `window id ... no longer belongs to B08FBE11D35D62A1; current owner is B08FBE11D35D62A1`, the identical IDs do not mean a valid capture. This was reproduced with a fresh window after restarting Zen on 2026-10-28. Restarting alone did not fix it, and both Computer Use tools used the same failing helper. Do not ask the user to restart Zen or repeat the same capture loop.
 
