@@ -17,12 +17,12 @@ Documentation-only changes do not require reinstalling the theme. The developmen
 Drive the development instance with `pnpm dev` (`apps/installer/scripts/dev.cjs`). Use it instead of hand-written close/reinstall/launch/capture commands:
 
 - `pnpm dev reload` after editing the payload: closes only the development Zen, reinstalls through the installer if any payload file differs from the installed receipt (`--force` always reinstalls), locks updates, relaunches in the background with Marionette and `-purgecaches`, then waits until Zennia loads and prints Zennia console errors. It skips the restart when the installed theme already matches the source.
-- `pnpm dev status` shows the version, process, Marionette state and which payload files differ from the installed theme.
+- `pnpm dev status` shows the version, process, Marionette state and which payload files differ from the installed theme, including installed copies edited or deleted since installing.
 - `pnpm dev eval "<js>"` (or a `.js` file) runs chrome-context JavaScript and prints JSON. `pnpm dev errors` lists Zennia console errors.
 - `pnpm dev shot <name> [--size 1200x800] [--setup "<js>"] [--wait ms]` saves `artifacts/shots/<name>.png` through Marionette. Add `--native` on Windows to include open menus and popups (PrintWindow composite). Use the same `--size` and `--setup` for before and after captures.
 - `pnpm dev stop` / `pnpm dev start`.
 
-It never activates the window or makes it topmost, never force-kills Zen, refuses a Marionette port held by another profile, and keeps every installer receipt and edited-file check. Pass `--version <folder>` when more than one development instance exists. Write throwaway interaction scripts as `--setup` files rather than new launch or capture helpers.
+On Windows it never activates the window or makes it topmost (on macOS and Linux Zen opens normally). It never force-kills Zen, refuses a Marionette port held by another profile, and keeps every installer receipt and edited-file check. Pass `--version <folder>` when more than one development instance exists. Write throwaway interaction scripts as `--setup` files rather than new launch or capture helpers.
 
 ## UI change screenshots
 

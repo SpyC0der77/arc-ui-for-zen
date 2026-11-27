@@ -14,8 +14,10 @@
 // personal Zen may stay open. Every installer receipt and edited-file check still runs.
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
+const net = require('node:net');
 const path = require('node:path');
 const { spawn, execFile } = require('node:child_process');
+const { once } = require('node:events');
 const { promisify } = require('node:util');
 const run = promisify(execFile);
 const engine = require('../installer/engine.cjs');
@@ -76,7 +78,7 @@ async function connect(instance, timeout = 30000) {
 // Compares the installed theme with the source payload, file by file.
 async function drift(instance, payload = PAYLOAD) {
   const receiptFile = engine.receiptFile(instance.profile);
-  if (!fs.existsSync(receiptFile)) return { installed: null, current: false, changed: [], reason: 'not installed' };
+  if (!fs.existsSync(receiptFile)) return { installed: null, current: false, changed: [], removed: [], reason: 'not installed' };
   const receipt = JSON.parse(await fsp.readFile(receiptFile, 'utf8'));
   const { resources } = engine.layout(instance.app);
   const root = path.join(instance.profile, 'chrome', engine.NAMES.root);
@@ -91,19 +93,25 @@ async function drift(instance, payload = PAYLOAD) {
       const target = name === 'zennia.cfg' ? path.join(resources, name)
         : name === 'zennia-autoconfig.js' ? path.join(resources, 'defaults', 'pref', name) : path.join(root, name);
       expected.add(key(target));
-      if (installed.get(key(target)) !== engine.digest(await fsp.readFile(path.join(folder, entry.name)))) changed.push(name);
+      // Changed in the source, or the installed copy was edited or deleted since installing.
+      const hash = installed.get(key(target));
+      if (hash !== engine.digest(await fsp.readFile(path.join(folder, entry.name)))
+        || hash !== await fsp.readFile(target).then(engine.digest, () => null)) changed.push(name);
     }
   };
   await walk(payload);
   const fontFiles = [font.STYLES, font.FACE, font.FAMILY].map(file => key(path.join(root, file)));
   const ownsFont = file => fontFiles.some(f => file === f || file.startsWith(f + path.sep));
-  const removed = [...installed.keys()].filter(file => file.startsWith(key(root) + path.sep) && !expected.has(file) && !ownsFont(file));
+  const removed = receipt.files.map(file => file.path).filter(file => {
+    const target = key(file);
+    return target.startsWith(key(root) + path.sep) && !expected.has(target) && !ownsFont(target);
+  }).map(file => path.relative(root, file).split(path.sep).join('/'));
   const settingsChanged = JSON.stringify(receipt.settings) !== JSON.stringify(versions.settings(instance.version, process.platform, payload));
   const versionChanged = receipt.version !== engine.VERSION;
   const current = !changed.length && !removed.length && !settingsChanged && !versionChanged;
   const reason = [changed.length && `${changed.length} changed`, removed.length && `${removed.length} removed`,
     settingsChanged && 'managed prefs changed', versionChanged && `installer ${receipt.version} → ${engine.VERSION}`].filter(Boolean).join(', ');
-  return { installed: receipt.version, current, changed, removed: removed.length, reason };
+  return { installed: receipt.version, current, changed, removed, reason };
 }
 
 async function stop(instance) {
@@ -152,23 +160,31 @@ async function start(instance) {
     });
     return { client, launched: false };
   }
-  // Something else may already hold the port, such as a disposable chrome-session.
-  const other = await Marionette.connect(instance.port, { timeout: 300 }).catch(() => null);
-  if (other) {
-    const profile = await other.execute("return Services.dirsvc.get('ProfD', Ci.nsIFile).path").catch(() => '?');
-    await other.close();
-    throw new Error(`Marionette port ${instance.port} is held by another Zen (profile ${profile}). Close it first.`);
+  // Check the listener without opening a Marionette session in another process.
+  const socket = net.connect({ host: '127.0.0.1', port: instance.port });
+  socket.setTimeout(1000, () => socket.destroy(new Error(`Could not check Marionette port ${instance.port}`)));
+  try {
+    await once(socket, 'connect');
+    throw new Error(`Marionette port ${instance.port} is already in use. Close its listener before starting dev Zen.`);
+  } catch (error) {
+    if (error.code !== 'ECONNREFUSED') throw error;
+  } finally {
+    socket.destroy();
   }
   devZen.disableUpdates(instance.app);
-  if (win) {
+  const child = win
     // Starts minimized and hands focus back; it keeps watching focus for a few seconds on its own.
-    spawn(PYTHON, [WINDOW_HELPER, 'launch', instance.exe, instance.profile], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
-  } else {
-    spawn(instance.exe, ['-no-remote', '-purgecaches', '--marionette', '-profile', instance.profile, 'about:blank'], {
+    ? spawn(PYTHON, [WINDOW_HELPER, 'launch', instance.exe, instance.profile], { detached: true, stdio: 'ignore', windowsHide: true })
+    : spawn(instance.exe, ['-no-remote', '-purgecaches', '--marionette', '-profile', instance.profile, 'about:blank'], {
       detached: true, stdio: 'ignore',
       env: { ...process.env, MOZ_REMOTE_ALLOW_SYSTEM_ACCESS: '1', MOZ_DISABLE_AUTO_SAFE_MODE: '1' },
-    }).unref();
-  }
+    });
+  await new Promise((resolve, reject) => {
+    child.once('spawn', resolve);
+    child.once('error', error => reject(win && error.code === 'ENOENT'
+      ? new Error(`Python is needed to launch the dev Zen in the background on Windows; ${PYTHON} was not found. Set PYTHON to its path.`) : error));
+  });
+  child.unref();
   const client = await connect(instance, 60000);
   await fsp.writeFile(instance.session, JSON.stringify({ app: instance.app, profile: instance.profile, port: instance.port }, null, 2) + '\n');
   return { client, launched: true };
@@ -269,9 +285,10 @@ async function status(instance) {
   if (!state.installed) console.log('  Zennia is not installed in this profile.');
   else if (state.current) console.log(`  Zennia ${state.installed} installed and matches the source payload.`);
   else {
-    console.log(`  Zennia ${state.installed} installed; source differs: ${state.reason}. Run pnpm dev reload.`);
-    for (const file of state.changed.slice(0, 8)) console.log(`    ${file}`);
-    if (state.changed.length > 8) console.log(`    ...${state.changed.length - 8} more`);
+    console.log(`  Zennia ${state.installed} installed; payload differs: ${state.reason}. Run pnpm dev reload.`);
+    const files = [...state.changed, ...state.removed.map(file => `${file} (removed from the source)`)];
+    for (const file of files.slice(0, 8)) console.log(`    ${file}`);
+    if (files.length > 8) console.log(`    ...${files.length - 8} more`);
   }
   const leftovers = fs.existsSync(path.dirname(devZen.ROOT)) ? fs.readdirSync(path.dirname(devZen.ROOT)).filter(name => /^(chrome-session|runtime|toggle-profile|landing-profile)-/.test(name)) : [];
   if (leftovers.length) console.log(`  ${leftovers.length} disposable test folders remain in zen-instances/ (chrome-session-*, runtime-*, ...).`);
@@ -283,7 +300,9 @@ function parse(argv) {
     const arg = argv[i];
     if (arg === '--') continue;
     if (arg.startsWith('--')) {
-      const [name, inline] = arg.slice(2).split('=');
+      const at = arg.indexOf('=');
+      const name = at < 0 ? arg.slice(2) : arg.slice(2, at);
+      const inline = at < 0 ? undefined : arg.slice(at + 1);
       const flag = ['force', 'native'].includes(name);
       options[name] = flag ? true : inline ?? argv[++i];
     } else args.push(arg);
@@ -294,7 +313,8 @@ function parse(argv) {
 async function main() {
   const { command, args, options } = parse(process.argv.slice(2));
   if (!command || command === 'help') {
-    console.log(fs.readFileSync(__filename, 'utf8').split('\n').filter(line => line.startsWith('//')).map(line => line.slice(3)).join('\n'));
+    const lines = fs.readFileSync(__filename, 'utf8').split(/\r?\n/);
+    console.log(lines.slice(0, lines.findIndex(line => !line.startsWith('//'))).map(line => line.slice(3)).join('\n'));
     return;
   }
   const instance = pick(options.version);

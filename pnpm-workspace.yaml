@@ -6,4 +6,6 @@ onlyBuiltDependencies:
 ignoredBuiltDependencies:
   - electron-winstaller
 allowBuilds:
+  electron: true
+  sharp: true
   electron-winstaller: false

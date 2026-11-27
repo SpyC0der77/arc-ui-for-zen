@@ -20,7 +20,42 @@ from ctypes import wintypes
 u = ctypes.windll.user32
 g = ctypes.windll.gdi32
 k = ctypes.windll.kernel32
-u.SetProcessDPIAware()
+set_dpi_awareness = getattr(u, "SetProcessDpiAwarenessContext", None)
+if set_dpi_awareness:
+    set_dpi_awareness.argtypes = [wintypes.HANDLE]
+    set_dpi_awareness.restype = wintypes.BOOL
+if not set_dpi_awareness or not set_dpi_awareness(-4):  # Per Monitor v2
+    u.SetProcessDPIAware()
+
+# ctypes defaults numeric arguments and results to 32 bits. Win32 handles are pointer-sized.
+u.GetForegroundWindow.restype = wintypes.HWND
+u.GetWindowDC.argtypes = [wintypes.HWND]
+u.GetWindowDC.restype = wintypes.HDC
+u.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
+u.GetClassNameW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
+u.GetWindowRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
+u.IsWindow.argtypes = [wintypes.HWND]
+u.IsWindowVisible.argtypes = [wintypes.HWND]
+u.IsIconic.argtypes = [wintypes.HWND]
+u.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
+u.SetForegroundWindow.argtypes = [wintypes.HWND]
+u.SwitchToThisWindow.argtypes = [wintypes.HWND, wintypes.BOOL]
+u.SetWinEventHook.restype = wintypes.HANDLE
+u.UnhookWinEvent.argtypes = [wintypes.HANDLE]
+g.CreateCompatibleDC.argtypes = [wintypes.HDC]
+g.CreateCompatibleDC.restype = wintypes.HDC
+g.CreateCompatibleBitmap.argtypes = [wintypes.HDC, ctypes.c_int, ctypes.c_int]
+g.CreateCompatibleBitmap.restype = wintypes.HBITMAP
+g.SelectObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
+g.SelectObject.restype = wintypes.HANDLE
+g.DeleteObject.argtypes = [wintypes.HANDLE]
+g.DeleteDC.argtypes = [wintypes.HANDLE]
+g.GetDIBits.argtypes = [wintypes.HANDLE, wintypes.HANDLE, ctypes.c_uint, ctypes.c_uint, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint]
+u.ReleaseDC.argtypes = [wintypes.HWND, wintypes.HANDLE]
+u.PrintWindow.argtypes = [wintypes.HWND, wintypes.HANDLE, ctypes.c_uint]
+k.CloseHandle.argtypes = [wintypes.HANDLE]
+k.OpenProcess.restype = wintypes.HANDLE
+k.QueryFullProcessImageNameW.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.LPWSTR, ctypes.POINTER(wintypes.DWORD)]
 u.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND] + [ctypes.c_int] * 4 + [ctypes.c_uint]
 HWND_BOTTOM = wintypes.HWND(1)
 BACK = 0x1 | 0x2 | 0x10 | 0x200  # NOSIZE | NOMOVE | NOACTIVATE | NOOWNERZORDER
@@ -30,7 +65,7 @@ SW_SHOWNOACTIVATE = 4
 def windows(pid, visible=True):
     out = []
 
-    @ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
+    @ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
     def enum(h, _):
         p = wintypes.DWORD()
         u.GetWindowThreadProcessId(h, ctypes.byref(p))
@@ -148,8 +183,9 @@ def grab(h):
     dc = u.GetWindowDC(h)
     mdc = g.CreateCompatibleDC(dc)
     bmp = g.CreateCompatibleBitmap(dc, w, hh)
-    g.SelectObject(mdc, bmp)
-    u.PrintWindow(ctypes.c_void_p(h), mdc, 2)  # PW_RENDERFULLCONTENT
+    old = g.SelectObject(mdc, bmp)
+    u.PrintWindow(h, mdc, 2)  # PW_RENDERFULLCONTENT
+    g.SelectObject(mdc, old)  # GetDIBits needs the bitmap deselected
 
     class BI(ctypes.Structure):
         _fields_ = [("a", ctypes.c_uint32), ("w", ctypes.c_int32), ("h", ctypes.c_int32), ("p", ctypes.c_uint16),
@@ -158,10 +194,12 @@ def grab(h):
 
     bi = BI(40, w, -hh, 1, 32, 0, 0, 0, 0, 0, 0)
     buf = ctypes.create_string_buffer(w * hh * 4)
-    g.GetDIBits(mdc, bmp, 0, hh, buf, ctypes.byref(bi), 0)
+    lines = g.GetDIBits(mdc, bmp, 0, hh, buf, ctypes.byref(bi), 0)
     g.DeleteObject(bmp)
     g.DeleteDC(mdc)
     u.ReleaseDC(h, dc)
+    if lines != hh:
+        raise SystemExit(f"Could not read dev Zen window pixels ({lines}/{hh} scanlines)")
     return Image.frombuffer("RGBA", (w, hh), buf, "raw", "BGRA", 0, 1), (r.left, r.top)
 
 

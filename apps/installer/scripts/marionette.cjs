@@ -2,6 +2,7 @@
 // Protocol: each message is `<byte length>:<JSON>`. Commands are
 // [0, id, name, params]; responses are [1, id, error, result].
 const net = require('node:net');
+const { setTimeout: sleep } = require('node:timers/promises');
 
 // Splits a receive buffer into complete messages and the unread remainder.
 function decode(buffer) {
@@ -38,7 +39,10 @@ class Marionette {
   }
 
   receive(chunk) {
-    const { messages, rest } = decode(Buffer.concat([this.buffer, chunk]));
+    let decoded;
+    try { decoded = decode(Buffer.concat([this.buffer, chunk])); }
+    catch (error) { this.fail(error); this.socket.destroy(); return; }
+    const { messages, rest } = decoded;
     this.buffer = rest;
     for (const message of messages) {
       if (!Array.isArray(message)) { this.handshake.resolve(message); continue; }
@@ -58,25 +62,27 @@ class Marionette {
     this.pending.clear();
   }
 
-  // Connects to Marionette, retrying until the browser answers or the timeout passes.
+  // Only retry a refused TCP connection. Once a server answers, surface its errors.
   static async connect(port = 2828, { timeout = 30000 } = {}) {
     const end = Date.now() + timeout;
     for (;;) {
+      const socket = net.connect({ host: '127.0.0.1', port });
+      const timer = setTimeout(() => socket.destroy(new Error('Marionette handshake timed out')), Math.max(1, end - Date.now()));
       try {
-        const socket = await new Promise((resolve, reject) => {
-          const s = net.connect({ host: '127.0.0.1', port }, () => resolve(s));
-          s.once('error', reject);
-          s.setTimeout(10000, () => s.destroy(new Error('Marionette handshake timed out')));
-        });
         const client = new Marionette(socket);
         await client.ready;
-        socket.setTimeout(0);
         await client.send('WebDriver:NewSession', { capabilities: {} });
         await client.send('Marionette:SetContext', { value: 'chrome' });
         return client;
       } catch (error) {
-        if (Date.now() > end) throw new Error(`Marionette did not answer on port ${port}: ${error.message}`);
-        await new Promise(resolve => setTimeout(resolve, 400));
+        socket.destroy();
+        const remaining = end - Date.now();
+        if (error.code !== 'ECONNREFUSED' || remaining <= 0) {
+          throw new Error(`Marionette connection on port ${port} failed: ${error.message}`, { cause: error });
+        }
+        await sleep(Math.min(400, remaining));
+      } finally {
+        clearTimeout(timer);
       }
     }
   }

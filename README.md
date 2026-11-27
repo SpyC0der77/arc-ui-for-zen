@@ -17,7 +17,7 @@ This is a pnpm workspace with two packages:
 
 Run `pnpm install` once at the root. `pnpm test`, `pnpm start`, `pnpm cli`, `pnpm test:runtime`, `pnpm dev` and `pnpm dev:lock` work from the root and run in `apps/installer`; other installer scripts run from `apps/installer`. `pnpm web:dev` and `pnpm web:build` run the website.
 
-`pnpm dev reload` reinstalls the theme into the development Zen under `zen-instances/dev-zen/` when the payload changed and relaunches it in the background with Marionette. `pnpm dev status`, `eval`, `errors`, `shot`, `start` and `stop` cover the rest of the loop; `pnpm dev help` lists the options. Screenshots need Python on Windows, and `--native` captures also need Pillow.
+`pnpm dev reload` reinstalls the theme into the development Zen under `zen-instances/dev-zen/` when the payload changed and relaunches it in the background with Marionette. `pnpm dev status`, `eval`, `errors`, `shot`, `start` and `stop` cover the rest of the loop; `pnpm dev help` lists the options. On Windows, `reload`, `start` and `shot` need Python, and `--native` captures also need Pillow.
 
 ## Demo videos
 
