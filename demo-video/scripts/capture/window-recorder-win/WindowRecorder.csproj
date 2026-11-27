@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Windows counterpart of window-recorder.swift. Build:
+       dotnet publish demo-video/scripts/capture/window-recorder-win -c Release -o artifacts/bin -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows10.0.26100.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>window-recorder</AssemblyName>
+    <RootNamespace>WindowRecorder</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- Vortice 3.6 needs the CsWinRT 2.1 projection (WinRT.Runtime 2.1); 26100 adds MinUpdateInterval. -->
+    <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Vortice.Direct3D11" Version="3.6.2" />
+  </ItemGroup>
+</Project>

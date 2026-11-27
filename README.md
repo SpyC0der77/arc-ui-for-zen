@@ -17,6 +17,17 @@ This is a pnpm workspace with two packages:
 
 Run `pnpm install` once at the root. `pnpm test`, `pnpm start`, `pnpm cli`, `pnpm test:runtime` and `pnpm dev:lock` work from the root and run in `apps/installer`; other installer scripts run from `apps/installer`. `pnpm web:dev` and `pnpm web:build` run the website.
 
+## Demo videos
+
+Arc, Arc UI for Zen and vanilla Zen side by side, feature by feature, in real 60 fps recordings of the actual browsers. Click a thumbnail to watch.
+
+| Windows 11 | macOS |
+| --- | --- |
+| [![Arc UI for Zen comparison on Windows 11](public/arc-ui-for-zen-comparison-windows.jpg)](public/arc-ui-for-zen-comparison-windows.mp4) | [![Arc UI for Zen comparison on macOS](public/arc-ui-for-zen-comparison-macos.jpg)](public/arc-ui-for-zen-comparison-macos.mp4) |
+| [arc-ui-for-zen-comparison-windows.mp4](public/arc-ui-for-zen-comparison-windows.mp4) | [arc-ui-for-zen-comparison-macos.mp4](public/arc-ui-for-zen-comparison-macos.mp4) |
+
+The Windows video's Zen lanes were recorded on Windows 11. Its Arc lane reuses the macOS Arc recording, because Arc for Windows was not available on the recording PC. [public/README.md](public/README.md) explains how both videos were made and links the code.
+
 ## Install
 
 Open the installer, select your Zen application and profile, close Zen, then click **Install**. Use **Open Zen** afterward. On first launch after Zen onboarding, a local preview page opens. Its Download button plays the file animation without downloading anything.

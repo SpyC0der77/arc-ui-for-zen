@@ -1,0 +1,46 @@
+{
+ "note": "Highlight cut for polished.py: the headline features only. Optional per-lane 'camera' is a static [x, y, width] crop in source pixels (height = 1.5 x width) that zooms on the feature. Use --cut full for all 36 features.",
+ "shots": [
+  {
+   "id": "work-space-essentials-and-real-documentation",
+   "title": "Essentials, Spaces and folders",
+   "camera": {
+    "arc": [
+     0,
+     0,
+     440
+    ],
+    "themed": [
+     0,
+     0,
+     440
+    ],
+    "zen": [
+     0,
+     0,
+     440
+    ]
+   }
+  },
+  {
+   "id": "personal-space",
+   "title": "Switch Spaces"
+  },
+  {
+   "id": "hover-peek",
+   "title": "Hidden sidebar with hover peek"
+  },
+  {
+   "id": "centered-command-bar",
+   "title": "Centered command bar"
+  },
+  {
+   "id": "side-by-side-split-view",
+   "title": "Split view"
+  },
+  {
+   "id": "library-spaces",
+   "title": "Spaces overview"
+  }
+ ]
+}

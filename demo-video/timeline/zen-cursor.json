@@ -1,0 +1,18 @@
+{
+  "note": "Composited cursor for the vanilla Zen lane, in vanilla-03.mp4 source pixels. Its actions were run by script, and Marionette screenshots contain no pointer. Each shot's first point is the control the scripted action targets, measured from the footage. The cursor glides there during the previous feature's hold, so it is in place before the action fires about 0.14 s into the shot. Hover peek and full page use the real pointer positions of the recorded ActionSequence (viewport 1,400 and 700,400, scaled 1.206). The sidebar drags happened just before their shots start, so the drag is shown during the crossfade. A shot not listed keeps the cursor where it is.",
+  "shots": {
+    "work-space-essentials-and-real-documentation": [[0, 560, 760]],
+    "collapsed-folder": [[0, 122, 246]],
+    "expanded-folder": [[0, 122, 246]],
+    "personal-space": [[0, 139, 1052]],
+    "reading-space": [[0, 181, 1052]],
+    "back-to-work": [[0, 96, 1052]],
+    "undock-the-sidebar": [[0, 700, 620]],
+    "hover-peek": [[0, 1, 482]],
+    "full-page-with-hidden-sidebar": [[0, 844, 482]],
+    "resize-sidebar": [[0, 277, 600], [0.27, 345, 600]],
+    "restore-sidebar-width": [[0, 345, 600], [0.27, 277, 600]],
+    "centered-command-bar": [[0, 520, 760]],
+    "finish-on-work": [[0, 150, 341]]
+  }
+}

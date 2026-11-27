@@ -39,6 +39,17 @@ if command == "probe" {
             Thread.sleep(forTimeInterval:1/60)
         }
         CGEvent(mouseEventSource:nil,mouseType:.leftMouseUp,mouseCursorPosition:CGPoint(x:x2,y:y2),mouseButton:.left)?.post(tap:.cghidEventTap)
+    } else if command == "cmdclick" || command == "rightclick" {
+        // Command-click (multi-select) or a secondary click, at screen points.
+        guard args.count == 3, let x = Double(args[1]), let y = Double(args[2]) else { fail("Pass x y") }
+        let point = CGPoint(x: x, y: y), right = command == "rightclick"
+        CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: point, mouseButton: .left)?.post(tap: .cghidEventTap)
+        for type in right ? [CGEventType.rightMouseDown, .rightMouseUp] : [.leftMouseDown, .leftMouseUp] {
+            let event = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: point, mouseButton: right ? .right : .left)
+            if !right { event?.flags = .maskCommand }
+            event?.post(tap: .cghidEventTap)
+            usleep(40000)
+        }
     } else if command == "move" || command == "click" {
         guard args.count == 3, let x = Double(args[1]), let y = Double(args[2]) else { fail("Pass x y") }
         let point = CGPoint(x: x, y: y)

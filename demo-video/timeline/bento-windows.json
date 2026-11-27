@@ -1,0 +1,136 @@
+{
+ "note": "Closing bento page for the Windows export (polished.py --bento). at = [column, row, column span, row span] on a 6x4 grid. Images are isolated element captures of the themed disposable Zen on Windows (scripts/capture/bento_zen.py, real Windows.Graphics.Capture frames cropped to one feature); crops are in image pixels.",
+ "tiles": [
+  {
+   "at": [
+    0,
+    0,
+    1,
+    1
+   ],
+   "eyebrow": "Auto-archive",
+   "big": "12h",
+   "text": "Idle tabs archive themselves"
+  },
+  {
+   "at": [
+    1,
+    0,
+    1,
+    1
+   ],
+   "eyebrow": "Appearance",
+   "big": "Light\nDark",
+   "size": 44,
+   "text": "Follows your system"
+  },
+  {
+   "at": [
+    2,
+    0,
+    2,
+    1
+   ],
+   "image": "recordings/windows/bento/iso-command.png",
+   "caption": "Commands in the command bar",
+   "transparent": true
+  },
+  {
+   "at": [
+    4,
+    0,
+    2,
+    2
+   ],
+   "image": "recordings/windows/bento/iso-split.png",
+   "caption": "Split side by side or top to bottom"
+  },
+  {
+   "at": [
+    0,
+    1,
+    2,
+    2
+   ],
+   "image": "recordings/windows/bento/iso-library.png",
+   "caption": "Library: downloads, media, Boosts, Spaces",
+   "crop": [
+    0,
+    0,
+    418,
+    410
+   ]
+  },
+  {
+   "at": [
+    2,
+    1,
+    2,
+    2
+   ],
+   "big": "Arc UI\nfor Zen",
+   "size": 92,
+   "text": "Free and open source"
+  },
+  {
+   "at": [
+    4,
+    2,
+    1,
+    2
+   ],
+   "image": "recordings/windows/bento/iso-flight.png",
+   "caption": "Download flight",
+   "transparent": true
+  },
+  {
+   "at": [
+    5,
+    2,
+    1,
+    1
+   ],
+   "image": "recordings/windows/bento/iso-live.png",
+   "caption": "GitHub Live Folders"
+  },
+  {
+   "at": [
+    5,
+    3,
+    1,
+    1
+   ],
+   "eyebrow": "Presets",
+   "big": "JSON",
+   "text": "Import and export themes"
+  },
+  {
+   "at": [
+    0,
+    3,
+    2,
+    1
+   ],
+   "image": "recordings/windows/bento/iso-downloads.png",
+   "caption": "Recent downloads on hover",
+   "crop": [
+    0,
+    0,
+    258,
+    112
+   ]
+  },
+  {
+   "at": [
+    2,
+    3,
+    2,
+    1
+   ],
+   "eyebrow": "Guided installer",
+   "big": "One click",
+   "size": 56,
+   "text": "Install, update and remove safely"
+  }
+ ]
+}
