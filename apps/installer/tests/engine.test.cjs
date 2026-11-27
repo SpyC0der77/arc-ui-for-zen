@@ -203,6 +203,9 @@ test('loader and installer enforce the same exact versions',async()=>{
  const cfg=await fs.readFile(path.join(__dirname,'../payload/zennia.cfg'),'utf8');
  assert.match(cfg,/loadSubScript\("chrome:\/\/zennia-runtime\/content\/zennia-start\.js", win/);
  assert.doesNotMatch(cfg,/zennia\.uc\.js/);
+ // In Zen's background update task it finds Zennia's profile and runs only the update guard.
+ assert.match(cfg,/task !== "backgroundupdate"\) return;/);
+ assert.match(cfg,/importESModule\("chrome:\/\/zennia-runtime\/content\/zennia-background\.sys\.mjs"\)\.start\(profile\)/);
  const files=(await fs.readdir(path.join(__dirname,'../payload/zen-versions'))).filter(name=>name!=='base.json').map(name=>name.replace(/\.json$/,''));
  assert.deepEqual(files.sort(),[...engine.SUPPORTED_VERSIONS].sort());
 });

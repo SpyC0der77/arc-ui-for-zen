@@ -3,7 +3,8 @@
 // unsupported one, the download is cancelled and Zen's automatic updates pause until
 // Zennia supports that version or the user chooses to update anyway. Zennia then
 // pauses itself on the new version and turns back on once a release supports it.
-// One instance per browser process; windows only render its state.
+// One instance per browser process; windows only render its state. While Zen is
+// closed, startWhileClosed() guards Zen's background update task instead.
 import { AppMenuNotifications } from 'resource://gre/modules/AppMenuNotifications.sys.mjs';
 import { UpdateUtils } from 'resource://gre/modules/UpdateUtils.sys.mjs';
 
@@ -14,11 +15,22 @@ const ZEN_PROMPTS = /^update-(available|downloading|restart)$/;
 const VERSION = /^\d+\.\d+(?:\.\d+)?[a-z]?$/;
 const TOPICS = ['update-available', 'update-downloading', 'update-downloaded', 'update-staged', 'appMenu-notifications'];
 
-export function supports(version) {
+// `profile` defaults to the running profile; the background task passes Zennia's.
+export function supports(version, profile = Services.dirsvc.get('ProfD', Ci.nsIFile)) {
   if (typeof version !== 'string' || !VERSION.test(version)) return false;
-  const data = Services.dirsvc.get('ProfD', Ci.nsIFile);
+  const data = profile.clone();
   for (const part of ['chrome', 'zennia', 'zen-versions', version + '.json']) data.append(part);
   return data.exists();
+}
+
+// Reads a string pref from a profile's prefs.js without loading that profile.
+function savedPref(profile, name) {
+  try {
+    const file = profile.clone(); file.append('prefs.js');
+    const start = `user_pref(${JSON.stringify(name)}, "`;
+    const line = Cu.readUTF8File(file).split(/\r?\n/).find(text => text.startsWith(start));
+    return line ? line.slice(start.length, line.lastIndexOf('");')) : '';
+  } catch { return ''; }
 }
 
 const service = () => Cc['@mozilla.org/updates/update-service;1'].getService(Ci.nsIApplicationUpdateService);
@@ -74,13 +86,18 @@ export const ZenniaBrowserUpdates = {
     try { await this.hold(version); } finally { this.holding = false; }
   },
 
-  async hold(version) {
+  // Discards Zen's download of `version`, finished or not, so it cannot install.
+  async cancel(version) {
     const um = manager();
     if (um.downloadingUpdate?.appVersion === version) {
       await service().stopDownload();
       await um.cleanupDownloadingUpdate();
     }
     if (um.readyUpdate?.appVersion === version) await um.cleanupReadyUpdate();
+  },
+
+  async hold(version) {
+    await this.cancel(version);
     if (!UpdateUtils.appUpdateAutoSettingIsLocked() && await UpdateUtils.getAppUpdateAutoEnabled()) {
       Services.prefs.setBoolPref(RESTORE_AUTO, true);
       await UpdateUtils.setAppUpdateAutoEnabled(false);
@@ -114,6 +131,27 @@ export const ZenniaBrowserUpdates = {
     this.allowed = version; this.emit();
     if (update) await service().downloadUpdate(update);
     else service().checkForBackgroundUpdates();
+  },
+
+  // Zen's background update task runs while Zen is closed, in a temporary profile.
+  // A version it downloads installs on the next start, before Zennia loads, so cancel
+  // unsupported ones here. Zen holds them as usual the next time it runs and checks.
+  // The user's "Update anyway" choice, kept in Zennia's prefs.js, still applies.
+  startWhileClosed(profilePath) {
+    const profile = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsIFile);
+    profile.initWithPath(profilePath);
+    // A paused Zennia does not hold Zen back.
+    if (!supports(Services.appinfo.version, profile)) return;
+    const allowed = savedPref(profile, ALLOWED);
+    this.closedGuard = { profile: profilePath, allowed };
+    const observer = {
+      observe: subject => {
+        const version = subject?.QueryInterface?.(Ci.nsIUpdate)?.appVersion;
+        if (!VERSION.test(version ?? '') || version === Services.appinfo.version || version === allowed || supports(version, profile)) return;
+        void this.cancel(version).catch(error => console.warn('[Zennia browser updates]', error));
+      },
+    };
+    for (const topic of ['update-downloading', 'update-downloaded', 'update-staged']) Services.obs.addObserver(observer, topic);
   },
 
   hidePrompts() {

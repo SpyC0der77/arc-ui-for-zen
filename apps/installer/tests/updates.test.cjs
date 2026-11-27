@@ -324,10 +324,14 @@ function loadGuard({supported = ['1.24.1b', '1.24.3b'], auto = true, locked = fa
     async cleanupReadyUpdate() { calls.push('cleanup-ready'); manager.readyUpdate = null; }};
   const service = {async stopDownload() { calls.push('stop'); }, async downloadUpdate(u) { calls.push('download ' + u.appVersion); }, checkForBackgroundUpdates() { calls.push('check'); }};
   const menu = {notifications: [{id: 'update-available'}], removeNotification(pattern) { calls.push('hide'); menu.notifications = menu.notifications.filter(n => !pattern.test(n.id)); }};
-  const file = () => { const parts = []; return {append: p => parts.push(p), exists: () => parts.at(-2) === 'zen-versions' && state.supported.has(parts.at(-1).replace(/\.json$/, ''))}; };
+  const file = (parts = []) => ({parts, clone: () => file([...parts]), initWithPath: p => parts.push(p), append: p => parts.push(p),
+    exists: () => parts.at(-2) === 'zen-versions' && state.supported.has(parts.at(-1).replace(/\.json$/, ''))});
+  state.savedPrefs = '';
   const scope = {console, Ci: {nsIFile: {}, nsIUpdate: {}, nsIApplicationUpdateService: {}, nsIUpdateManager: {}},
-    Cc: {'@mozilla.org/updates/update-service;1': {getService: () => service}, '@mozilla.org/updates/update-manager;1': {getService: () => manager}},
-    Services: {prefs: api, appinfo: {version: '1.24.1b'}, dirsvc: {get: file}, obs: {addObserver: (o, topic) => { observers[topic] = o; }}},
+    Cu: {readUTF8File: () => state.savedPrefs},
+    Cc: {'@mozilla.org/updates/update-service;1': {getService: () => service}, '@mozilla.org/updates/update-manager;1': {getService: () => manager},
+      '@mozilla.org/file/local;1': {createInstance: () => file()}},
+    Services: {prefs: api, appinfo: {version: '1.24.1b'}, dirsvc: {get: () => file()}, obs: {addObserver: (o, topic) => { observers[topic] = o; }}},
     AppMenuNotifications: menu,
     UpdateUtils: {appUpdateAutoSettingIsLocked: () => locked, getAppUpdateAutoEnabled: async () => state.auto,
       setAppUpdateAutoEnabled: async v => { calls.push('auto ' + v); state.auto = v; }}};
@@ -403,4 +407,23 @@ test('the hold respects locked and manual Zen update settings and cancels pendin
   const mixed = loadGuard({pending: {downloading: {appVersion: '1.25b'}, ready: {appVersion: '1.24.3b'}}});
   mixed.guard.start();await mixed.settle();
   assert.equal(mixed.guard.held, '1.25b');assert.equal(mixed.state.auto, false);
+});
+
+test('while Zen is closed, its background update task cannot download an unsupported version', async () => {
+  const g = loadGuard();
+  g.state.savedPrefs = 'user_pref("zennia.browserUpdates.allowed", "1.26b");\n';
+  g.guard.startWhileClosed('C:\\Zennia profile');
+  assert.equal(g.guard.closedGuard.allowed, '1.26b', "the user's Update anyway choice is read from Zennia's prefs.js");
+  for (const version of ['1.24.3b', '1.26b']) { g.manager.downloadingUpdate = g.update(version); await g.fire('update-downloading', version); }
+  assert.deepEqual(g.calls, [], 'supported and allowed versions download as usual');
+  g.manager.downloadingUpdate = g.update('1.25b');
+  await g.fire('update-downloading', '1.25b');
+  g.manager.readyUpdate = g.update('1.25b');
+  await g.fire('update-downloaded', '1.25b');
+  assert.deepEqual(g.calls, ['stop', 'cleanup-downloading', 'cleanup-ready'], 'an unsupported download is discarded before it can install');
+  assert.equal(g.prefs.size, 0, "the task's temporary profile is left alone");
+  // A paused Zennia, on a version it does not support, does not hold Zen back.
+  const paused = loadGuard({supported: ['1.24.3b']});
+  paused.guard.startWhileClosed('C:\\Zennia profile');
+  assert.equal(paused.guard.closedGuard, undefined);
 });
