@@ -337,4 +337,4 @@ async function discover(options={}) {
   }
   return {platform,version:VERSION,supportedZen:SUPPORTED,apps,profiles,instances};
 }
-module.exports={inspect,VERSION,SUPPORTED,SUPPORTED_VERSIONS,BEGIN,END,NAMES,LEGACY,parseIni,layout,candidates,discover,install,remove,validate,receiptFile,digest};
+module.exports={inspect,VERSION,SUPPORTED,SUPPORTED_VERSIONS,BEGIN,END,NAMES,LEGACY,parseIni,layout,candidates,discover,install,remove,validate,receiptFile,digest,assertRealPath};

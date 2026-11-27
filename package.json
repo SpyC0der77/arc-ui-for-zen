@@ -8,6 +8,7 @@
     "test": "pnpm --filter zennia-installer test",
     "test:runtime": "pnpm --filter zennia-installer test:runtime",
     "cli": "pnpm --filter zennia-installer cli",
+    "dev": "pnpm --filter zennia-installer dev",
     "dev:lock": "pnpm --filter zennia-installer dev:lock",
     "web:dev": "pnpm --filter zennia-website dev",
     "web:build": "pnpm --filter zennia-website build"

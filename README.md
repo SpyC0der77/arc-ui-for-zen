@@ -15,7 +15,9 @@ This is a pnpm workspace with two packages:
 
 `demo-video/`, `CHANGES.md` and this README stay at the repository root. Local development data also stays at the root: `zen-instances/` for development Zen instances and `artifacts/` for downloaded Zen builds, the Python test driver and captures. Installer scripts and tests resolve those two folders from the repository root.
 
-Run `pnpm install` once at the root. `pnpm test`, `pnpm start`, `pnpm cli`, `pnpm test:runtime` and `pnpm dev:lock` work from the root and run in `apps/installer`; other installer scripts run from `apps/installer`. `pnpm web:dev` and `pnpm web:build` run the website.
+Run `pnpm install` once at the root. `pnpm test`, `pnpm start`, `pnpm cli`, `pnpm test:runtime`, `pnpm dev` and `pnpm dev:lock` work from the root and run in `apps/installer`; other installer scripts run from `apps/installer`. `pnpm web:dev` and `pnpm web:build` run the website.
+
+`pnpm dev reload` reinstalls the theme into the development Zen under `zen-instances/dev-zen/` when the payload changed and relaunches it in the background with Marionette. `pnpm dev status`, `eval`, `errors`, `shot`, `start` and `stop` cover the rest of the loop; `pnpm dev help` lists the options. On Windows, `reload`, `start` and `shot` need Python, and `--native` captures also need Pillow.
 
 ## Demo videos
 

@@ -30,11 +30,11 @@ function appVersion(app) {
 }
 
 // Every development app, with the version its folder names and the one it runs.
-function instances() {
-  if (!fs.existsSync(ROOT)) return [];
-  return fs.readdirSync(ROOT, { withFileTypes: true }).filter(entry => entry.isDirectory()).flatMap(entry => {
-    const app = ['Zen', 'Zen.app'].map(name => path.join(ROOT, entry.name, name)).find(fs.existsSync);
-    return app ? [{ folder: entry.name, app, profile: path.join(ROOT, entry.name, 'profile'), version: appVersion(app) }] : [];
+function instances(root = ROOT) {
+  if (!fs.existsSync(root)) return [];
+  return fs.readdirSync(root, { withFileTypes: true }).filter(entry => entry.isDirectory()).flatMap(entry => {
+    const app = ['Zen', 'Zen.app'].map(name => path.join(root, entry.name, name)).find(fs.existsSync);
+    return app ? [{ folder: entry.name, app, profile: path.join(root, entry.name, 'profile'), version: appVersion(app) }] : [];
   });
 }
 
