@@ -130,9 +130,13 @@ var ZenniaDownloads = {
       gift.setAttribute("aria-expanded", "true");
       if (!popup.matches(":popover-open")) popup.showPopover();
       if (wasHidden) {
+        // Over the tabs, the message waits until they have faded out.
+        const textDelay = veilTabs();
         void animate(popup, [{ opacity: 0 }, { opacity: 1 }], {
           duration: 160,
+          delay: textDelay,
           easing: "ease-out",
+          fill: "backwards",
         });
         const rows = [...list.children];
         for (const [index, row] of rows.entries()) {
@@ -145,13 +149,42 @@ var ZenniaDownloads = {
             ],
             {
               duration: 260,
-              delay: Math.min(rows.length - 1 - index, 5) * 24,
+              delay: textDelay + Math.min(rows.length - 1 - index, 5) * 24,
               easing: "cubic-bezier(.16,1,.3,1)",
               fill: "backwards",
             },
           );
         }
       }
+    }
+    // With no downloads, the message sits over the last tabs and fades them out
+    // (popup.css). The two take turns so the message never overlaps a tab: the
+    // tabs fade before the message appears, and return after it has gone.
+    let veiled = null;
+    const VEIL_MS = 120;
+    const VEIL_HIDDEN = { "--zennia-download-veil": 0 };
+    const VEIL_SHOWN = { "--zennia-download-veil": 1 };
+    // Returns how long the message should wait for the tabs.
+    function veilTabs() {
+      // Reopening while the tabs come back continues from where they are.
+      const from = veiled
+        ? Number(window.getComputedStyle(veiled).getPropertyValue("--zennia-download-veil")) || 0
+        : 0;
+      unveilTabs();
+      if (!list.querySelector(".zennia-download-empty")) return 0;
+      veiled = document.querySelector(zen.name("zen-workspace[active] > .workspace-arrowscrollbox"));
+      if (!veiled) return 0;
+      veiled.setAttribute("zennia-download-veil", "");
+      if (reduced() || from >= 1) return 0;
+      const duration = Math.round(VEIL_MS * (1 - from));
+      void animate(veiled, [{ "--zennia-download-veil": from }, VEIL_SHOWN], { duration, easing: "ease-out" });
+      return duration;
+    }
+    function unveilTabs() {
+      if (!veiled) return;
+      for (const animation of veiled.getAnimations()) animation.cancel();
+      veiled.removeAttribute("zennia-download-veil");
+      veiled = null;
     }
     function riseFromGift(row) {
       return gift.getBoundingClientRect().top - row.getBoundingClientRect().top;
@@ -166,8 +199,9 @@ var ZenniaDownloads = {
         if (popup.matches(":popover-open")) popup.hidePopover();
         popup.hidden = true;
         popupClosing = false;
+        unveilTabs();
       };
-      for (const node of [popup, ...list.children])
+      for (const node of [popup, ...list.children, ...(veiled ? [veiled] : [])])
         for (const animation of node.getAnimations()) animation.cancel();
       if (soft && !popup.hidden && !reduced()) {
         popupClosing = true;
@@ -178,7 +212,19 @@ var ZenniaDownloads = {
             { opacity: 0, transform: "translateY(8px)" },
           ],
           { duration: 140, easing: "ease-in" },
-        ).then(finish);
+        )
+          .then(() => {
+            if (motion !== popupMotion || !veiled) return;
+            // The message has gone: hide it, then bring the tabs back.
+            if (popup.matches(":popover-open")) popup.hidePopover();
+            popup.hidden = true;
+            return animate(veiled, [VEIL_SHOWN, VEIL_HIDDEN], {
+              duration: VEIL_MS,
+              easing: "ease-out",
+              fill: "forwards",
+            });
+          })
+          .then(finish);
       } else finish();
     }
     function scheduleClose() {

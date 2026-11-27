@@ -1,3 +1,10 @@
+/* How strongly the last tabs fade under the empty downloads message. Registered
+   so the fade can animate: gradients themselves cannot. */
+@property --zennia-download-veil {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
 @-moz-document url("chrome://browser/content/browser.xhtml")
 {
   /* Recent files share the sidebar surface, without a separate popup card. */
@@ -44,9 +51,16 @@
   /* With no downloads the message sits over the last tabs. Fade those tabs
      out instead of painting a veil: the real sidebar shows through, so the
      colour matches in light and dark, translucent, gradient or opaque. */
-  :root[data-zennia]:has(#zennia-download-popup:popover-open .zennia-download-empty)
-    zen-workspace[active] > .workspace-arrowscrollbox {
-    mask-image: linear-gradient(to top, transparent 40px, black 76px);
+  /* downloads.js sets the attribute and fades --zennia-download-veil with the
+     popup, keeping the attribute until the close finishes. */
+  :root[data-zennia]:has(#zennia-download-popup .zennia-download-empty)
+    zen-workspace[active] > .workspace-arrowscrollbox[zennia-download-veil] {
+    --zennia-download-veil: 1;
+    mask-image: linear-gradient(
+      to top,
+      rgb(0 0 0 / calc(1 - var(--zennia-download-veil))) 40px,
+      black 76px
+    );
   }
   /* The fade also hides Zen's overflow line (the list's 1px ::after, shown
      while more tabs sit below). Redraw it under the same condition, on the
