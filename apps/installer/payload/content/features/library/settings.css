@@ -194,6 +194,7 @@
     box-sizing: border-box;
   }
   #zennia-settings-dialog .zennia-settings-group > * + * { border-top: 1px solid var(--set-divider); }
+  #zennia-settings-dialog .zennia-settings-group + .zennia-settings-group { margin-top: 16px; }
   #zennia-settings-dialog .zennia-row-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
   #zennia-settings-dialog .zennia-row-text > span { font-size: 13.5px; }
   #zennia-settings-dialog .zennia-row-text > small { color: var(--set-muted); font-size: 12px; line-height: 1.4; }
@@ -391,12 +392,20 @@
     transition: transform 160ms cubic-bezier(0.2, 0.7, 0.3, 1);
   }
   #zennia-settings-dialog[data-zennia-reduced-motion] .zennia-segment-thumb { transition: none; }
-  #zennia-settings-dialog .zennia-segment-lens { display: none; }
-  #zennia-settings-dialog [data-glass-traveling]:not([data-glass-sampling]) > .zennia-segment-lens {
-    display: block;
+  /* The lens shows while it travels, then fades out over the CSS pill instead of swapping. */
+  #zennia-settings-dialog .zennia-segment-lens {
     position: absolute;
     pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 140ms ease-out, visibility 0s 140ms;
   }
+  #zennia-settings-dialog [data-glass-traveling] > .zennia-segment-lens {
+    opacity: 1;
+    visibility: visible;
+    transition: none;
+  }
+  #zennia-settings-dialog [data-glass-sampling] > .zennia-segment-lens { display: none; }
   #zennia-settings-dialog [data-glass-refraction] > .zennia-segment-lens { z-index: 2; }
   #zennia-appearance-mode:is([data-glass-traveling], [data-glass-sampling]) .zennia-segment-thumb { visibility: hidden; }
   #zennia-settings-dialog .zennia-segmented[data-glass-dragging] label { cursor: grabbing; }
@@ -685,7 +694,7 @@
     }
 
     /* The list: Card's frost with a thin white edge and a soft shadow, no light of its own.
-       While it opens or closes liquid-glass.js draws it on .zennia-glass-goo instead. */
+       While it opens or closes liquid-glass.js draws it, melted into the button, on .zennia-glass-goo. */
     #zennia-settings-dialog[data-zennia-glass] .zennia-select-menu {
       padding: 6px;
       border: 0;

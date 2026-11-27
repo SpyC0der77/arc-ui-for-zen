@@ -4,12 +4,12 @@
  * Bilal Abdullah Gürşen; licence in liquid-glass-LICENSE.txt). The slider's glass is a
  * WebGL2 port of that kit's lens shader (controls/glass/runtime.ts) and its spring and
  * press morph (physics.ts, RangeSlider.tsx). The segments adapt GlassLens to native
- * radios and refract a snapshot of their labels. The pop-up list follows its select's
- * opening: the list swells out of the button on a neck that thins and snaps, both take
- * the jolt, and the options arrive one after another; closing plays it backwards.
+ * radios and refract a snapshot of their labels. The pop-up list follows GlassPopup's
+ * stretching surface (glass-popup.tsx): the list melts out of the button, held by a neck
+ * that thins and lets go, and the options arrive one after another; closing draws it back in.
  *
  * Behaviour stays native: the range input still takes the pointer and the keyboard, and
- * the list is a popover of buttons. Without WebGL2 a slider keeps its CSS look. */
+ * the list is a popover of buttons. Without WebGL2 every control keeps its CSS look. */
 var ZenniaLiquidGlass = {
   install(window, { reduced: reducedMotion = () => false } = {}) {
     const XHTML = "http://www.w3.org/1999/xhtml";
@@ -164,6 +164,53 @@ void main() {
       "uInner", "uTopRefl", "uShOp", "uShSoft", "uShOff", "uFrostCenter", "uFrostEdge", "uSurface", "uPaintBackdrop", "uPreserveInk"];
     const SHADER_DPR_REF = 2.27;
 
+    /* ---------- the pop-up list's shape (glass-popup.tsx), GLSL ES 3.0 ----------
+       The list melts out of its button: a smooth union of the button's pill and the list's box,
+       softened most at the neck (engine.ts blobSoft). The button paints itself, so only the part
+       outside it is drawn here, plus its border where the neck leaves it, so the two read as one. */
+    const GOO = `#version 300 es
+precision highp float;
+uniform vec2 uSize;
+uniform float uDpr, uRadius, uLineWidth, uShadowY, uShadowBlur;
+uniform vec4 uButton, uList, uFill, uLine, uShadow;
+uniform vec3 uNeck;
+in vec2 vUv; out vec4 outColor;
+float sdRR(vec2 p, vec2 h, float r) { vec2 q = abs(p) - h + r; return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; }
+float button(vec2 p) { return sdRR(p - uButton.xy, uButton.zw, uButton.w); }
+float list(vec2 p) { return sdRR(p - uList.xy, uList.zw, uRadius); }
+float shape(vec2 p) {
+  float a = button(p), b = list(p);
+  float n = (p.x - uNeck.y) / uNeck.z;
+  float k = max(uNeck.x * exp(0.2 - sqrt(n * n + 0.04)), 1e-3);
+  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+  return mix(b, a, h) - k * h * (1.0 - h);
+}
+// Abramowitz and Stegun 7.1.27: close enough to a Gaussian for a box-shadow's falloff.
+float erf(float x) {
+  float s = sign(x), a = abs(x);
+  x = 1.0 + (0.278393 + (0.230389 + 0.078108 * a * a) * a) * a;
+  x *= x;
+  return s - s / (x * x);
+}
+void main() {
+  vec2 p = vec2(vUv.x, 1.0 - vUv.y) * uSize / uDpr;
+  float aa = 0.75 / uDpr;
+  float d = shape(p), b = button(p);
+  // Outside the button, or on its border where goo lies just past it.
+  vec2 normal = normalize(vec2(button(p + vec2(0.5, 0.0)) - button(p - vec2(0.5, 0.0)),
+    button(p + vec2(0.0, 0.5)) - button(p - vec2(0.0, 0.5))) + 1e-6);
+  float border = (1.0 - smoothstep(1.0, 2.0, -b)) * (1.0 - smoothstep(-aa, aa, shape(p + normal * (1.5 - b))));
+  float glass = (1.0 - smoothstep(-aa, aa, d)) * max(smoothstep(-aa, aa, b), border) * uFill.a;
+  float line = 1.0 - smoothstep(uLineWidth - aa, uLineWidth + aa, -d);
+  vec3 fill = mix(uFill.rgb, uLine.rgb, line * uLine.a);
+  // The list's CSS box-shadow: offset down, a Gaussian of half the blur radius.
+  float sigma = uShadowBlur * 0.5;
+  float shadow = uShadow.a * (0.5 - 0.5 * erf(list(p - vec2(0.0, uShadowY)) / (sigma * 1.4142)));
+  float under = shadow * (1.0 - glass);
+  outColor = vec4(fill * glass + uShadow.rgb * under, glass + under);
+}`;
+    const GOO_UNIFORMS = ["uSize", "uDpr", "uRadius", "uLineWidth", "uShadowY", "uShadowBlur", "uButton", "uList", "uFill", "uLine", "uShadow", "uNeck"];
+
     // The controls in a document share one WebGL2 renderer; each copies its frame onto its own 2D canvas.
     const renderers = new WeakMap();
     function rendererFor(doc) {
@@ -180,21 +227,24 @@ void main() {
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(shader));
             return shader;
           };
-          const program = gl.createProgram();
-          gl.attachShader(program, compile(gl.VERTEX_SHADER, VERTEX));
-          gl.attachShader(program, compile(gl.FRAGMENT_SHADER, FRAGMENT));
-          gl.bindAttribLocation(program, 0, "aPos");
-          gl.linkProgram(program);
-          if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
+          const link = (fragment, uniforms) => {
+            const program = gl.createProgram();
+            gl.attachShader(program, compile(gl.VERTEX_SHADER, VERTEX));
+            gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragment));
+            gl.bindAttribLocation(program, 0, "aPos");
+            gl.linkProgram(program);
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
+            return { program, loc: Object.fromEntries(uniforms.map(name => [name, gl.getUniformLocation(program, name)])) };
+          };
+          const lens = link(FRAGMENT, UNIFORMS), goo = link(GOO, GOO_UNIFORMS);
           const quad = gl.createBuffer();
           gl.bindBuffer(gl.ARRAY_BUFFER, quad);
           gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
           gl.enableVertexAttribArray(0);
           gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-          gl.useProgram(program);
-          const loc = Object.fromEntries(UNIFORMS.map(name => [name, gl.getUniformLocation(program, name)]));
-          gl.uniform1i(loc.uBg, 0);
-          renderer = { canvas, gl, loc, width: 0, height: 0, textures: new WeakMap() };
+          gl.useProgram(lens.program);
+          gl.uniform1i(lens.loc.uBg, 0);
+          renderer = { canvas, gl, lens, goo, width: 0, height: 0, textures: new WeakMap() };
           // A lost context cannot be drawn to, and its textures are gone. Stay on the CSS look: no
           // event preventDefault, so the browser does not restore this context and rendererFor
           // never hands it out again.
@@ -204,7 +254,7 @@ void main() {
           });
         }
       } catch (error) {
-        console.error("[Zennia] Liquid Glass sliders fall back to CSS", error);
+        console.error("[Zennia] Liquid Glass controls fall back to CSS", error);
         renderer = null;
       }
       renderers.set(doc, renderer);
@@ -213,14 +263,30 @@ void main() {
 
     /** The resting slider pill's frost: white at its middle, a cool grey at its rim. */
     const WHITE_PILL = [[1, 1, 1], [0xe9 / 255, 0xeb / 255, 0xef / 255]];
-    function draw(renderer, target, background, spec) {
-      const { gl, loc } = renderer;
-      const w = target.width, h = target.height;
+    /** Selects a program, and a viewport the target's size in the shared canvas. */
+    function begin(renderer, { program }, target) {
+      const { gl } = renderer, w = target.width, h = target.height;
       if (renderer.width < w || renderer.height < h) {
         renderer.width = renderer.canvas.width = Math.max(renderer.width, w);
         renderer.height = renderer.canvas.height = Math.max(renderer.height, h);
       }
+      gl.useProgram(program);
       gl.viewport(0, renderer.height - h, w, h);
+    }
+    /** Draws the quad and copies the frame onto the target's own 2D canvas. */
+    function present(renderer, target) {
+      const { gl } = renderer, w = target.width, h = target.height;
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      const ctx = target.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(renderer.canvas, 0, 0, w, h, 0, 0, w, h);
+    }
+    function draw(renderer, target, background, spec) {
+      const { gl } = renderer, { loc } = renderer.lens;
+      const w = target.width, h = target.height;
+      begin(renderer, renderer.lens, target);
       // Each backdrop has its own texture, uploaded only when the control redrew it.
       let texture = renderer.textures.get(background);
       if (!texture) {
@@ -262,12 +328,7 @@ void main() {
       gl.uniform3f(loc.uSurface, ...spec.surface);
       gl.uniform1i(loc.uPaintBackdrop, spec.paintBackdrop !== false);
       gl.uniform1i(loc.uPreserveInk, !!spec.preserveInk);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      const ctx = target.getContext("2d");
-      ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(renderer.canvas, 0, 0, w, h, 0, 0, w, h);
+      present(renderer, target);
     }
 
     // The host passes the resolved theme. Computed colours can still be mid-transition
@@ -469,7 +530,8 @@ void main() {
       const nearest = (boxes, x) => boxes.reduce((best, box) => (Math.abs(x - box.x) < Math.abs(x - best.x) ? box : best));
       const optionAt = (boxes, x) => boxes.find(box => Math.abs(x - box.x) < box.w / 2) ?? nearest(boxes, x);
 
-      /** Hides the lens and puts it at rest on the selected choice; the CSS pill shows again. */
+      /** Puts the lens at rest on the selected choice; it fades out over the CSS pill (settings.css).
+       *  data-glass-refraction stays, so the lens keeps its place over the labels while it fades. */
       function rest() {
         if (frame) view().cancelAnimationFrame(frame);
         frame = last = 0;
@@ -478,7 +540,6 @@ void main() {
         width.x = target?.w ?? 0;
         position.v = width.v = press.x = press.v = 0;
         root.removeAttribute("data-glass-traveling");
-        root.removeAttribute("data-glass-refraction");
       }
       /** Snapshots the rail and its labels once per travel, so the lens can bend them. */
       function sample(dpr) {
@@ -646,22 +707,50 @@ void main() {
     }
 
     /* ---------- pop-up list (glass-popup.tsx's stretching surface) ---------- */
-    const OPEN = { omega: 13, zeta: 0.58 };
-    const CLOSE = { omega: 15, zeta: 0.9 };
-    const JOLT = { omega: 22, zeta: 0.35 };
-    /** Px of gap at which the neck between button and list has thinned to nothing and snaps. */
-    const SNAP = 11;
+    // GOOEY (engine.ts) for a wide control: the list opens on one spring and is held to its button
+    // by a bridge until it is `detach` open; the bridge then thins into a neck at the button's middle
+    // and lets go. Closing pulls the list back in on a quicker spring, and the bridge forms again
+    // as it nears the button (`rejoin`), so the close mirrors the opening.
+    const POPUP = {
+      open: { omega: 11, zeta: 0.82 },
+      close: { omega: 26, zeta: 0.7 },
+      attach: { omega: 28, zeta: 1 },
+      thin: { omega: 5.6, zeta: 1 },
+      letGo: { omega: 16, zeta: 1 },
+      detach: 0.1,
+      rejoin: [0.25, 0.8],
+      /** Px: the bridge's softness at full strength, and how far the list leans back to the button while held. */
+      softness: 50,
+      pull: 11,
+      /** Px the button sags towards the list while they hold on. */
+      sag: 6,
+      /** The options: how far open the list is when the first appears, then the gap and fade (seconds), and how fast they leave. */
+      itemsAt: 0.85,
+      itemsGap: 0.06,
+      itemsFade: 0.22,
+      itemsOut: 0.07,
+    };
+    const smooth = (a, b, x) => { const t = saturate((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+    /** A computed CSS colour as straight RGBA, 0–1. */
+    const rgba = css => {
+      const [r = 0, g = 0, b = 0, a = 1] = (css.match(/[\d.]+/g) ?? []).map(Number);
+      return [r / 255, g / 255, b / 255, a];
+    };
 
     function popup(trigger, menu, { gap = () => 12, glass = () => true } = {}) {
-      const canvas = trigger.ownerDocument.createElementNS(XHTML, "canvas");
+      const doc = trigger.ownerDocument;
+      const canvas = doc.createElementNS(XHTML, "canvas");
       canvas.className = "zennia-glass-goo";
       canvas.setAttribute("aria-hidden", "true");
       menu.prepend(canvas);
       const view = () => menu.ownerDocument.defaultView;
       const items = () => [...menu.children].filter(child => child !== canvas);
-      let p = { x: 0, v: 0 }, jolt = { x: 0, v: 0 }, target = 0, snapped = false, below = true;
-      let frame = 0, last = 0, recoil = null;
+      // Shut, the list is all bridge: it holds on from the first frame it comes out.
+      const open = { x: 0, v: 0 }, bridge = { x: 1, v: 0 };
+      // `shown` is the list's own fade, `reveal` seconds since its first option started to come in.
+      let target = 0, below = true, joined = false, snapped = false, shown = 0, reveal = 0, frame = 0, last = 0;
 
+      const animated = () => glass() && !reducedMotion() && usable(menu.ownerDocument);
       function place() {
         const win = view(), t = trigger.getBoundingClientRect();
         menu.style.minWidth = glass() ? `${t.width}px` : "";
@@ -671,113 +760,130 @@ void main() {
         menu.style.left = `${Math.max(8, Math.min(left, win.innerWidth - width - 8))}px`;
         menu.style.top = `${below ? t.bottom + g : t.top - g - height}px`;
       }
-      /** The list's box this frame: it starts as a sliver at the button and swells, past its size and back. */
-      function shapes() {
-        const t = trigger.getBoundingClientRect(), f = menu.getBoundingClientRect();
-        const start = below
-          ? { left: t.left + 10, right: t.right - 10, top: t.bottom - 10, bottom: t.bottom }
-          : { left: t.left + 10, right: t.right - 10, top: t.top, bottom: t.top + 10 };
-        const shift = jolt.x * (below ? 1 : -1);
-        const list = {
-          left: lerp(start.left, f.left, p.x), right: lerp(start.right, f.right, p.x),
-          top: lerp(start.top, f.top, p.x) + shift, bottom: lerp(start.bottom, f.bottom, p.x) + shift,
-        };
-        return { t, list, gap: below ? list.top - t.bottom : t.top - list.bottom };
-      }
+      /** Draws this frame: the button sags on its bridge, the list grows out of it, the options come in. */
       function paint() {
-        const win = view(), dpr = win.devicePixelRatio || 1;
-        const w = Math.round(win.innerWidth * dpr), h = Math.round(win.innerHeight * dpr);
-        if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
-        const ctx = canvas.getContext("2d");
-        ctx.resetTransform();
-        ctx.clearRect(0, 0, w, h);
-        ctx.scale(dpr, dpr);
-        const { t, list, gap: open } = shapes();
-        const radius = Math.max(0, Math.min(22, (list.bottom - list.top) / 2, (list.right - list.left) / 2));
-        const path = new win.Path2D();
-        path.roundRect(list.left, list.top, list.right - list.left, Math.max(0, list.bottom - list.top), radius);
-        // The neck: concave sides that meet in the middle as the gap reaches SNAP.
-        const tension = saturate(open / SNAP);
-        if (!snapped && tension < 1) {
-          const cx = (t.left + t.right) / 2;
-          // Same winding as the panel, so where they overlap they fill as one shape.
-          const a = (below ? 1 : -1) * Math.min(t.right - t.left, list.right - list.left) / 2 * 0.72;
-          const m = a * Math.pow(1 - tension, 1.6);
-          const y0 = below ? t.bottom - 6 : t.top + 6;
-          const y1 = below ? list.top + radius * 0.6 : list.bottom - radius * 0.6;
-          const ym = (y0 + y1) / 2, span = y1 - y0;
-          path.moveTo(cx + a, y0);
-          path.bezierCurveTo(cx + a, y0 + span * 0.35, cx + m, ym - span * 0.15, cx + m, ym);
-          path.bezierCurveTo(cx + m, ym + span * 0.15, cx + a, y1 - span * 0.35, cx + a, y1);
-          path.lineTo(cx - a, y1);
-          path.bezierCurveTo(cx - a, y1 - span * 0.35, cx - m, ym + span * 0.15, cx - m, ym);
-          path.bezierCurveTo(cx - m, ym - span * 0.15, cx - a, y0 + span * 0.35, cx - a, y0);
-          path.closePath();
-        }
+        const dir = below ? 1 : -1, p = saturate(open.x), b = saturate(bridge.x);
+        // The list overshoots a little as it lands, and dips under the button as it goes back in.
+        const y = Math.max(-0.04, Math.min(1.08, open.x));
+        const hold = b * smooth(0, 0.6, p);
+        const w = trigger.offsetWidth, h = trigger.offsetHeight;
+        trigger.style.translate = hold ? `0 ${(dir * POPUP.sag * hold).toFixed(2)}px` : "";
+        trigger.style.scale = hold ? `${(1 - (1.5 * hold) / (w / 2)).toFixed(4)} ${(1 + hold / (h / 2)).toFixed(4)}` : "";
+
+        const t = trigger.getBoundingClientRect(), list = menu.getBoundingClientRect();
+        const edge = below ? t.bottom : t.top, cx = t.left + t.width / 2;
+        // The list starts inside the button. Its near edge crosses the gap first and leans back
+        // towards the button while the bridge holds.
+        const near = lerp(edge - dir * 6, (below ? list.top : list.bottom) - dir * POPUP.pull * b, smooth(0, 0.3, p));
+        const far = lerp(edge - dir, below ? list.bottom : list.top, y);
+        const reach = dir * (far - edge);
+        const hx = lerp(t.width * 0.3, list.width / 2, y), hy = Math.max(Math.abs(far - near) / 2, 0.5);
+        // Soft as the list comes out: at full strength inside the button it would swell it, and with
+        // none the list would leave as a slab under the button.
+        const k = Math.max(POPUP.softness * b * smooth(-12, 60, reach), 0.05);
+        // Two facing edges stay bridged while the softness is over twice the gap between them.
+        joined = k > 2 * Math.max(dir * (near - edge), 0);
+        const radius = parseFloat(view().getComputedStyle(menu).borderTopLeftRadius) || 24;
+
+        const renderer = rendererFor(menu.ownerDocument), win = view(), dpr = win.devicePixelRatio || 1;
+        const width = Math.round(win.innerWidth * dpr), height = Math.round(win.innerHeight * dpr);
+        if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
         // settings.css sets the goo's colours on the canvas: color is the frost,
         // text-decoration-color the edge line, outline-color the shadow.
         const style = win.getComputedStyle(canvas);
-        ctx.lineWidth = 2.6;
-        ctx.strokeStyle = style.textDecorationColor;
-        ctx.stroke(path);
-        ctx.save();
-        ctx.shadowColor = style.outlineColor;
-        ctx.shadowBlur = 34;
-        ctx.shadowOffsetY = 14;
-        ctx.fillStyle = style.color;
-        ctx.fill(path);
-        ctx.restore();
-        // The options arrive one after another once the list has room for them.
+        const { gl } = renderer, { loc } = renderer.goo;
+        begin(renderer, renderer.goo, canvas);
+        gl.uniform2f(loc.uSize, width, height);
+        gl.uniform1f(loc.uDpr, dpr);
+        gl.uniform4f(loc.uButton, cx, (t.top + t.bottom) / 2, t.width / 2, t.height / 2);
+        gl.uniform4f(loc.uList, lerp(cx, list.left + list.width / 2, p), (near + far) / 2, hx, hy);
+        // Still attached, the list is rounder: surface tension lets go as the neck does.
+        gl.uniform1f(loc.uRadius, Math.min(lerp(radius, radius * 1.8, b), hx, hy));
+        gl.uniform3f(loc.uNeck, k, cx, t.width * lerp(0.2, 0.6, b));
+        gl.uniform4fv(loc.uFill, rgba(style.color));
+        gl.uniform4fv(loc.uLine, rgba(style.textDecorationColor));
+        gl.uniform1f(loc.uLineWidth, 1.3);
+        // The shadow comes out with the list.
+        const shadow = rgba(style.outlineColor);
+        gl.uniform4f(loc.uShadow, shadow[0], shadow[1], shadow[2], shadow[3] * smooth(0, 48, reach));
+        gl.uniform1f(loc.uShadowY, 14);
+        gl.uniform1f(loc.uShadowBlur, 34);
+        present(renderer, canvas);
+
         items().forEach((item, i) => {
-          const o = saturate((p.x - 0.42 - i * 0.07) / 0.3);
+          const o = saturate((reveal - i * POPUP.itemsGap) / POPUP.itemsFade) * shown;
           item.style.opacity = String(o);
-          item.style.transform = `translateY(${((1 - o) * -6 * (below ? 1 : -1)).toFixed(2)}px)`;
-          item.style.filter = o < 0.98 ? `blur(${((1 - o) * 3).toFixed(2)}px)` : "";
+          item.style.translate = o < 1 ? `0 ${((1 - o) * 6).toFixed(2)}px` : "";
         });
-        return open;
       }
       function clearMotion() {
-        for (const item of items()) item.style.opacity = item.style.transform = item.style.filter = "";
+        for (const item of items()) item.style.opacity = item.style.translate = "";
+        trigger.style.translate = trigger.style.scale = "";
         canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
       }
-      function tick(time) {
-        frame = 0;
-        const dt = frameStep(time, last);
-        last = time;
-        const opening = target === 1;
-        const spring = opening ? OPEN : CLOSE;
-        let moving = stepSpring(p, target, spring.omega, spring.zeta, dt);
-        moving = stepSpring(jolt, 0, JOLT.omega, JOLT.zeta, dt) || moving;
-        const open = paint();
-        // The neck lets go: both halves take the jolt.
-        if (opening && !snapped && open >= SNAP) {
-          snapped = true;
-          jolt.v = 70;
-          recoil?.cancel();
-          recoil = trigger.animate([{ transform: "none" }, { transform: `translateY(${below ? -2 : 2}px) scale(1.02, 0.97)` }, { transform: "none" }],
-            { duration: 360, easing: "cubic-bezier(0.3, 1.6, 0.5, 1)" });
-        }
-        if (!opening && open < SNAP) snapped = false;
-        if (moving) { frame = view().requestAnimationFrame(tick); return; }
-        last = 0;
-        if (!opening) finishClose();
-        else {
-          clearMotion();
-          menu.setAttribute("data-glass-state", "open");
-        }
-      }
-      function finishClose() {
+      function stop() {
         if (frame) view().cancelAnimationFrame(frame);
         frame = last = 0;
-        recoil?.cancel();
+      }
+      /** At rest and open: the CSS list takes over from the canvas. */
+      function finishOpen() {
+        stop();
+        clearMotion();
+        open.x = shown = 1;
+        open.v = bridge.x = bridge.v = 0;
+        reveal = Infinity;
+        joined = snapped = false;
+        menu.setAttribute("data-glass-state", "open");
+      }
+      function finishClose() {
+        stop();
         clearMotion();
         menu.removeAttribute("data-glass-state");
         if (menu.matches(":popover-open")) menu.hidePopover();
-        p = { x: 0, v: 0 };
-        jolt = { x: 0, v: 0 };
-        snapped = false;
+        open.x = open.v = bridge.v = shown = reveal = 0;
+        bridge.x = 1;
+        joined = snapped = false;
       }
-      return {
+      function tick(time) {
+        frame = 0;
+        if (!animated()) { if (target) finishOpen(); else finishClose(); return; }
+        const dt = frameStep(time, last);
+        last = time;
+        const opening = target === 1;
+        const spring = opening ? POPUP.open : POPUP.close;
+        let moving = stepSpring(open, target, spring.omega, spring.zeta, dt);
+        if (opening) {
+          // Held while it starts out; once the neck breaks, what is left of the tension lets go at once.
+          const held = open.x < POPUP.detach;
+          const pull = held ? POPUP.attach : snapped ? POPUP.letGo : POPUP.thin;
+          moving = stepSpring(bridge, held ? 1 : 0, pull.omega, pull.zeta, dt) || moving;
+          shown = 1;
+          if (open.x > POPUP.itemsAt) reveal += dt;
+          moving ||= reveal < (items().length - 1) * POPUP.itemsGap + POPUP.itemsFade;
+        } else {
+          // Gone once nothing of it shows outside the button.
+          if (open.x < 0.004) { finishClose(); return; }
+          bridge.x = Math.max(bridge.x, 1 - smooth(...POPUP.rejoin, open.x));
+          bridge.v = 0;
+          // The options go ahead of the glass, before it draws back past them.
+          shown = Math.min(Math.max(0, shown - dt / POPUP.itemsOut), smooth(0.75, 0.95, open.x));
+          if (!shown) reveal = 0;
+        }
+        const wasJoined = joined;
+        paint();
+        if (opening && wasJoined && !joined) snapped = true;
+        if (!opening) snapped = false;
+        if (!moving) { finishOpen(); return; }
+        frame = view().requestAnimationFrame(tick);
+      }
+      /** Starts the motion, drawing its first frame now so the CSS list never shows bare. */
+      function animate() {
+        menu.setAttribute("data-glass-state", "moving");
+        paint();
+        if (!frame) frame = view().requestAnimationFrame(tick);
+      }
+
+      const controller = {
         get open() { return target === 1; },
         show() {
           if (target === 1) return;
@@ -786,24 +892,30 @@ void main() {
             menu.showPopover();
             place();
           }
-          if (!glass() || reducedMotion()) {
-            p = { x: 1, v: 0 };
-            menu.setAttribute("data-glass-state", "open");
-            return;
-          }
-          menu.setAttribute("data-glass-state", "moving");
-          if (!frame) frame = view().requestAnimationFrame(tick);
+          if (animated()) animate();
+          else finishOpen();
         },
         hide(immediate = false) {
+          if (!target && !frame) return;
           target = 0;
-          if (immediate || !glass() || reducedMotion() || !menu.matches(":popover-open")) {
-            finishClose();
-            return;
+          if (immediate || !animated() || !menu.matches(":popover-open")) finishClose();
+          else animate();
+        },
+        /** Glass turned off or its renderer lost: settle where the list is going. */
+        sync(on) {
+          if (on === false && frame) {
+            if (target) finishOpen();
+            else finishClose();
           }
-          menu.setAttribute("data-glass-state", "moving");
-          if (!frame) frame = view().requestAnimationFrame(tick);
+        },
+        destroy() {
+          finishClose();
+          canvas.remove();
+          controls.delete(controller);
         },
       };
+      controls.add(controller);
+      return controller;
     }
 
     return {
