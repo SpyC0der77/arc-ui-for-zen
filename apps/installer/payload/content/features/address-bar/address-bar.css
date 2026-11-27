@@ -9,7 +9,7 @@
   :root[data-zennia] #urlbar-input {
     color: light-dark(#141414, #f0edf3) !important;
     font-size: 13px !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
   }
   :root[data-zennia] #urlbar:not([zen-floating-urlbar="true"]) #urlbar-input {
     caret-color: transparent !important;
@@ -52,7 +52,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     pointer-events: none;
-    font: 500 13px var(--zennia-font);
+    font: 600 13px var(--zennia-font);
     color: var(--zennia-text);
   }
   .zennia-sidebar-address-icon {

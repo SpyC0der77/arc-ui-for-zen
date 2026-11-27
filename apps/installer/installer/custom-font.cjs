@@ -84,9 +84,6 @@ const FAMILY_FILE = /^SF-Pro-(Text|Display)-(Ultralight|Thin|Light|Regular|Mediu
 const WEIGHTS = { ultralight: 100, thin: 200, light: 300, regular: 400, medium: 500, semibold: 600, bold: 700, heavy: 800, black: 900 };
 const MAX_FAMILY_BYTES = 160 * 1024 * 1024;
 const display = '"Zennia Custom Display"';
-/** Windows and Linux draw SF Pro thinner than macOS does, so light and regular text use the
- *  next heavier cut there (regular text gets Medium). Semibold and heavier keep their own cut. */
-const HEAVIER = { 100: 200, 200: 300, 300: 400, 400: 500, 500: 600 };
 
 /** Reads every SF Pro Text and Display face (any weight, upright or italic) in `folder`. */
 async function readFamily(folder, name = path.basename(folder)) {
@@ -121,7 +118,7 @@ function familyFaces(font, platform) {
       const set = font.faces.filter(face => face.cut === cut && face.italic === italic);
       if (!set.length) continue;
       for (let weight = 100; weight <= 900; weight += 100) {
-        const face = nearest(set, platform === 'darwin' ? weight : HEAVIER[weight] ?? weight);
+        const face = nearest(set, weight);
         rules.push(`@font-face { font-family: ${name}; src: url("sf-pro/${face.file}") format("opentype"); font-weight: ${weight}; font-style: ${italic ? 'italic' : 'normal'}; }`);
       }
     }
@@ -132,7 +129,7 @@ function familyFaces(font, platform) {
 /** The face a preview should show for regular text on `platform`. */
 function previewFace(font, platform = process.platform) {
   const upright = font.faces.filter(face => face.cut === 'Text' && !face.italic);
-  return nearest(upright, platform === 'darwin' ? 400 : HEAVIER[400]);
+  return nearest(upright, 400);
 }
 
 function stylesheet(font, platform = process.platform) {

@@ -107,7 +107,7 @@ function otf(tag){
  bytes.write('CFF ',12,'latin1');bytes.writeUInt32BE(28,20);bytes.writeUInt32BE(4,24);bytes.write(tag,40,'latin1');
  return bytes;
 }
-test('the SF Pro family imports every Text and Display face and uses heavier cuts off macOS',async t=>{
+test('the SF Pro family imports every Text and Display face at its matching weight',async t=>{
  const f=await fixture(t);
  const {FAMILY,STYLES,stylesheet,readFamily}=require('../installer/custom-font.cjs');
  const installed=relative=>path.join(f.profile,'chrome','zennia',relative);
@@ -128,9 +128,9 @@ test('the SF Pro family imports every Text and Display face and uses heavier cut
   const tail=`") format("opentype"); font-weight: ${weight}; font-style: ${style}; }`;
   return offMac.split('\n').map(line=>line.trim()).find(line=>line.startsWith(rule)&&line.endsWith(tail))?.slice(rule.length,-tail.length);
  };
- // Off macOS, regular text is drawn with the Medium cut; semibold and bold keep their own.
- assert.equal(face('Zennia Custom',400),'SF-Pro-Text-Medium.otf');
- assert.equal(face('Zennia Custom',500),'SF-Pro-Text-Semibold.otf');
+ // Each CSS weight uses its matching SF Pro cut on every platform.
+ assert.equal(face('Zennia Custom',400),'SF-Pro-Text-Regular.otf');
+ assert.equal(face('Zennia Custom',500),'SF-Pro-Text-Medium.otf');
  assert.equal(face('Zennia Custom',700),'SF-Pro-Text-Bold.otf');
  assert.equal(face('Zennia Custom',400,'italic'),'SF-Pro-Text-RegularItalic.otf');
  assert.equal(face('Zennia Custom Display',400),'SF-Pro-Display-Regular.otf');

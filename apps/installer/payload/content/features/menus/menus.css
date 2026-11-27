@@ -46,7 +46,8 @@
     --menuitem-hover-color: var(--zennia-text);
     --menuitem-disabled-color: var(--zennia-muted);
     font-family: var(--zennia-font) !important;
-    color-scheme: light dark !important;
+    /* Use Zennia's selected appearance, including when it differs from the OS. */
+    color-scheme: inherit !important;
   }
   /* No shadow margin: on Windows 11 it hands the popup to DWM, which squares
      the corners off to its own small radius and drops the CSS rounding. */
@@ -104,7 +105,7 @@
   }
   :root[data-zennia] menupopup menucaption {
     color: var(--zennia-menu-shortcut) !important;
-    font: 600 11px var(--zennia-font) !important;
+    font: 400 11px var(--zennia-font) !important;
     padding: 6px 10px 2px !important;
   }
   /* Back / forward / reload / bookmark strip on the page menu keeps its
@@ -201,7 +202,7 @@
   :root[data-zennia] #appMenu-popup .subview-subheader {
     color: var(--zennia-menu-shortcut) !important;
     font-size: 11px !important;
-    font-weight: 600 !important;
+    font-weight: 400 !important;
     padding: 6px 10px 2px !important;
   }
   :root[data-zennia] #appMenu-popup .panel-header {
@@ -210,7 +211,7 @@
   }
   :root[data-zennia] #appMenu-popup .panel-header > h1 {
     font-size: 13px !important;
-    font-weight: 600 !important;
+    font-weight: 400 !important;
   }
 
   /* Account row */
@@ -232,7 +233,7 @@
   }
   :root[data-zennia] #appMenu-fxa-text {
     font-size: 13px !important;
-    font-weight: 600 !important;
+    font-weight: 400 !important;
     color: var(--zennia-text) !important;
   }
   :root[data-zennia] #appMenu-fxa-text::before {
@@ -398,7 +399,7 @@
   :root[data-zennia] #zenCreateNewPopup > menuitem {
     min-height: 36px !important;
     padding: 0 10px !important;
-    font: 500 13px var(--zennia-font) !important;
+    font: 400 13px var(--zennia-font) !important;
     &:not([_moz-menuactive="true"]) {
       background: transparent !important;
     }
@@ -412,6 +413,6 @@
     margin-inline-end: 12px !important;
   }
   :root[data-zennia] #zenCreateNewPopup .menu-text {
-    font-weight: 500 !important;
+    font-weight: 400 !important;
   }
 }

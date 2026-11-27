@@ -46,6 +46,12 @@
   :root[data-zennia] .tab-label {
     color: light-dark(#141414, #f0edf3) !important;
   }
+  /* Zen reserves a favicon slot even for tabs with no icon. Let the
+     scroll-to-selected-tab control fit just its arrow in that case. */
+  :root[data-zennia] .zen-workspace-scroll-to-tab-icon:not([src]),
+  :root[data-zennia] .zen-workspace-scroll-to-tab-icon[src=""] {
+    display: none !important;
+  }
   /* Match Arc's favorite proportions without changing ordinary tab density. */
   :root[data-zennia] .tabbrowser-tab[zen-essential="true"] {
     --tab-min-height: 46px;
@@ -55,7 +61,7 @@
     corner-shape: round !important;
   }
   :root[data-zennia] zen-folder > .tab-group-label-container .tab-group-label {
-    font-weight: 600 !important;
+    font-weight: 500 !important;
   }
   :root[data-zennia][zen-sidebar-expanded="true"]
     .zen-current-workspace-indicator:has(
