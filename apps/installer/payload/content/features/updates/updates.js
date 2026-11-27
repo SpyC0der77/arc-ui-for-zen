@@ -62,7 +62,7 @@ var ZenniaUpdates = {
       message.textContent = updater.error || (state === 'ready' ? 'Theme updated in place. Restart Zen to apply it.' : state === 'downloading' ? label : 'A new version is available.');
       progress.hidden = state !== 'downloading';
       if (updater.progress === null) progress.removeAttribute('value'); else progress.value = updater.progress;
-      action.textContent = label; action.disabled = ['downloading', 'applying', 'restarting'].includes(state);
+      action.textContent = label; action.disabled = ['downloading', 'applying', 'restarting', 'removing'].includes(state);
       if (shownRelease !== updater.release) {
         shownRelease = updater.release;
         notes.replaceChildren();

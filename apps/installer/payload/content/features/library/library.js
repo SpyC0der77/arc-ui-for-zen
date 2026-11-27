@@ -1027,7 +1027,47 @@ var ZenniaLibrary = {
     trackCopy.className = "zennia-row-text";
     trackCopy.append(trackRow.firstElementChild, trackNote);
     trackRow.prepend(trackCopy);
-    panels.get('updates').append(group(trackRow));
+    // Reinstall and Uninstall ask first, then hand Zen to the updater, which closes or restarts it.
+    const removals = [];
+    function removalRow(title, note, label, question, failure, run) {
+      const copy = html("div", "");
+      copy.className = "zennia-row-text";
+      copy.append(html("span", title), html("small", note));
+      const button = html("button", label);
+      button.type = "button";
+      button.addEventListener("click", async () => {
+        const view = settings.ownerDocument.defaultView;
+        if (!Services.prompt.confirm(view, `${title}?`, question)) return;
+        try {
+          await run();
+        } catch (error) {
+          Services.prompt.alert(view, failure, error.message);
+        }
+      });
+      const row = html("div", "");
+      row.className = "zennia-settings-row";
+      row.append(copy, button);
+      removals.push({ button, label });
+      return row;
+    }
+    const reinstallRow = removalRow("Reinstall Zennia",
+      "Remove the theme and open its installer to install it again. Zen closes.",
+      "Reinstall",
+      "Zennia's installer will be downloaded, Zennia will be removed, and Zen will close so the installer can install it again. Your tabs, bookmarks and history stay.",
+      "Could not reinstall Zennia", () => updater.reinstall());
+    const uninstallRow = removalRow("Uninstall Zennia",
+      "Remove the theme and restart Zen. Your tabs, bookmarks and history stay.",
+      "Uninstall",
+      "Zennia will be removed from this Zen installation, and Zen will restart. Your tabs, bookmarks and history stay.",
+      "Could not uninstall Zennia", () => updater.uninstall());
+    const syncRemoval = () => {
+      const busy = updater.state === "removing";
+      for (const { button, label } of removals) button.disabled = busy;
+      const [reinstall] = removals;
+      reinstall.button.textContent = busy && updater.progress !== null ? `Downloading ${Math.round(updater.progress)}%` : reinstall.label;
+    };
+    updater.listeners.add(syncRemoval);
+    panels.get("updates").append(group(trackRow), group(reinstallRow, uninstallRow));
     const syncTrack = () => {
       void updater.getTrack().then(value => {
         track.value = value;
@@ -1336,6 +1376,7 @@ var ZenniaLibrary = {
         glassKit?.destroy();
         settings.remove();
         updater.listeners.delete(syncTrack);
+        updater.listeners.delete(syncRemoval);
         gift.remove();
         for (const button of footerButtons) button.remove();
         for (const [donate, image] of donateImages) {

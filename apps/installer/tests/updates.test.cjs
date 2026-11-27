@@ -434,3 +434,147 @@ test('while Zen is closed, its background update task cannot download an unsuppo
   leftover.guard.startWhileClosed('C:\\Zennia profile');await leftover.settle();
   assert.deepEqual(leftover.calls, ['cleanup-ready']);
 });
+test('uninstalling from Settings restores an engine install exactly, keeping later user.js additions', async t => {
+  const fs = require('node:fs/promises'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
+  const {uninstallTheme} = await import('../payload/content/uninstall.mjs');
+  const engine = require('../installer/engine.cjs');
+  const folder = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'zennia-uninstall-')));
+  t.after(() => fs.rm(folder, {recursive: true, force: true}));
+  const app = path.join(folder, 'Zen'), profile = path.join(folder, 'profile');
+  const target = engine.layout(app, 'linux');
+  await fs.mkdir(path.join(target.resources, 'defaults', 'pref'), {recursive: true});
+  await fs.mkdir(profile);
+  await fs.mkdir(path.dirname(target.exe), {recursive: true});
+  await fs.writeFile(target.exe, '');
+  await fs.writeFile(path.join(target.resources, 'application.ini'), '[App]\nVersion=1.24b\n');
+  await fs.writeFile(path.join(profile, 'prefs.js'), '// personal prefs\n');
+  await fs.writeFile(path.join(profile, 'user.js'), '// personal settings\n');
+  // Every file under the folder, so a check can tell nothing else changed.
+  const files = async (dir = folder, found = {}) => {
+    for (const item of await fs.readdir(dir, {withFileTypes: true})) {
+      const file = path.join(dir, item.name);
+      if (item.isDirectory()) await files(file, found);
+      else found[path.relative(folder, file)] = (await fs.readFile(file)).toString('base64');
+    }
+    return found;
+  };
+  const before = await files();
+  await engine.install(app, profile, {platform: 'linux', checkClosed: async () => {}});
+  await fs.appendFile(path.join(profile, 'user.js'), 'user_pref("added.later", true);\n');
+  const installed = await files();
+  const io = {
+    exists: file => fs.access(file).then(() => true, () => false),
+    readJSON: async file => JSON.parse(await fs.readFile(file, 'utf8')),
+    read: file => fs.readFile(file),
+    write: async (file, bytes) => { await fs.mkdir(path.dirname(file), {recursive: true}); await fs.writeFile(file, bytes); },
+    remove: file => fs.rm(file, {force: true}),
+    assertPath: async file => assert.equal(path.resolve(file), file),
+  };
+  const context = {
+    io, paths: {profile, resources: target.resources, join: path.join, separator: path.sep},
+    hash: async bytes => crypto.createHash('sha256').update(bytes).digest('hex'),
+    decode: text => Buffer.from(text, 'base64'), encode: text => Buffer.from(text),
+  };
+
+  const theme = path.join(profile, 'chrome', 'zennia', 'zennia.uc.js');
+  const theme64 = installed[path.relative(folder, theme)];
+  await fs.appendFile(theme, 'edited');
+  await assert.rejects(uninstallTheme(context), /edited after installation/);
+  await fs.writeFile(theme, Buffer.from(theme64, 'base64'));
+  assert.deepEqual(await files(), installed);
+
+  let fail = true;
+  const cfg = path.join(target.resources, 'zennia.cfg');
+  context.io = {...io, remove: file => { if (file === cfg && fail) { fail = false; throw new Error('Access denied.'); } return io.remove(file); }};
+  await assert.rejects(uninstallTheme(context), /Access denied\. Nothing was changed\./);
+  assert.deepEqual(await files(), installed);
+
+  context.io = io;
+  const receipt = await uninstallTheme(context);
+  assert.ok(Object.keys(receipt.settings).length, 'returns the managed preferences for the browser to restore');
+  const after = await files(), user = path.join('profile', 'user.js');
+  assert.equal(Buffer.from(after[user], 'base64').toString(), '// personal settings\nuser_pref("added.later", true);\n');
+  delete after[user];
+  delete before[user];
+  assert.deepEqual(after, before);
+});
+test('reinstall finds this system\'s installer in a release, before and after the rename', async () => {
+  const { installerAsset } = await import('../payload/content/update-data.mjs');
+  const release = (...names) => ({tag_name: 'v1.2.0', assets: [...names, 'SHA256SUMS.txt'].map(name => ({name}))});
+  const all = release('Zennia-1.2.0-Windows.exe', 'Zennia-1.2.0-macOS-arm64.dmg', 'Zennia-1.2.0-macOS-x64.dmg', 'Zennia-1.2.0-Linux-x86_64.AppImage', 'Zennia-1.2.0-Update.json');
+  assert.equal(installerAsset(all, 'WINNT', 'x86_64-msvc').asset.name, 'Zennia-1.2.0-Windows.exe');
+  assert.equal(installerAsset(all, 'Darwin', 'aarch64-gcc3').asset.name, 'Zennia-1.2.0-macOS-arm64.dmg');
+  assert.equal(installerAsset(all, 'Darwin', 'x86_64-gcc3').asset.name, 'Zennia-1.2.0-macOS-x64.dmg');
+  assert.equal(installerAsset(all, 'Linux', 'x86_64-gcc3').asset.name, 'Zennia-1.2.0-Linux-x86_64.AppImage');
+  assert.equal(installerAsset(all, 'WINNT', 'x86_64-msvc').checksum.name, 'SHA256SUMS.txt');
+  assert.equal(installerAsset(release('Arc-UI-Zen-1.2.0-Windows.exe'), 'WINNT', 'x86_64-msvc').asset.name, 'Arc-UI-Zen-1.2.0-Windows.exe');
+  assert.equal(installerAsset(all, 'Linux', 'aarch64-gcc3'), null, 'no arm64 AppImage');
+  assert.equal(installerAsset({tag_name: 'v1.2.0', assets: [{name: 'Zennia-1.2.0-Windows.exe'}]}, 'WINNT', 'x86_64-msvc'), null, 'no checksums');
+});
+test('reinstall removes Zennia only once its verified installer is downloaded, then opens it and quits', async () => {
+  const helpers = await import('../payload/content/update-data.mjs');
+  const fs = require('node:fs'), vm = require('node:vm');
+  const digest = '\xab'.repeat(32), name = 'Zennia-1.2.0-Windows.exe';
+  const url = file => `https://github.com/${helpers.REPO}/releases/download/v1.2.0/${file}`;
+  const release = {tag_name: 'v1.2.0', assets: [{name, browser_download_url: url(name)}, {name: 'SHA256SUMS.txt', browser_download_url: url('SHA256SUMS.txt')}]};
+  const receipt = {version: '1.2.0', resources: 'C:/Zen', profile: 'C:/profile', settings: {}, originalPrefs: {}};
+  const events = [];
+  let stayOpen = false, sums = `${'ab'.repeat(32)}  ${name}\n`;
+  const instance = {
+    '@mozilla.org/supports-PRBool;1': () => ({data: false}),
+    '@mozilla.org/file/local;1': () => ({initWithPath(path) { this.path = path; }, reveal() { events.push(['reveal', this.path]); }}),
+    '@mozilla.org/network/file-input-stream;1': () => ({init() {}, close() {}}),
+    '@mozilla.org/security/hash;1': () => ({SHA256: 4, init() {}, updateFromStream() {}, finish: () => digest}),
+    '@mozilla.org/process/util;1': () => ({init(file) { this.file = file; }, runwAsync: args => events.push(['open', ...args])}),
+  };
+  const scope = {
+    ...helpers, console, setTimeout, clearTimeout, AbortController,
+    Cc: new Proxy({}, {get: (_, id) => ({createInstance: () => instance[id]()})}),
+    Ci: {nsIAppStartup: {eAttemptQuit: 1, eRestart: 16}},
+    Services: {
+      appinfo: {OS: 'WINNT', XPCOMABI: 'x86_64-msvc', invalidateCachesOnRestart() {}},
+      obs: {notifyObservers: (cancel, topic, data) => { events.push([topic, data]); cancel.data = stayOpen; }},
+      startup: {quit: flags => events.push(['quit', flags])},
+      prefs: {savePrefFile() {}},
+      dirsvc: {get: () => ({path: 'C:/Zen'})},
+    },
+    ChromeUtils: {importESModule: () => ({uninstallTheme: async () => { events.push(['uninstall']); return receipt; }})},
+    IOUtils: {
+      readJSON: async () => receipt,
+      createUniqueDirectory: async () => 'C:/tmp/zennia-download',
+      remove: async path => events.push(['delete', path]),
+    },
+    PathUtils: {profileDir: 'C:/profile', tempDir: 'C:/tmp', join: (...parts) => parts.join('/'), parent: path => path.slice(0, path.lastIndexOf('/'))},
+    Downloads: {createDownload: async ({source}) => ({start: async () => events.push(['download', source.url])})},
+    fetch: async address => ({ok: true, json: async () => release, text: async () => sums, address}),
+  };
+  vm.runInNewContext(fs.readFileSync(require.resolve('../payload/content/updater.sys.mjs'), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('export function updateContext', 'function updateContext').replace('export const ZenniaUpdater =', 'globalThis.updater ='), scope);
+  const updater = scope.updater;
+
+  sums = `${'cd'.repeat(32)}  ${name}\n`;
+  await assert.rejects(updater.reinstall(), /did not match its checksum/);
+  assert.equal(updater.state, 'idle');
+  assert.ok(!events.some(([kind]) => kind === 'uninstall' || kind === 'quit'), 'a bad download removes nothing');
+  assert.deepEqual(events.at(-1), ['delete', 'C:/tmp/zennia-download']);
+
+  sums = `${'ab'.repeat(32)}  ${name}\n`;
+  events.length = 0; stayOpen = true;
+  await updater.reinstall();
+  assert.equal(updater.state, 'idle');
+  assert.ok(!events.some(([kind]) => kind === 'uninstall' || kind === 'quit'), 'a page that keeps Zen open stops it');
+  assert.deepEqual(events.at(-1), ['delete', 'C:/tmp/zennia-download'], 'and the unused installer is deleted');
+
+  events.length = 0; stayOpen = false;
+  await updater.reinstall();
+  assert.deepEqual(events, [
+    ['download', url(name)],
+    ['quit-application-requested', null],
+    ['uninstall'],
+    ['open', '--installation', 'C:/Zen', '--profile', 'C:/profile'],
+    ['quit', 1],
+  ]);
+
+  events.length = 0; updater.state = 'idle';
+  await updater.uninstall();
+  assert.deepEqual(events, [['quit-application-requested', 'restart'], ['uninstall'], ['quit', 17]]);
+});

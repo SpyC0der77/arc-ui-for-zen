@@ -19,6 +19,21 @@ export function newer(a, b) {
 export function assetName(version, os, arch) {
   return `Zennia-${version.replace(/^v/, '')}-Update.json`;
 }
+/**
+ * A release's installer for this system and its checksum list, or null. The names are
+ * electron-builder's (package.json build); releases before the rename call it Arc-UI-Zen.
+ */
+export function installerAsset(release, os, abi) {
+  const version = release.tag_name.replace(/^v/, '');
+  const arm = abi.startsWith('aarch64');
+  const suffix = os === 'WINNT' ? 'Windows.exe'
+    : os === 'Darwin' ? `macOS-${arm ? 'arm64' : 'x64'}.dmg`
+    : `Linux-${arm ? 'arm64' : 'x86_64'}.AppImage`;
+  const names = [`Zennia-${version}-${suffix}`, `Arc-UI-Zen-${version}-${suffix}`];
+  const asset = release.assets?.find(a => names.includes(a.name));
+  const checksum = release.assets?.find(a => a.name === 'SHA256SUMS.txt');
+  return asset && checksum ? { asset, checksum } : null;
+}
 
 export function releaseTrack(value, current) {
   return ['stable', 'beta'].includes(value) ? value : current.includes('-') ? 'beta' : 'stable';
