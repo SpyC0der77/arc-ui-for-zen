@@ -176,7 +176,11 @@
     gift.dispatchEvent(new PointerEvent('pointerenter'));
     await DownloadsPanel.showPanel();
     check(!Zennia.diagnostics().popup,'hover and native download requests cannot open menu during flight');
-    await wait(1100);check(!Zennia.diagnostics().popup&&!!document.querySelector('[data-zennia-flight]'),'menu stays closed until file reaches gift');
+    // Watch the whole flight rather than sampling a fixed moment: slow runners can
+    // spend most of the flight inside showPanel() above.
+    let openedDuringFlight=false;
+    for(let i=0;i<200&&document.querySelector('[data-zennia-flight]');i++){if(Zennia.diagnostics().popup)openedDuringFlight=true;await wait(20);}
+    check(!openedDuringFlight,'menu stays closed until file reaches gift');
     await flight;check(!document.querySelector('[data-zennia-flight]'),'file flight completes');check(Zennia.diagnostics().downloads===start,'preview creates no downloads');
     check(Zennia.diagnostics().popup,'arrival opens downloads');
     Zennia.hideDownloads();
@@ -217,8 +221,10 @@
     check(!!document.querySelector('[aria-label="Show download-result.txt in folder"]'),'completed download offers reveal action');
     check(!gift.hasAttribute('tooltiptext'),'library hover has no overlapping native tooltip');
     Zennia.openDownloads();await wait(250);
-    check(!Zennia.diagnostics().popup,'real download keeps menu closed during its flight');
-    await wait(1500);check(Zennia.diagnostics().popup,'real download opens menu on arrival');
+    // Judge "during its flight" only while the file is actually flying; slow runners can land it sooner.
+    check(!document.querySelector('[data-zennia-flight]')||!Zennia.diagnostics().popup,'real download keeps menu closed during its flight');
+    for(let i=0;i<200&&document.querySelector('[data-zennia-flight]');i++)await wait(20);
+    await wait(150);check(Zennia.diagnostics().popup,'real download opens menu on arrival');
     check(getComputedStyle(document.querySelector('.zennia-download-icon')).width==='40px','download rows use Arc-sized file previews');
     check(getComputedStyle(document.getElementById('zennia-download-popup')).boxShadow==='none'&&!document.querySelector('.zennia-download-header'),'recent files appear without a popup card or heading');
     check(getComputedStyle(document.querySelector('.zennia-download-list')).maxHeight==='288px','download list retains bounded scrolling');

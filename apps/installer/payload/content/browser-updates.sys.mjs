@@ -144,14 +144,15 @@ export const ZenniaBrowserUpdates = {
     if (!supports(Services.appinfo.version, profile)) return;
     const allowed = savedPref(profile, ALLOWED);
     this.closedGuard = { profile: profilePath, allowed };
-    const observer = {
-      observe: subject => {
-        const version = subject?.QueryInterface?.(Ci.nsIUpdate)?.appVersion;
-        if (!VERSION.test(version ?? '') || version === Services.appinfo.version || version === allowed || supports(version, profile)) return;
-        void this.cancel(version).catch(error => console.warn('[Zennia browser updates]', error));
-      },
+    const guard = version => {
+      if (!VERSION.test(version ?? '') || version === Services.appinfo.version || version === allowed || supports(version, profile)) return;
+      void this.cancel(version).catch(error => console.warn('[Zennia browser updates]', error));
     };
+    const observer = { observe: subject => guard(subject?.QueryInterface?.(Ci.nsIUpdate)?.appVersion) };
     for (const topic of ['update-downloading', 'update-downloaded', 'update-staged']) Services.obs.addObserver(observer, topic);
+    // An earlier task run may have left a download behind; it would install on the next start.
+    const um = manager();
+    for (const update of [um.downloadingUpdate, um.readyUpdate]) guard(update?.appVersion);
   },
 
   hidePrompts() {

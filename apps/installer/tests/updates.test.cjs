@@ -328,7 +328,7 @@ function loadGuard({supported = ['1.24.1b', '1.24.3b'], auto = true, locked = fa
     exists: () => parts.at(-2) === 'zen-versions' && state.supported.has(parts.at(-1).replace(/\.json$/, ''))});
   state.savedPrefs = '';
   const scope = {console, Ci: {nsIFile: {}, nsIUpdate: {}, nsIApplicationUpdateService: {}, nsIUpdateManager: {}},
-    Cu: {readUTF8File: () => state.savedPrefs},
+    Cu: {readUTF8File: file => { state.readFrom = file.parts.join('/'); return state.savedPrefs; }},
     Cc: {'@mozilla.org/updates/update-service;1': {getService: () => service}, '@mozilla.org/updates/update-manager;1': {getService: () => manager},
       '@mozilla.org/file/local;1': {createInstance: () => file()}},
     Services: {prefs: api, appinfo: {version: '1.24.1b'}, dirsvc: {get: () => file()}, obs: {addObserver: (o, topic) => { observers[topic] = o; }}},
@@ -414,6 +414,7 @@ test('while Zen is closed, its background update task cannot download an unsuppo
   g.state.savedPrefs = 'user_pref("zennia.browserUpdates.allowed", "1.26b");\n';
   g.guard.startWhileClosed('C:\\Zennia profile');
   assert.equal(g.guard.closedGuard.allowed, '1.26b', "the user's Update anyway choice is read from Zennia's prefs.js");
+  assert.equal(g.state.readFrom, 'C:\\Zennia profile/prefs.js', "it reads Zennia's profile, not the task's temporary one");
   for (const version of ['1.24.3b', '1.26b']) { g.manager.downloadingUpdate = g.update(version); await g.fire('update-downloading', version); }
   assert.deepEqual(g.calls, [], 'supported and allowed versions download as usual');
   g.manager.downloadingUpdate = g.update('1.25b');
@@ -426,4 +427,8 @@ test('while Zen is closed, its background update task cannot download an unsuppo
   const paused = loadGuard({supported: ['1.24.3b']});
   paused.guard.startWhileClosed('C:\\Zennia profile');
   assert.equal(paused.guard.closedGuard, undefined);
+  // A download an earlier task run left behind is discarded at once.
+  const leftover = loadGuard({pending: {ready: {appVersion: '1.25b'}}});
+  leftover.guard.startWhileClosed('C:\\Zennia profile');await leftover.settle();
+  assert.deepEqual(leftover.calls, ['cleanup-ready']);
 });
