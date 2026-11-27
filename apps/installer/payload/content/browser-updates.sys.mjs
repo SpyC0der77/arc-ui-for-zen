@@ -1,0 +1,163 @@
+// Holds back a Zen update to a version Zennia does not support yet.
+// Zen keeps updating normally to supported versions. When it starts downloading an
+// unsupported one, the download is cancelled and Zen's automatic updates pause until
+// Zennia supports that version or the user chooses to update anyway. Zennia then
+// pauses itself on the new version and turns back on once a release supports it.
+// One instance per browser process; windows only render its state. While Zen is
+// closed, startWhileClosed() guards Zen's background update task instead.
+import { AppMenuNotifications } from 'resource://gre/modules/AppMenuNotifications.sys.mjs';
+import { UpdateUtils } from 'resource://gre/modules/UpdateUtils.sys.mjs';
+
+const HELD = 'zennia.browserUpdates.held';
+const ALLOWED = 'zennia.browserUpdates.allowed';
+const RESTORE_AUTO = 'zennia.browserUpdates.restoreAuto';
+const ZEN_PROMPTS = /^update-(available|downloading|restart)$/;
+const VERSION = /^\d+\.\d+(?:\.\d+)?[a-z]?$/;
+const TOPICS = ['update-available', 'update-downloading', 'update-downloaded', 'update-staged', 'appMenu-notifications'];
+
+// `profile` defaults to the running profile; the background task passes Zennia's.
+export function supports(version, profile = Services.dirsvc.get('ProfD', Ci.nsIFile)) {
+  if (typeof version !== 'string' || !VERSION.test(version)) return false;
+  const data = profile.clone();
+  for (const part of ['chrome', 'zennia', 'zen-versions', version + '.json']) data.append(part);
+  return data.exists();
+}
+
+// Reads a string pref from a profile's prefs.js without loading that profile.
+function savedPref(profile, name) {
+  try {
+    const file = profile.clone(); file.append('prefs.js');
+    const start = `user_pref(${JSON.stringify(name)}, "`;
+    const line = Cu.readUTF8File(file).split(/\r?\n/).find(text => text.startsWith(start));
+    return line ? line.slice(start.length, line.lastIndexOf('");')) : '';
+  } catch { return ''; }
+}
+
+const service = () => Cc['@mozilla.org/updates/update-service;1'].getService(Ci.nsIApplicationUpdateService);
+const manager = () => Cc['@mozilla.org/updates/update-manager;1'].getService(Ci.nsIUpdateManager);
+// The update manager has only async getters for these, in every supported Zen.
+const pending = async um => [await um.getDownloadingUpdate(), await um.getReadyUpdate()].filter(Boolean);
+
+export const ZenniaBrowserUpdates = {
+  // The Zen version on hold, if any, and the update Zen offered for it.
+  held: null, update: null, listeners: new Set(), started: false,
+  emit() { for (const listener of this.listeners) listener(); },
+
+  start() {
+    if (this.started) return;
+    this.started = true;
+    // An update the user allowed has been installed or is supported now.
+    const allowed = Services.prefs.getStringPref(ALLOWED, '');
+    if (allowed && (allowed === Services.appinfo.version || supports(allowed))) Services.prefs.clearUserPref(ALLOWED);
+    for (const topic of TOPICS) Services.obs.addObserver(this, topic);
+    this.held = Services.prefs.getStringPref(HELD, '') || null;
+    void this.resume();
+  },
+
+  async resume() {
+    try {
+      // A held version Zennia now supports goes ahead; so do updates that were
+      // already downloading or downloaded before this check existed.
+      // The held download was discarded, so ask Zen to look for it again.
+      if (this.held && supports(this.held) && await this.release()) service().checkForBackgroundUpdates();
+      const um = manager();
+      for (const update of await pending(um)) await this.review(update, 'pending');
+    } catch (error) { console.warn('[Zennia browser updates]', error); }
+  },
+
+  observe(subject, topic) {
+    if (topic === 'appMenu-notifications') { if (this.held) this.hidePrompts(); return; }
+    const update = subject?.QueryInterface?.(Ci.nsIUpdate);
+    if (update) void this.review(update, topic).catch(error => console.warn('[Zennia browser updates]', error));
+  },
+
+  async review(update, topic) {
+    const version = update.appVersion;
+    if (!VERSION.test(version ?? '') || version === Services.appinfo.version) return;
+    if (supports(version) || Services.prefs.getStringPref(ALLOWED, '') === version) {
+      // Zen offered this update while its automatic updates were paused: download it now.
+      // Only the held version's own update ends its hold; resume() releases one Zennia now supports.
+      if (this.held === version && await this.release() && topic === 'update-available') await service().downloadUpdate(update);
+      return;
+    }
+    // While a version is held Zen's automatic updates are paused, so a new download
+    // of it was started by the user from Zen's own update controls.
+    if (this.held === version && !this.holding && topic === 'update-downloading' && !await UpdateUtils.getAppUpdateAutoEnabled()) { await this.allow(); return; }
+    this.update = update;
+    this.holding = true;
+    try { await this.hold(version); } finally { this.holding = false; }
+  },
+
+  // Discards Zen's download of `version`, finished or not, so it cannot install.
+  async cancel(version) {
+    const um = manager();
+    if ((await um.getDownloadingUpdate())?.appVersion === version) {
+      await service().stopDownload();
+      await um.cleanupDownloadingUpdate();
+    }
+    if ((await um.getReadyUpdate())?.appVersion === version) await um.cleanupReadyUpdate();
+  },
+
+  async hold(version) {
+    await this.cancel(version);
+    if (!UpdateUtils.appUpdateAutoSettingIsLocked() && await UpdateUtils.getAppUpdateAutoEnabled()) {
+      Services.prefs.setBoolPref(RESTORE_AUTO, true);
+      await UpdateUtils.setAppUpdateAutoEnabled(false);
+    }
+    Services.prefs.setStringPref(HELD, version);
+    this.held = version; this.allowed = null;
+    this.hidePrompts();
+    this.emit();
+  },
+
+  // Ends a hold: Zen's own automatic update setting comes back as it was.
+  // Returns whether automatic updates were turned back on.
+  async release() {
+    Services.prefs.clearUserPref(HELD);
+    this.held = null; this.update = null;
+    let restored = false;
+    if (Services.prefs.getBoolPref(RESTORE_AUTO, false)) {
+      Services.prefs.clearUserPref(RESTORE_AUTO);
+      if (!UpdateUtils.appUpdateAutoSettingIsLocked()) { await UpdateUtils.setAppUpdateAutoEnabled(true); restored = true; }
+    }
+    this.emit();
+    return restored;
+  },
+
+  // The user chose to update Zen anyway: Zennia pauses on that version until it supports it.
+  async allow() {
+    const version = this.held, update = this.update;
+    if (!version) return;
+    Services.prefs.setStringPref(ALLOWED, version);
+    await this.release();
+    this.allowed = version; this.emit();
+    if (update) await service().downloadUpdate(update);
+    else service().checkForBackgroundUpdates();
+  },
+
+  // Zen's background update task runs while Zen is closed, in a temporary profile.
+  // A version it downloads installs on the next start, before Zennia loads, so cancel
+  // unsupported ones here. Zen holds them as usual the next time it runs and checks.
+  // The user's "Update anyway" choice, kept in Zennia's prefs.js, still applies.
+  startWhileClosed(profilePath) {
+    const profile = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsIFile);
+    profile.initWithPath(profilePath);
+    // A paused Zennia does not hold Zen back.
+    if (!supports(Services.appinfo.version, profile)) return;
+    const allowed = savedPref(profile, ALLOWED);
+    this.closedGuard = { profile: profilePath, allowed };
+    const guard = version => {
+      if (!VERSION.test(version ?? '') || version === Services.appinfo.version || version === allowed || supports(version, profile)) return;
+      void this.cancel(version).catch(error => console.warn('[Zennia browser updates]', error));
+    };
+    const observer = { observe: subject => guard(subject?.QueryInterface?.(Ci.nsIUpdate)?.appVersion) };
+    for (const topic of ['update-downloading', 'update-downloaded', 'update-staged']) Services.obs.addObserver(observer, topic);
+    // An earlier task run may have left a download behind; it would install on the next start.
+    void pending(manager()).then(updates => { for (const update of updates) guard(update.appVersion); })
+      .catch(error => console.warn('[Zennia browser updates]', error));
+  },
+
+  hidePrompts() {
+    if (AppMenuNotifications.notifications.some(notification => ZEN_PROMPTS.test(notification.id))) AppMenuNotifications.removeNotification(ZEN_PROMPTS);
+  },
+};

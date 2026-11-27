@@ -14,7 +14,8 @@
   "unavailable": {
     "archive": ["zen.library.history.closed-tabs"],
     "library space background": ["zen-library-space-background"],
-    "color editor window": ["zen-keep-opener-active"]
+    "color editor window": ["zen-keep-opener-active"],
+    "scroll-to-selected-tab control": ["zen-workspace-scroll-to-tab-icon"]
   },
   "runtime": {
     "windows-x64": {

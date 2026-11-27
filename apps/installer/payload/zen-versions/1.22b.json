@@ -39,7 +39,8 @@
     ],
     "compact sidebar transition": ["--zen-compact-hidden-translate"],
     "color editor window": ["zen-keep-opener-active"],
-    "accent button colors": ["--zen-accent-button-color", "--zen-accent-button-background"]
+    "accent button colors": ["--zen-accent-button-color", "--zen-accent-button-background"],
+    "scroll-to-selected-tab control": ["zen-workspace-scroll-to-tab-icon"]
   },
   "runtime": {
     "windows-x64": {

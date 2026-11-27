@@ -17,6 +17,7 @@
 - Validate imported appearance values, preview before applying, and preserve existing presets when names match.
 - On Windows, use macOS-style overlay scrollbars that hide until used and momentum scrolling that eases like a Mac trackpad. These are new managed preferences, so existing Windows installations cannot take this release as an in-place update: run the installer again to update.
 - On Windows and Linux, suggest the SF Pro family when the browser font is Default, with a button that selects it.
+- Hold back Zen updates to versions Zennia does not support yet, with a notification and an **Update Zen anyway** button, including while Zen is closed, when Zen's Windows background updater could otherwise download one. After such an update, Zennia pauses, installs its newest release once that supports the new version, and asks for a restart to turn back on. This release changes the startup loader, so existing installations must run the installer once to update.
 
 ## v0.1.8-beta.10
 

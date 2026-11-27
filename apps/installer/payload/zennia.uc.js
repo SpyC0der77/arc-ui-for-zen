@@ -72,6 +72,7 @@
   const ui = install("shared/ui", "ZenniaUI", { createMotion });
   const { el, icon, nudge, button, downloadButton } = ui;
   install('features/updates/updates', 'ZenniaUpdates', { el, icon, PrivateBrowsingUtils });
+  install('features/updates/browser-updates', 'ZenniaBrowserUpdateNotice', { PrivateBrowsingUtils });
   const status = el("div", {
     id: "zennia-live-status",
     role: "status",

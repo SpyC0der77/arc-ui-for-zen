@@ -49,7 +49,14 @@ async function refreshVersions(){
   $('review-versions').textContent=info.installedVersion
    ? 'Zennia installed: '+info.installedVersion+'. '+(info.installedVersion===info.targetVersion?'Reinstall version: ':'Install version: ')+info.targetVersion+'.'
    : 'Zennia is not installed in this profile. Install version: '+info.targetVersion+'.';
+  $('review-versions').textContent+=pausedNote(info);
  }catch(error){if(JSON.stringify(choice)===JSON.stringify(selection()))$('review-versions').textContent='Could not read installed version. '+error.message;}
+}
+// Says why an installed Zennia is not loading, usually after Zen updated itself.
+function pausedNote(info){
+ if(info.paused==='startup-files-missing')return ' Paused: reinstall to repair.';
+ if(info.paused!=='unsupported-zen')return '';
+ return info.installerSupportsZen?' Paused on Zen '+info.zenVersion+': reinstall to resume.':' Paused until Zennia supports Zen '+info.zenVersion+'.';
 }
 function status(text,error=false){errorSelection=error?selection():null;$('status').textContent=text;$('review-error').textContent=error?text:'';$('review-error').hidden=!error;for(const copy of document.querySelectorAll('.status-copy')){copy.textContent=error&&currentStep==='review'?'Review the error above and try again.':text;copy.dataset.error=String(error);}}
 function selectionChanged(key){

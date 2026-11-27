@@ -194,12 +194,48 @@ for(const version of engine.SUPPORTED_VERSIONS)test('installs and removes suppor
  await assert.rejects(fs.access(engine.receiptFile(f.profile)));
 });
 test('loader and installer enforce the same exact versions',async()=>{
- // The loader accepts a Zen version only when its data file was installed.
+ // The startup script loads Zennia only when this Zen version's data file was installed;
+ // any other version gets recovery, which changes nothing in Zen's interface.
+ const start=await fs.readFile(path.join(__dirname,'../payload/zennia-start.js'),'utf8');
+ assert.match(start,/\["chrome", "zennia", "zen-versions", version \+ "\.json"\]/);
+ assert.match(start,/supported \? "chrome:\/\/zennia-runtime\/content\/zennia\.uc\.js" : "chrome:\/\/zennia\/content\/features\/updates\/recovery\.js"/);
+ // The loader in the Zen folder only hands each window to that script.
  const cfg=await fs.readFile(path.join(__dirname,'../payload/zennia.cfg'),'utf8');
- assert.match(cfg,/data\.append\("zen-versions"\); data\.append\(version \+ "\.json"\);/);
- assert.match(cfg,/!data\.exists\(\)\) return;/);
+ assert.match(cfg,/loadSubScript\("chrome:\/\/zennia-runtime\/content\/zennia-start\.js", win/);
+ assert.doesNotMatch(cfg,/zennia\.uc\.js/);
+ // In Zen's background update task it finds Zennia's profile and runs only the update guard.
+ assert.match(cfg,/task !== "backgroundupdate"\) return;/);
+ assert.match(cfg,/importESModule\("chrome:\/\/zennia-runtime\/content\/zennia-background\.sys\.mjs"\)\.start\(profile\)/);
  const files=(await fs.readdir(path.join(__dirname,'../payload/zen-versions'))).filter(name=>name!=='base.json').map(name=>name.replace(/\.json$/,''));
  assert.deepEqual(files.sort(),[...engine.SUPPORTED_VERSIONS].sort());
+});
+test('inspect reports a paused install after Zen updates or is reinstalled',async t=>{
+ const f=await fixture(t);await engine.install(f.app,f.profile,f.options);
+ const info=await engine.inspect(f.app,f.profile);
+ assert.equal(info.zenVersion,'1.23.4b');assert.equal(info.installerSupportsZen,true);assert.equal(info.paused,undefined);
+ // Zen updated to a version this install has no data for.
+ await fs.writeFile(path.join(f.resources,'application.ini'),'[App]\nVersion=9.9b\n');
+ assert.deepEqual(await engine.inspect(f.app,f.profile).then(i=>[i.paused,i.zenVersion,i.installerSupportsZen]),['unsupported-zen','9.9b',false]);
+ // Zen updated to a version the installer supports but the installed theme predates.
+ const supported=engine.SUPPORTED_VERSIONS.at(-1),data=path.join(f.profile,'chrome','zennia','zen-versions',supported+'.json');
+ await fs.writeFile(path.join(f.resources,'application.ini'),`[App]\nVersion=${supported}\n`);await fs.rename(data,data+'.old');
+ assert.deepEqual(await engine.inspect(f.app,f.profile).then(i=>[i.paused,i.installerSupportsZen]),['unsupported-zen',true]);
+ await fs.rename(data+'.old',data);
+ // Zen was replaced, taking the startup files with it; a reinstall repairs it.
+ await fs.rm(path.join(f.resources,'zennia.cfg'));
+ assert.equal((await engine.inspect(f.app,f.profile)).paused,'startup-files-missing');
+ // Replaced by an unsupported version too: that is the reason a reinstall cannot fix.
+ const ini=path.join(f.resources,'application.ini'),supportedIni=await fs.readFile(ini);
+ await fs.writeFile(ini,'[App]\nVersion=9.9b\n');
+ assert.equal((await engine.inspect(f.app,f.profile)).paused,'unsupported-zen');
+ await fs.writeFile(ini,supportedIni);
+ await engine.install(f.app,f.profile,f.options);
+ assert.equal((await engine.inspect(f.app,f.profile)).paused,undefined);
+ // An installer without support for the new Zen version changes nothing; removal still works.
+ await fs.writeFile(path.join(f.resources,'application.ini'),'[App]\nVersion=9.9b\n');
+ await assert.rejects(engine.install(f.app,f.profile,f.options),/supports Zen/);
+ await engine.remove(f.app,f.profile,f.options);
+ assert.equal((await engine.inspect(f.app,f.profile)).paused,undefined);
 });
 test('rejects unsupported versions before modifying',async t=>{const f=await fixture(t);await fs.writeFile(path.join(f.resources,'application.ini'),'[App]\nVersion=99\n');await assert.rejects(engine.install(f.app,f.profile,f.options),/supports Zen/);await assert.rejects(fs.access(engine.receiptFile(f.profile)));});
 test('refuses existing startup loaders',async t=>{const f=await fixture(t);const dir=path.join(f.resources,'defaults','pref');await fs.mkdir(dir,{recursive:true});await fs.writeFile(path.join(dir,'other.js'),'pref("general.config.filename", "other.cfg");');await assert.rejects(engine.install(f.app,f.profile,f.options),/Another AutoConfig/);await assert.rejects(fs.access(engine.receiptFile(f.profile)));});

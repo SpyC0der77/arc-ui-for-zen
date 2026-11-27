@@ -3,7 +3,8 @@
   "notes": "Has the native library. The library's per-space background and the color editor's keep-opener flag arrived in 1.24b, so those rules have nothing to match here.",
   "unavailable": {
     "library space background": ["zen-library-space-background"],
-    "color editor window": ["zen-keep-opener-active"]
+    "color editor window": ["zen-keep-opener-active"],
+    "scroll-to-selected-tab control": ["zen-workspace-scroll-to-tab-icon"]
   },
   "runtime": {
     "windows-x64": {

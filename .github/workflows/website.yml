@@ -1,7 +1,7 @@
 name: Build website
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - apps/website/**
       - apps/installer/payload/zen-versions/**
