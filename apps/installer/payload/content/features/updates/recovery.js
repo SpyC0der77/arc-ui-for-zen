@@ -52,7 +52,7 @@
     updater.listeners.add(render);
     render();
   });
-  // Later checks are limited to one every six hours across windows.
+  // Ask hourly; the updater itself fetches releases at most every six hours.
   const timer = window.setInterval(() => void updater.check(), 60 * 60 * 1000);
   window.ZenniaRecovery = { destroy() { window.clearInterval(timer); updater.listeners.delete(render); toast.close(window, ID); } };
   window.addEventListener("unload", () => window.ZenniaRecovery.destroy(), { once: true });

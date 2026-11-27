@@ -123,11 +123,12 @@ async function inspect(installation,profile) {
     ...(font.PRESETS.has(receipt?.fontPreset)?{fontPreset:receipt.fontPreset}:{})};
 }
 // Why an installed Zennia is not loading, usually after Zen updated or was reinstalled.
+// An unsupported version is reported first: a reinstall cannot repair that.
 async function pausedReason(target) {
-  const startup=[path.join(target.resources,'defaults','pref',NAMES.autoconfig),path.join(target.resources,NAMES.cfg)];
-  if(!(await Promise.all(startup.map(exists))).every(Boolean))return {paused:'startup-files-missing'};
   const data=path.join(target.profile,'chrome',NAMES.root,'zen-versions',target.version+'.json');
   if(!versions.VERSION_PATTERN.test(target.version)||!await exists(data))return {paused:'unsupported-zen'};
+  const startup=[path.join(target.resources,'defaults','pref',NAMES.autoconfig),path.join(target.resources,NAMES.cfg)];
+  if(!(await Promise.all(startup.map(exists))).every(Boolean))return {paused:'startup-files-missing'};
   return {};
 }
 function missingFont(){return new Error('The browser font from the previous install is missing. Choose the font again before reinstalling, or choose Default to remove it.');}

@@ -221,6 +221,13 @@ test('inspect reports a paused install after Zen updates or is reinstalled',asyn
  // Zen was replaced, taking the startup files with it; a reinstall repairs it.
  await fs.rm(path.join(f.resources,'zennia.cfg'));
  assert.equal((await engine.inspect(f.app,f.profile)).paused,'startup-files-missing');
+ // Replaced by an unsupported version too: that is the reason a reinstall cannot fix.
+ const ini=path.join(f.resources,'application.ini'),supportedIni=await fs.readFile(ini);
+ await fs.writeFile(ini,'[App]
+Version=9.9b
+');
+ assert.equal((await engine.inspect(f.app,f.profile)).paused,'unsupported-zen');
+ await fs.writeFile(ini,supportedIni);
  await engine.install(f.app,f.profile,f.options);
  assert.equal((await engine.inspect(f.app,f.profile)).paused,undefined);
  // An installer without support for the new Zen version changes nothing; removal still works.
