@@ -7,7 +7,7 @@ const net = require('node:net');
 const path = require('node:path');
 const engine = require('../installer/engine.cjs');
 const { Marionette, decode, encode } = require('../scripts/marionette.cjs');
-const { drift, parse } = require('../scripts/dev.cjs');
+const { drift, parse, pick } = require('../scripts/dev.cjs');
 const { fixture } = require('./engine-fixture.cjs');
 
 test('Marionette frames decode across chunk boundaries and multibyte text', () => {
@@ -45,6 +45,33 @@ test('Marionette surfaces session refusal and times out when NewSession stalls',
   assert.equal(connections, 2);
 });
 
+test('Marionette closes a session when a command times out after the handshake', async t => {
+  const server = net.createServer(socket => {
+    socket.write(encode({ applicationType: 'gecko', marionetteProtocol: 3 }));
+    socket.once('data', () => {
+      socket.once('data', () => socket.write(encode([1, 2, null, {}])));
+      socket.write(encode([1, 1, null, {}]));
+    });
+    socket.resume();
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const client = await Marionette.connect(server.address().port, { timeout: 2000 });
+  await assert.rejects(client.execute('return true', [], 100), /ExecuteScript timed out after 100 ms/);
+  assert.equal(client.closed, true);
+  await assert.rejects(client.execute('return true'), /connection closed/);
+});
+
+test('development instance selection refuses an app linked outside its version folder', async t => {
+  const target = await fixture(t);
+  const root = path.join(target.root, 'dev-zen');
+  const versionPath = path.join(root, '1.23.4b');
+  await fs.mkdir(versionPath, { recursive: true });
+  await fs.symlink(target.app, path.join(versionPath, 'Zen'), 'junction');
+  await assert.rejects(pick('1.23.4b', root), /symbolic link or junction/);
+});
+
 test('drift reports source and installed payload changes', async t => {
   const target = await fixture(t);
   const payload = path.join(target.root, 'payload');
@@ -69,4 +96,9 @@ test('drift reports source and installed payload changes', async t => {
   const missing = await drift(instance, payload);
   assert.deepEqual(missing.changed, ['zennia.uc.js']);
   assert.deepEqual(missing.removed, ['Local-Only.txt']);
+  await fs.unlink(path.join(payload, 'zennia.cfg'));
+  await fs.unlink(path.join(payload, 'zennia-autoconfig.js'));
+  const missingLoaders = await drift(instance, payload);
+  assert.deepEqual(missingLoaders.missingLoaders, ['zennia.cfg', 'zennia-autoconfig.js']);
+  assert.deepEqual(missingLoaders.removed, ['zennia.cfg', 'zennia-autoconfig.js', 'Local-Only.txt']);
 });

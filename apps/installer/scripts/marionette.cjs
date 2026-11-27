@@ -50,6 +50,7 @@ class Marionette {
       const waiter = this.pending.get(id);
       if (!waiter) continue;
       this.pending.delete(id);
+      clearTimeout(waiter.timer);
       if (error) waiter.reject(Object.assign(new Error(`${error.error}: ${error.message}`), { marionette: error }));
       else waiter.resolve(result);
     }
@@ -58,7 +59,10 @@ class Marionette {
   fail(error) {
     this.closed = true;
     this.handshake.reject(error);
-    for (const waiter of this.pending.values()) waiter.reject(error);
+    for (const waiter of this.pending.values()) {
+      clearTimeout(waiter.timer);
+      waiter.reject(error);
+    }
     this.pending.clear();
   }
 
@@ -87,18 +91,20 @@ class Marionette {
     }
   }
 
-  send(name, params = {}) {
+  send(name, params = {}, timeout = 60000) {
     if (this.closed) return Promise.reject(new Error('Marionette connection closed'));
     const id = this.nextId++;
     return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
-      this.socket.write(encode([0, id, name, params]));
+      const frame = encode([0, id, name, params]);
+      const timer = setTimeout(() => this.socket.destroy(new Error(`Marionette command ${name} timed out after ${timeout} ms`)), timeout);
+      this.pending.set(id, { resolve, reject, timer });
+      this.socket.write(frame);
     });
   }
 
   // Runs chrome-context JavaScript as a function body; `return` sends a value back.
-  async execute(script, args = []) {
-    return (await this.send('WebDriver:ExecuteScript', { script, args })).value;
+  async execute(script, args = [], timeout) {
+    return (await this.send('WebDriver:ExecuteScript', { script, args }, timeout)).value;
   }
 
   // PNG of the browser window's chrome and content (popups are separate windows).
@@ -107,7 +113,7 @@ class Marionette {
   }
 
   async close() {
-    if (!this.closed) await this.send('WebDriver:DeleteSession').catch(() => {});
+    if (!this.closed) await this.send('WebDriver:DeleteSession', {}, 2000).catch(() => {});
     this.socket.destroy();
   }
 }

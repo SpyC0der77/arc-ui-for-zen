@@ -36,17 +36,20 @@ const same = (a, b) => win ? a.toLowerCase() === b.toLowerCase() : a === b;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const rel = file => path.relative(REPO, file) || '.';
 
-function pick(version) {
-  const all = devZen.instances();
-  if (!all.length) throw new Error(`No development instance under ${rel(devZen.ROOT)}. See AGENTS.md.`);
+async function pick(version, root = devZen.ROOT) {
+  const all = devZen.instances(root);
+  if (!all.length) throw new Error(`No development instance under ${rel(root)}. See AGENTS.md.`);
   const found = version ? all.filter(i => i.folder === version) : all;
   if (found.length !== 1)
     throw new Error(version ? `No development instance named ${version}. Found: ${all.map(i => i.folder).join(', ')}`
       : `Several development instances exist; pass --version (${all.map(i => i.folder).join(', ')}).`);
   const instance = found[0];
-  const session = path.join(devZen.ROOT, instance.folder, 'session.json');
+  const session = path.join(root, instance.folder, 'session.json');
+  const { exe, resources } = engine.layout(instance.app);
+  const policy = path.join(resources, 'distribution', 'policies.json');
+  await Promise.all([exe, policy, instance.profile, session].map(engine.assertRealPath));
   const port = fs.existsSync(session) ? JSON.parse(fs.readFileSync(session, 'utf8')).port || 2828 : 2828;
-  return { ...instance, exe: engine.layout(instance.app).exe, session, port };
+  return { ...instance, exe, session, port };
 }
 
 // Process ids of this development app only; any other Zen is ignored.
@@ -67,21 +70,27 @@ const alive = pid => { try { process.kill(pid, 0); return true; } catch (error) 
 // Connects and confirms Marionette belongs to this instance's profile, not another Zen.
 async function connect(instance, timeout = 30000) {
   const client = await Marionette.connect(instance.port, { timeout });
-  const profile = await client.execute("return Services.dirsvc.get('ProfD', Ci.nsIFile).path");
-  if (!same(path.resolve(profile), path.resolve(instance.profile))) {
-    await client.close();
+  try {
+    const profile = await client.execute("return Services.dirsvc.get('ProfD', Ci.nsIFile).path", [], Math.min(timeout, 5000));
+    if (same(path.resolve(profile), path.resolve(instance.profile))) return client;
     throw new Error(`Marionette port ${instance.port} belongs to another Zen (profile ${profile}). Close that session first.`);
+  } catch (error) {
+    await client.close();
+    throw error;
   }
-  return client;
 }
 
 // Compares the installed theme with the source payload, file by file.
 async function drift(instance, payload = PAYLOAD) {
   const receiptFile = engine.receiptFile(instance.profile);
-  if (!fs.existsSync(receiptFile)) return { installed: null, current: false, changed: [], removed: [], reason: 'not installed' };
+  if (!fs.existsSync(receiptFile)) return { installed: null, current: false, changed: [], removed: [], missingLoaders: [], reason: 'not installed' };
   const receipt = JSON.parse(await fsp.readFile(receiptFile, 'utf8'));
   const { resources } = engine.layout(instance.app);
   const root = path.join(instance.profile, 'chrome', engine.NAMES.root);
+  const loaderTargets = new Map([
+    ['zennia.cfg', path.join(resources, 'zennia.cfg')],
+    ['zennia-autoconfig.js', path.join(resources, 'defaults', 'pref', 'zennia-autoconfig.js')],
+  ]);
   const key = file => win ? path.resolve(file).toLowerCase() : path.resolve(file);
   const installed = new Map(receipt.files.map(file => [key(file.path), file.installedHash]));
   const expected = new Set();
@@ -90,8 +99,7 @@ async function drift(instance, payload = PAYLOAD) {
     for (const entry of await fsp.readdir(folder, { withFileTypes: true })) {
       const name = prefix + entry.name;
       if (entry.isDirectory()) { await walk(path.join(folder, entry.name), name + '/'); continue; }
-      const target = name === 'zennia.cfg' ? path.join(resources, name)
-        : name === 'zennia-autoconfig.js' ? path.join(resources, 'defaults', 'pref', name) : path.join(root, name);
+      const target = loaderTargets.get(name) ?? path.join(root, name);
       expected.add(key(target));
       // Changed in the source, or the installed copy was edited or deleted since installing.
       const hash = installed.get(key(target));
@@ -102,16 +110,18 @@ async function drift(instance, payload = PAYLOAD) {
   await walk(payload);
   const fontFiles = [font.STYLES, font.FACE, font.FAMILY].map(file => key(path.join(root, file)));
   const ownsFont = file => fontFiles.some(f => file === f || file.startsWith(f + path.sep));
-  const removed = receipt.files.map(file => file.path).filter(file => {
+  const missingLoaders = [...loaderTargets].filter(([, target]) => !expected.has(key(target))).map(([name]) => name);
+  const removedPayload = receipt.files.map(file => file.path).filter(file => {
     const target = key(file);
     return target.startsWith(key(root) + path.sep) && !expected.has(target) && !ownsFont(target);
   }).map(file => path.relative(root, file).split(path.sep).join('/'));
+  const removed = [...missingLoaders, ...removedPayload];
   const settingsChanged = JSON.stringify(receipt.settings) !== JSON.stringify(versions.settings(instance.version, process.platform, payload));
   const versionChanged = receipt.version !== engine.VERSION;
   const current = !changed.length && !removed.length && !settingsChanged && !versionChanged;
   const reason = [changed.length && `${changed.length} changed`, removed.length && `${removed.length} removed`,
     settingsChanged && 'managed prefs changed', versionChanged && `installer ${receipt.version} → ${engine.VERSION}`].filter(Boolean).join(', ');
-  return { installed: receipt.version, current, changed, removed, reason };
+  return { installed: receipt.version, current, changed, removed, missingLoaders, reason };
 }
 
 async function stop(instance) {
@@ -121,7 +131,7 @@ async function stop(instance) {
   try {
     const client = await connect(instance, 2000);
     // Quit on the next tick so the reply arrives before the connection drops.
-    await client.execute('setTimeout(() => Services.startup.quit(Ci.nsIAppStartup.eAttemptQuit), 0); return true');
+    await client.execute('setTimeout(() => Services.startup.quit(Ci.nsIAppStartup.eAttemptQuit), 0); return true', [], 2000);
     await client.close();
     asked = true;
   } catch (error) {
@@ -193,8 +203,9 @@ async function start(instance) {
 // Waits for the browser window and Zennia to finish starting, then reports problems.
 async function ready(client, instance, launched) {
   let state;
-  for (const end = Date.now() + 20000; Date.now() < end; await sleep(250)) {
-    state = await client.execute("return { loaded: document.readyState === 'complete', zennia: !!window.Zennia, pid: Services.appinfo.processID }").catch(() => null);
+  for (const end = Date.now() + 20000; !client.closed && Date.now() < end; await sleep(250)) {
+    state = await client.execute("return { loaded: document.readyState === 'complete', zennia: !!window.Zennia, pid: Services.appinfo.processID }",
+      [], Math.max(1, end - Date.now())).catch(() => null);
     if (state?.loaded && state.zennia) break;
   }
   if (launched && win && state?.pid) await run(PYTHON, [WINDOW_HELPER, 'settle', String(state.pid)], { windowsHide: true }).catch(() => {});
@@ -209,6 +220,7 @@ async function reload(instance, { force }) {
   const t0 = Date.now();
   const step = label => console.log(`${label} (${((Date.now() - t0) / 1000).toFixed(1)}s)`);
   const state = await drift(instance);
+  if (state.missingLoaders.length) throw new Error(`Restore required payload files before reloading: ${state.missingLoaders.join(', ')}`);
   const running = (await pids(instance)).length > 0;
   if (state.current && !force && running) {
     console.log(`Dev Zen ${instance.folder} already runs the current payload. Use --force to reinstall anyway.`);
@@ -285,7 +297,8 @@ async function status(instance) {
   if (!state.installed) console.log('  Zennia is not installed in this profile.');
   else if (state.current) console.log(`  Zennia ${state.installed} installed and matches the source payload.`);
   else {
-    console.log(`  Zennia ${state.installed} installed; payload differs: ${state.reason}. Run pnpm dev reload.`);
+    const next = state.missingLoaders.length ? 'Restore the required loader files before reloading.' : 'Run pnpm dev reload.';
+    console.log(`  Zennia ${state.installed} installed; payload differs: ${state.reason}. ${next}`);
     const files = [...state.changed, ...state.removed.map(file => `${file} (removed from the source)`)];
     for (const file of files.slice(0, 8)) console.log(`    ${file}`);
     if (files.length > 8) console.log(`    ...${files.length - 8} more`);
@@ -317,7 +330,7 @@ async function main() {
     console.log(lines.slice(0, lines.findIndex(line => !line.startsWith('//'))).map(line => line.slice(3)).join('\n'));
     return;
   }
-  const instance = pick(options.version);
+  const instance = await pick(options.version);
   if (command === 'status') return status(instance);
   if (command === 'reload') return reload(instance, options);
   if (command === 'stop') return console.log(await stop(instance) ? 'Dev Zen closed.' : 'Dev Zen is not running.');

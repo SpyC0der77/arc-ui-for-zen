@@ -60,6 +60,13 @@ u.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND] + [ctypes.c_int] * 4 + 
 HWND_BOTTOM = wintypes.HWND(1)
 BACK = 0x1 | 0x2 | 0x10 | 0x200  # NOSIZE | NOMOVE | NOACTIVATE | NOOWNERZORDER
 SW_SHOWNOACTIVATE = 4
+EVENT_SYSTEM_FOREGROUND = 0x0003
+
+
+def window_pid(h):
+    pid = wintypes.DWORD()
+    u.GetWindowThreadProcessId(h, ctypes.byref(pid))
+    return pid.value
 
 
 def windows(pid, visible=True):
@@ -67,9 +74,7 @@ def windows(pid, visible=True):
 
     @ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
     def enum(h, _):
-        p = wintypes.DWORD()
-        u.GetWindowThreadProcessId(h, ctypes.byref(p))
-        if p.value == pid and (not visible or u.IsWindowVisible(h)):
+        if window_pid(h) == pid and (not visible or u.IsWindowVisible(h)):
             b = ctypes.create_unicode_buffer(256)
             u.GetClassNameW(h, b, 256)
             r = wintypes.RECT()
@@ -86,9 +91,7 @@ def to_back(h):
 
 
 def image_path(h):
-    p = wintypes.DWORD()
-    u.GetWindowThreadProcessId(h, ctypes.byref(p))
-    proc = k.OpenProcess(0x1000, False, p.value)  # PROCESS_QUERY_LIMITED_INFORMATION
+    proc = k.OpenProcess(0x1000, False, window_pid(h))  # PROCESS_QUERY_LIMITED_INFORMATION
     if not proc:
         return ""
     buf = ctypes.create_unicode_buffer(1024)
@@ -98,17 +101,19 @@ def image_path(h):
     return buf.value
 
 
-def give_back(prev):
+def give_back(prev, fg):
     """Return keyboard focus to the window you were using."""
-    fg = u.GetForegroundWindow()
+    if not prev or prev == fg or not u.IsWindow(prev) or u.GetForegroundWindow() != fg:
+        return
     # Only the process that sent the last input may change the foreground; a
     # zero-distance relative mouse move qualifies and does nothing visible.
     u.mouse_event(0x0001, 0, 0, 0, 0)
     a, b = k.GetCurrentThreadId(), u.GetWindowThreadProcessId(fg, None)
     u.AttachThreadInput(a, b, True)
-    ok = u.SetForegroundWindow(prev)
+    if u.GetForegroundWindow() == fg:
+        u.SetForegroundWindow(prev)
     u.AttachThreadInput(a, b, False)
-    if not ok or u.GetForegroundWindow() != prev:
+    if u.GetForegroundWindow() == fg:
         u.SwitchToThisWindow(prev, True)
 
 
@@ -127,10 +132,12 @@ def launch(exe, profile, watch=12):
     end = time.time() + watch
     while time.time() < end:
         fg = u.GetForegroundWindow()
-        if fg and fg != prev and os.path.normcase(image_path(fg)) == target:
-            to_back(fg)
-            if prev and u.IsWindow(prev):
-                give_back(prev)
+        if fg and fg != prev:
+            if os.path.normcase(image_path(fg)) == target:
+                to_back(fg)
+                give_back(prev, fg)
+            else:
+                prev = fg
         time.sleep(0.005)
 
 
@@ -146,26 +153,35 @@ def settle(pid):
 
 def guard(pid):
     prev = u.GetForegroundWindow()
+    if prev and window_pid(prev) == pid:
+        prev = None
     PROC = ctypes.WINFUNCTYPE(None, wintypes.HANDLE, wintypes.DWORD, wintypes.HWND,
                               wintypes.LONG, wintypes.LONG, wintypes.DWORD, wintypes.DWORD)
 
     def cb(hook, event, h, obj, child, thread, ms):
+        nonlocal prev
         if not h or obj != 0:
+            return
+        if event == EVENT_SYSTEM_FOREGROUND:
+            owner = window_pid(h)
+            if owner and owner != pid:
+                prev = h
+            elif owner == pid and u.GetForegroundWindow() == h:
+                to_back(h)
+                give_back(prev, h)
             return
         b = ctypes.create_unicode_buffer(64)
         u.GetClassNameW(h, b, 64)
-        if event == 0x0003:  # EVENT_SYSTEM_FOREGROUND
-            to_back(h)
-            if prev and u.IsWindow(prev):
-                give_back(prev)
-        elif b.value == "MozillaDropShadowWindowClass" or (b.value == "MozillaWindowClass" and event == 0x8002):
+        if b.value == "MozillaDropShadowWindowClass" or (b.value == "MozillaWindowClass" and event == 0x8002):
             to_back(h)
 
     callback = PROC(cb)
     tid = k.GetCurrentThreadId()
     # Stop when the parent closes stdin.
     threading.Thread(target=lambda: (sys.stdin.read(), u.PostThreadMessageW(tid, 0x12, 0, 0)), daemon=True).start()
-    hooks = [u.SetWinEventHook(e, e, None, callback, pid, 0, 0) for e in (0x0003, 0x8002, 0x800B)]
+    # Observe foreground changes across apps, while popup events stay scoped to dev Zen.
+    hooks = [u.SetWinEventHook(e, e, None, callback, owner, 0, 0)
+             for e, owner in ((EVENT_SYSTEM_FOREGROUND, 0), (0x8002, pid), (0x800B, pid))]
     print("ready", flush=True)
     msg = wintypes.MSG()
     while u.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
@@ -180,13 +196,6 @@ def grab(h):
     r = wintypes.RECT()
     u.GetWindowRect(h, ctypes.byref(r))
     w, hh = r.right - r.left, r.bottom - r.top
-    dc = u.GetWindowDC(h)
-    mdc = g.CreateCompatibleDC(dc)
-    bmp = g.CreateCompatibleBitmap(dc, w, hh)
-    old = g.SelectObject(mdc, bmp)
-    u.PrintWindow(h, mdc, 2)  # PW_RENDERFULLCONTENT
-    g.SelectObject(mdc, old)  # GetDIBits needs the bitmap deselected
-
     class BI(ctypes.Structure):
         _fields_ = [("a", ctypes.c_uint32), ("w", ctypes.c_int32), ("h", ctypes.c_int32), ("p", ctypes.c_uint16),
                     ("b", ctypes.c_uint16), ("c", ctypes.c_uint32), ("s", ctypes.c_uint32), ("x", ctypes.c_int32),
@@ -194,10 +203,22 @@ def grab(h):
 
     bi = BI(40, w, -hh, 1, 32, 0, 0, 0, 0, 0, 0)
     buf = ctypes.create_string_buffer(w * hh * 4)
-    lines = g.GetDIBits(mdc, bmp, 0, hh, buf, ctypes.byref(bi), 0)
-    g.DeleteObject(bmp)
-    g.DeleteDC(mdc)
-    u.ReleaseDC(h, dc)
+    dc = u.GetWindowDC(h)
+    mdc = g.CreateCompatibleDC(dc)
+    bmp = g.CreateCompatibleBitmap(dc, w, hh)
+    try:
+        old = g.SelectObject(mdc, bmp)
+        try:
+            rendered = u.PrintWindow(h, mdc, 2)  # PW_RENDERFULLCONTENT
+        finally:
+            g.SelectObject(mdc, old)  # GetDIBits needs the bitmap deselected
+        if not rendered:
+            raise SystemExit(f"PrintWindow could not render dev Zen window {h:#x}")
+        lines = g.GetDIBits(mdc, bmp, 0, hh, buf, ctypes.byref(bi), 0)
+    finally:
+        g.DeleteObject(bmp)
+        g.DeleteDC(mdc)
+        u.ReleaseDC(h, dc)
     if lines != hh:
         raise SystemExit(f"Could not read dev Zen window pixels ({lines}/{hh} scanlines)")
     return Image.frombuffer("RGBA", (w, hh), buf, "raw", "BGRA", 0, 1), (r.left, r.top)
