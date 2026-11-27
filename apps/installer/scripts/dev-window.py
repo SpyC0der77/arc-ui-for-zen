@@ -15,6 +15,7 @@ import subprocess
 import sys
 import threading
 import time
+from contextlib import contextmanager
 from ctypes import wintypes
 
 u = ctypes.windll.user32
@@ -42,6 +43,9 @@ u.SetForegroundWindow.argtypes = [wintypes.HWND]
 u.SwitchToThisWindow.argtypes = [wintypes.HWND, wintypes.BOOL]
 u.SetWinEventHook.restype = wintypes.HANDLE
 u.UnhookWinEvent.argtypes = [wintypes.HANDLE]
+u.SetTimer.argtypes = [wintypes.HWND, ctypes.c_size_t, wintypes.UINT, ctypes.c_void_p]
+u.SetTimer.restype = ctypes.c_size_t
+u.KillTimer.argtypes = [wintypes.HWND, ctypes.c_size_t]
 g.CreateCompatibleDC.argtypes = [wintypes.HDC]
 g.CreateCompatibleDC.restype = wintypes.HDC
 g.CreateCompatibleBitmap.argtypes = [wintypes.HDC, ctypes.c_int, ctypes.c_int]
@@ -61,6 +65,9 @@ HWND_BOTTOM = wintypes.HWND(1)
 BACK = 0x1 | 0x2 | 0x10 | 0x200  # NOSIZE | NOMOVE | NOACTIVATE | NOOWNERZORDER
 SW_SHOWNOACTIVATE = 4
 EVENT_SYSTEM_FOREGROUND = 0x0003
+WM_TIMER = 0x0113
+WIN_EVENT_PROC = ctypes.WINFUNCTYPE(None, wintypes.HANDLE, wintypes.DWORD, wintypes.HWND,
+                                   wintypes.LONG, wintypes.LONG, wintypes.DWORD, wintypes.DWORD)
 
 
 def window_pid(h):
@@ -117,28 +124,68 @@ def give_back(prev, fg):
         u.SwitchToThisWindow(prev, True)
 
 
+@contextmanager
+def win_event(event, handler, pid=0):
+    callback = WIN_EVENT_PROC(handler)
+    hook = u.SetWinEventHook(event, event, None, callback, pid, 0, 0)
+    if not hook:
+        raise SystemExit(f"Could not watch Windows event {event:#x}")
+    try:
+        yield
+    finally:
+        u.UnhookWinEvent(hook)
+
+
+@contextmanager
+def track_foreground(is_dev):
+    prev = None
+
+    def on_foreground(hook, event, h, obj, child, thread, ms):
+        nonlocal prev
+        if not h or obj != 0 or not u.IsWindow(h):
+            return
+        if not is_dev(h):
+            # A queued event still records the user's last window after Zen takes focus.
+            prev = h
+        elif u.GetForegroundWindow() == h:
+            to_back(h)
+            give_back(prev, h)
+
+    with win_event(EVENT_SYSTEM_FOREGROUND, on_foreground):
+        fg = u.GetForegroundWindow()
+        if fg and not is_dev(fg):
+            prev = fg
+        yield
+
+
+def pump_messages(stop_timer=None):
+    msg = wintypes.MSG()
+    while u.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
+        if msg.message == WM_TIMER and msg.wParam == stop_timer:
+            break
+        u.TranslateMessage(ctypes.byref(msg))
+        u.DispatchMessageW(ctypes.byref(msg))
+
+
 def launch(exe, profile, watch=12):
-    prev = u.GetForegroundWindow()
     si = subprocess.STARTUPINFO(dwFlags=subprocess.STARTF_USESHOWWINDOW, wShowWindow=7)  # SW_SHOWMINNOACTIVE
     # A Shift held while you type would start safe mode without the theme, and
     # quick restarts can trigger automatic safe mode. Marionette needs system
     # access, set only for this child process.
     env = {**os.environ, "MOZ_REMOTE_ALLOW_SYSTEM_ACCESS": "1",
            "MOZ_DISABLE_SAFE_MODE_KEY": "1", "MOZ_DISABLE_AUTO_SAFE_MODE": "1"}
-    subprocess.Popen([exe, "-no-remote", "-purgecaches", "--marionette", "-profile", profile, "about:blank"],
-                     startupinfo=si, env=env, close_fds=True,
-                     creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
     target = os.path.normcase(os.path.abspath(exe))
-    end = time.time() + watch
-    while time.time() < end:
-        fg = u.GetForegroundWindow()
-        if fg and fg != prev:
-            if os.path.normcase(image_path(fg)) == target:
-                to_back(fg)
-                give_back(prev, fg)
-            else:
-                prev = fg
-        time.sleep(0.005)
+    with track_foreground(lambda h: os.path.normcase(image_path(h)) == target):
+        subprocess.Popen([exe, "-no-remote", "-purgecaches", "--marionette", "-profile", profile, "about:blank"],
+                         startupinfo=si, env=env, close_fds=True,
+                         creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
+        timer = u.SetTimer(None, 0, int(watch * 1000), None)
+        if not timer:
+            raise SystemExit("Could not set the development Zen focus timer")
+        try:
+            pump_messages(timer)
+        finally:
+            u.KillTimer(None, timer)
 
 
 def settle(pid):
@@ -152,43 +199,21 @@ def settle(pid):
 
 
 def guard(pid):
-    prev = u.GetForegroundWindow()
-    if prev and window_pid(prev) == pid:
-        prev = None
-    PROC = ctypes.WINFUNCTYPE(None, wintypes.HANDLE, wintypes.DWORD, wintypes.HWND,
-                              wintypes.LONG, wintypes.LONG, wintypes.DWORD, wintypes.DWORD)
-
-    def cb(hook, event, h, obj, child, thread, ms):
-        nonlocal prev
+    def on_window(hook, event, h, obj, child, thread, ms):
         if not h or obj != 0:
-            return
-        if event == EVENT_SYSTEM_FOREGROUND:
-            owner = window_pid(h)
-            if owner and owner != pid:
-                prev = h
-            elif owner == pid and u.GetForegroundWindow() == h:
-                to_back(h)
-                give_back(prev, h)
             return
         b = ctypes.create_unicode_buffer(64)
         u.GetClassNameW(h, b, 64)
         if b.value == "MozillaDropShadowWindowClass" or (b.value == "MozillaWindowClass" and event == 0x8002):
             to_back(h)
 
-    callback = PROC(cb)
     tid = k.GetCurrentThreadId()
-    # Stop when the parent closes stdin.
-    threading.Thread(target=lambda: (sys.stdin.read(), u.PostThreadMessageW(tid, 0x12, 0, 0)), daemon=True).start()
-    # Observe foreground changes across apps, while popup events stay scoped to dev Zen.
-    hooks = [u.SetWinEventHook(e, e, None, callback, owner, 0, 0)
-             for e, owner in ((EVENT_SYSTEM_FOREGROUND, 0), (0x8002, pid), (0x800B, pid))]
-    print("ready", flush=True)
-    msg = wintypes.MSG()
-    while u.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
-        u.TranslateMessage(ctypes.byref(msg))
-        u.DispatchMessageW(ctypes.byref(msg))
-    for hook in hooks:
-        u.UnhookWinEvent(hook)
+    with track_foreground(lambda h: window_pid(h) == pid), \
+            win_event(0x8002, on_window, pid), win_event(0x800B, on_window, pid):
+        # Stop when the parent closes stdin.
+        threading.Thread(target=lambda: (sys.stdin.read(), u.PostThreadMessageW(tid, 0x12, 0, 0)), daemon=True).start()
+        print("ready", flush=True)
+        pump_messages()
 
 
 def grab(h):
