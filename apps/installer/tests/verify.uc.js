@@ -222,8 +222,9 @@
     check(!gift.hasAttribute('tooltiptext'),'library hover has no overlapping native tooltip');
     Zennia.openDownloads();await wait(250);
     // Judge "during its flight" only while the file is actually flying; slow runners can land it sooner.
-    check(!document.querySelector('[data-zennia-flight]')||!Zennia.diagnostics().popup,'real download keeps menu closed during its flight');
-    for(let i=0;i<200&&document.querySelector('[data-zennia-flight]');i++)await wait(20);
+    let realOpenedDuringFlight=false;
+    for(let i=0;i<200&&document.querySelector('[data-zennia-flight]');i++){if(Zennia.diagnostics().popup)realOpenedDuringFlight=true;await wait(20);}
+    check(!realOpenedDuringFlight,'real download keeps menu closed during its flight');
     await wait(150);check(Zennia.diagnostics().popup,'real download opens menu on arrival');
     check(getComputedStyle(document.querySelector('.zennia-download-icon')).width==='40px','download rows use Arc-sized file previews');
     check(getComputedStyle(document.getElementById('zennia-download-popup')).boxShadow==='none'&&!document.querySelector('.zennia-download-header'),'recent files appear without a popup card or heading');
