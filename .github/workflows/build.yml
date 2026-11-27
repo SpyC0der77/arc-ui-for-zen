@@ -77,6 +77,26 @@ jobs:
             zen-instances/runtime-*/diagnostics/*.json
             zen-instances/runtime-*/diagnostics/*.log
             zen-instances/runtime-*/diagnostics/*.png
+  # Unit tests run beside packaging rather than before it. The release
+  # workflow still needs every job here, tests included, to pass.
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
   build:
     strategy:
       fail-fast: false
@@ -100,7 +120,6 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
       # electron-builder always packs the Windows portable app at 7-Zip's
       # maximum level, which took about 2.5 minutes. Pull request and branch
       # builds only need a working installer; releases keep full compression.
