@@ -306,7 +306,11 @@ var ZenniaDownloads = {
             easing: "ease-out",
             fill: "backwards",
           });
-      } else if (!empty && veiled.length) unveilTabs();
+      } else if (!empty && veiled.length) {
+        // Files arrived during that wait: show them now.
+        for (const animation of list.getAnimations()) animation.cancel();
+        unveilTabs();
+      }
     }
     // Initial list hydration renders existing files without replaying arrival effects.
     // Later additions animate only in the most recent browser window.
